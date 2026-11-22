@@ -367,6 +367,8 @@ export function ExplainerPlayer({
             svgOverlays={engine.svgOverlays}
             transitionOpacity={engine.transitionOpacity}
             incomingOpacity={engine.incomingOpacity}
+            clean={engine.clean}
+            incomingClean={engine.incomingClean}
             aspectRatio={lesson.aspectRatio}
             onClick={handleViewportClick}
           />

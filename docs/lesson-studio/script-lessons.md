@@ -1,11 +1,12 @@
 # Script lessons
 
-Lesson Studio (`/admin/lesson-studio`) builds lessons script first. A lesson is a
+The script studio (`/admin/lesson-studio/script`) builds lessons script first. A lesson is a
 list of scenes. Each scene uses one of five templates, and each sentence of
 narration is one beat: when the narrator says it, its item appears.
 
-The free-form canvas editor is still at `/admin/lesson-studio/classic`, and
-canvas lessons keep playing exactly as before.
+The canvas editor at `/admin/lesson-studio` now offers the same templates as
+editable scenes; see [templates-in-canvas.md](./templates-in-canvas.md). Canvas
+lessons keep playing exactly as before.
 
 ## The rules that keep it simple
 
@@ -24,13 +25,13 @@ canvas lessons keep playing exactly as before.
 
 ## Templates
 
-| Template | What each sentence does |
-|---|---|
-| `title` | The heading is the big title. A sentence with `text` adds a subtitle. |
-| `image` | A sentence with a `region` rings or spotlights that part of the picture, or zooms into it (`mark`). `text` adds a numbered label beside the picture; a sentence with `text` and no region adds a bold note. |
-| `compare` | Sentences with `side: "left"` fill the left panel, `"right"` the right one. The first sentence on a side is its title. A sentence with `text` and no side is a closing line under both. |
-| `ladder` | Each sentence with `text` adds the next rung; `detail` is the smaller line. The rung being spoken is highlighted. |
-| `takehome` | Each sentence with `text` adds a point. |
+| Template   | What each sentence does                                                                                                                                                                                     |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`    | The heading is the big title. A sentence with `text` adds a subtitle.                                                                                                                                       |
+| `image`    | A sentence with a `region` rings or spotlights that part of the picture, or zooms into it (`mark`). `text` adds a numbered label beside the picture; a sentence with `text` and no region adds a bold note. |
+| `compare`  | Sentences with `side: "left"` fill the left panel, `"right"` the right one. The first sentence on a side is its title. A sentence with `text` and no side is a closing line under both.                     |
+| `ladder`   | Each sentence with `text` adds the next rung; `detail` is the smaller line. The rung being spoken is highlighted.                                                                                           |
+| `takehome` | Each sentence with `text` adds a point.                                                                                                                                                                     |
 
 A sentence with no `text` is narration only: it is spoken and keeps the timing,
 but adds nothing on screen.
@@ -49,16 +50,29 @@ but adds nothing on screen.
       "heading": "The dysplasia ladder",
       "beats": [
         "Then grade it on a ladder.",
-        { "say": "Negative: the atypia matures toward the surface.", "text": "Negative", "detail": "Atypia matures toward the surface" }
+        {
+          "say": "Negative: the atypia matures toward the surface.",
+          "text": "Negative",
+          "detail": "Atypia matures toward the surface"
+        }
       ]
     },
     {
       "template": "image",
       "heading": "Four lines",
-      "image": { "url": "https://img.pathologybites.com/library/….jpg", "width": 487, "height": 329 },
+      "image": {
+        "url": "https://img.pathologybites.com/library/….jpg",
+        "width": 487,
+        "height": 329
+      },
       "credit": "Figure: …",
       "beats": [
-        { "say": "Line one is the mucin droplet.", "text": "Mucin droplet", "region": { "x": 46, "y": 7, "w": 10, "h": 7 }, "mark": "ring" }
+        {
+          "say": "Line one is the mucin droplet.",
+          "text": "Mucin droplet",
+          "region": { "x": 46, "y": 7, "w": 10, "h": 7 },
+          "mark": "ring"
+        }
       ]
     }
   ]

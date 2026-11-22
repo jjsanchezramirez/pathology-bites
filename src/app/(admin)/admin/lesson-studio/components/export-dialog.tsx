@@ -31,7 +31,13 @@ function lessonImageUrls(lesson: ExportableLesson): string[] {
   return [
     ...new Set(
       lesson.slides.flatMap((s) =>
-        s.elements.flatMap((e) => (e.kind === "image" ? [e.imageUrl] : []))
+        s.elements.flatMap((e) =>
+          e.kind === "image"
+            ? [e.imageUrl]
+            : e.kind === "svg" && s.look === "clean"
+              ? [e.svgUrl]
+              : []
+        )
       )
     ),
   ].filter(Boolean);
@@ -43,15 +49,19 @@ async function frameDrawer(
   images: Map<string, HTMLImageElement>,
   captions: boolean
 ): Promise<(ctx: CanvasRenderingContext2D, w: number, h: number, t: number) => void> {
-  if (!isScriptLesson(lesson)) {
-    return (ctx, w, h, t) => drawExportFrame(ctx, w, h, computeFrameState(lesson, t), images);
-  }
   const fontFamily = lessonSans.style.fontFamily;
+  const needsFont = isScriptLesson(lesson) || lesson.slides.some((s) => s.look === "clean");
   // Canvas only uses a web font once it's loaded.
-  await Promise.all([
-    document.fonts.load(`400 24px ${fontFamily}`),
-    document.fonts.load(`600 24px ${fontFamily}`),
-  ]).catch((err) => log.warn("[export] lesson font failed to load:", err));
+  if (needsFont) {
+    await Promise.all([
+      document.fonts.load(`400 24px ${fontFamily}`),
+      document.fonts.load(`600 24px ${fontFamily}`),
+    ]).catch((err) => log.warn("[export] lesson font failed to load:", err));
+  }
+  if (!isScriptLesson(lesson)) {
+    return (ctx, w, h, t) =>
+      drawExportFrame(ctx, w, h, computeFrameState(lesson, t), images, fontFamily);
+  }
   const timeline = computeTimeline(lesson);
   const chunks = captions ? scriptCaptions(lesson, timeline) : null;
   return (ctx, w, _h, t) =>

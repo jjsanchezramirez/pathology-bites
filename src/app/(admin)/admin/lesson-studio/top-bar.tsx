@@ -28,6 +28,7 @@ import {
   ChevronDown,
   Wand2,
   Mic,
+  FileText,
 } from "lucide-react";
 import { useEditorStore, selectCanUndo, selectCanRedo } from "./model/store";
 
@@ -50,6 +51,8 @@ interface TopBarProps {
   onGenerate: () => void;
   /** Open the Gemini narration dialog. */
   onNarrateOpen: () => void;
+  /** Open the script import dialog (JSON or text → template scenes). */
+  onImportScript: () => void;
   /** Total duration in seconds, used for the display chip. */
   totalDuration: number;
 }
@@ -71,6 +74,7 @@ export function TopBar({
   onClearAudio,
   onGenerate,
   onNarrateOpen,
+  onImportScript,
   totalDuration,
 }: TopBarProps) {
   const title = useEditorStore((s) => s.lesson.title);
@@ -111,6 +115,10 @@ export function TopBar({
             <FolderOpen className="mr-2 h-4 w-4" />
             Load from library…
             <DropdownMenuShortcut>⌘O</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={onImportScript}>
+            <FileText className="mr-2 h-4 w-4" />
+            Import script…
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={onSaveOpen} disabled={noSlides}>

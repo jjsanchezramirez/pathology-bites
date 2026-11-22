@@ -19,6 +19,10 @@ import { computeSlideAt, cameraToCss, rectAt } from "../model/runtime";
 import { pointInRect } from "./geometry";
 import { overlayImageFromLibrary, type LibraryImageLike } from "../model/slide-factory";
 import type { SlideElement } from "../model/types";
+import { arrowPointsAt } from "@/shared/lesson/evaluate";
+import { cleanEditorItems } from "@/shared/lesson/clean";
+import { CleanItemView } from "@/shared/components/explainer/clean-layer";
+import { lessonSans } from "@/shared/fonts/lesson-fonts";
 
 export function EditorCanvas() {
   const canvasRef = useRef<HTMLDivElement | null>(null);
@@ -26,13 +30,14 @@ export function EditorCanvas() {
   const selectedIds = useEditorStore((s) => s.selection.elementIds);
   const tool = useEditorStore((s) => s.tool);
   const viewTime = useEditorStore((s) => s.viewTime);
+  const editingId = useEditorStore((s) => s.editingElementId);
 
   const runtime = useMemo(
     () => (slide ? computeSlideAt(slide, viewTime) : null),
     [slide, viewTime]
   );
 
-  const camera = runtime?.transform ?? { x: 0, y: 0, scale: 1 };
+  const camera = useMemo(() => runtime?.transform ?? { x: 0, y: 0, scale: 1 }, [runtime]);
 
   const pointerHandlers = useCanvasPointer({ canvasRef, slide, camera, viewTime });
 
@@ -54,10 +59,23 @@ export function EditorCanvas() {
       if (!rect) return;
       const dropX = ((e.clientX - rect.left) / rect.width) * 100;
       const dropY = ((e.clientY - rect.top) / rect.height) * 100;
+      // On a template slide, dropping onto a picture swaps that picture.
+      if (slide.look === "clean") {
+        const s = camera.scale || 1;
+        const pt = { x: (dropX - 50 - camera.x) / s + 50, y: (dropY - 50 - camera.y) / s + 50 };
+        const target = [...slide.elements]
+          .reverse()
+          .find((el) => el.kind === "image" && pointInRect(pt, el.rect));
+        if (target) {
+          useEditorStore.getState().updateElement(slide.id, target.id, { imageUrl: img.url });
+          useEditorStore.getState().selectElements(slide.id, [target.id]);
+          return;
+        }
+      }
       const el = overlayImageFromLibrary(img, dropX, dropY);
       useEditorStore.getState().addElement(slide.id, el);
     },
-    [slide]
+    [slide, camera]
   );
 
   // Double-click to inline-edit a text element (single click selects first).
@@ -143,15 +161,29 @@ export function EditorCanvas() {
             style={{ background: slide.backgroundColor ?? "#fff" }}
           />
 
-          {slide.elements.map((el) => (
-            <ElementRenderer
-              key={el.id}
-              element={el}
-              selected={selectedIds.includes(el.id)}
-              runtimeOpacity={runtime?.elementOpacity[el.id] ?? 1}
-              viewTime={viewTime}
-            />
-          ))}
+          {slide.look === "clean" ? (
+            // Template look: draw exactly as the player does, in list order.
+            <div className={`${lessonSans.className} absolute inset-0 pointer-events-none`}>
+              {cleanEditorItems(slide, viewTime, selectedIds, rectAt, arrowPointsAt).map((it) => {
+                const el = it.id === editingId ? slide.elements.find((e) => e.id === it.id) : null;
+                return el ? (
+                  <ElementRenderer key={it.id} element={el} selected viewTime={viewTime} />
+                ) : (
+                  <CleanItemView key={it.id} item={it} />
+                );
+              })}
+            </div>
+          ) : (
+            slide.elements.map((el) => (
+              <ElementRenderer
+                key={el.id}
+                element={el}
+                selected={selectedIds.includes(el.id)}
+                runtimeOpacity={runtime?.elementOpacity[el.id] ?? 1}
+                viewTime={viewTime}
+              />
+            ))
+          )}
 
           {singleSelection && renderHandlesFor(singleSelection, viewTime)}
         </div>

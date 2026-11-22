@@ -68,6 +68,8 @@ export function linesFromScript(
     id: kept[i]?.id ?? makeId(),
     text,
     elementIds: kept[i]?.elementIds ?? [],
+    // A sentence pinned on the timeline keeps its place while its text is unchanged.
+    ...(kept[i]?.at != null && kept[i]?.text === text ? { at: kept[i]!.at } : {}),
   }));
 }
 

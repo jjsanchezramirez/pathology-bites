@@ -7,6 +7,7 @@ import type { Lesson, Slide, SlideElement, Framing } from "./types";
 import { newBlankLesson } from "./slide-factory";
 import { migrateLesson } from "@/shared/lesson/normalize";
 import { applyNarrationCues, type SlideCue } from "@/shared/lesson/narration";
+import { autoTimeLesson } from "@/shared/lesson/auto-timing";
 
 const HISTORY_LIMIT = 50;
 
@@ -131,8 +132,10 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   _commit: (mutator) => {
     set((state) => {
       const prev = state.lesson;
-      const next = mutator(prev);
-      if (next === prev) return state;
+      const mutated = mutator(prev);
+      if (mutated === prev) return state;
+      // Elements that follow the narration are retimed after every change.
+      const next = autoTimeLesson(mutated);
       const prevId = state.currentSnapshotId;
       const nextId = prevId + 1;
       // If a drag session is active, don't push per-mutation snapshots.
@@ -162,7 +165,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   // ---- Document --------------------------------------------------------------
 
   setLesson: (lesson) => {
-    const migrated = migrateLesson(lesson);
+    const migrated = autoTimeLesson(migrateLesson(lesson));
     set((state) => {
       const nextId = state.currentSnapshotId + 1;
       return {
@@ -288,9 +291,13 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
           ? s
           : {
               ...s,
-              elements: s.elements.map((e) =>
-                e.id === elementId ? ({ ...e, ...patch } as SlideElement) : e
-              ),
+              elements: s.elements.map((e) => {
+                if (e.id !== elementId) return e;
+                const next = { ...e, ...patch } as SlideElement;
+                // Setting timing by hand takes the element off auto timing.
+                if ("timing" in patch && !("cue" in patch)) delete next.cue;
+                return next;
+              }),
             }
       ),
     }));

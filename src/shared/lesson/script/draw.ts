@@ -704,12 +704,4 @@ export function drawScriptFrame(
   ctx.restore();
 }
 
-/** Every picture a script lesson shows, for preloading before export. */
-export function scriptImageUrls(lesson: ScriptLesson): string[] {
-  const urls = new Set<string>();
-  for (const scene of lesson.scenes) {
-    if (scene.image?.url) urls.add(scene.image.url);
-    for (const beat of scene.beats) if (beat.image?.url) urls.add(beat.image.url);
-  }
-  return [...urls];
-}
+export { scriptImageUrls } from "./timeline";
