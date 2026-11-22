@@ -115,10 +115,11 @@ export async function login(formData: FormData) {
     redirect(redirectPath);
   }
 
-  // Get role from JWT first (fastest), fallback to database
-  let userRole = authData.user.app_metadata?.role || authData.user.user_metadata?.role || "user";
+  // Role comes from app_metadata (server-written; a DB trigger mirrors public.users.role
+  // into it), falling back to public.users. Never from user_metadata, which users can edit,
+  // and never written back there. This only picks the landing page; middleware enforces access.
+  let userRole = authData.user.app_metadata?.role || "user";
 
-  // If role not in JWT, fetch from database and update JWT
   if (!authData.user.app_metadata?.role) {
     try {
       const { data: userData, error: roleError } = await supabase
@@ -127,30 +128,14 @@ export async function login(formData: FormData) {
         .eq("id", authData.user.id)
         .maybeSingle();
 
-      log.debug("[Auth] User role data:", userData);
-
       if (roleError) {
         log.error("[Auth] Role check error:", roleError);
       } else if (userData) {
         userRole = userData.role || "user";
-
-        // Store role in app_metadata (requires admin API)
-        // For now, store in user_metadata which is accessible from JWT
-        try {
-          await supabase.auth.updateUser({
-            data: { role: userRole },
-          });
-          log.debug("[Auth] Updated user_metadata with role:", userRole);
-        } catch (metadataError) {
-          log.error("[Auth] Failed to update user_metadata:", metadataError);
-          // Non-critical error, continue with login
-        }
       }
     } catch (error) {
       log.error("[Auth] Database error during role check:", error);
     }
-  } else {
-    log.debug("[Auth] Role retrieved from JWT:", userRole);
   }
 
   // Redirect based on role

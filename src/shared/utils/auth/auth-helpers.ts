@@ -23,9 +23,10 @@ export interface AuthUser extends User {
  * Falls back to database if not in JWT
  */
 export async function getUserRole(supabase: SupabaseClient, user: User): Promise<UserRole> {
-  // Try to get role from JWT first (stored in app_metadata by Supabase)
+  // app_metadata only: users can edit their own user_metadata, so it is never an
+  // authorization source. A DB trigger mirrors public.users.role into app_metadata.
   const authUser = user as AuthUser;
-  const roleFromJWT = authUser.app_metadata?.role || authUser.user_metadata?.role;
+  const roleFromJWT = authUser.app_metadata?.role;
 
   if (roleFromJWT && isValidRole(roleFromJWT)) {
     return roleFromJWT;
