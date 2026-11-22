@@ -49,8 +49,28 @@ function missingCompanionConfig(provider: string): boolean {
   );
 }
 
-/** Get the API key for a provider. Empty string when unconfigured. */
+/**
+ * Providers locked off until someone confirms the account has funds.
+ *
+ * Cerebras is prepaid and its balance is empty: every model answers 402
+ * (re-checked 2026-11-21). The key stays configured so it can be switched back
+ * on without a key hunt, but the provider reads as unconfigured — so no chain,
+ * pinned model or catalog flip can spend an attempt on it — until
+ * CEREBRAS_ENABLED=true is set. Only set it after confirming funds at
+ * console.cerebras.ai.
+ */
+export function isProviderLocked(provider: string): boolean {
+  return provider === "cerebras" && process.env.CEREBRAS_ENABLED !== "true";
+}
+
+/** Get the API key for a provider. Empty string when unconfigured or locked. */
 export function getApiKey(provider: string): string {
+  if (isProviderLocked(provider)) {
+    log.warn(
+      `⚠️ ${provider} is locked (no funds). Set CEREBRAS_ENABLED=true only after topping up.`
+    );
+    return "";
+  }
   const key = API_KEYS[provider as keyof typeof API_KEYS];
   if (key && missingCompanionConfig(provider)) {
     log.warn(
@@ -68,6 +88,7 @@ export function getApiKey(provider: string): string {
 
 /** Whether a provider has a usable key configured. */
 export function hasApiKey(provider: string): boolean {
+  if (isProviderLocked(provider)) return false;
   const key = API_KEYS[provider as keyof typeof API_KEYS];
   return !!(key && key.trim() !== "" && !missingCompanionConfig(provider));
 }
