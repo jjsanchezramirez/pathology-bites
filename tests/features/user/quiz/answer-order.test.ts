@@ -150,6 +150,7 @@ describe("QuizService.getQuizSession answer order", () => {
       const chain: Record<string, unknown> = {};
       for (const m of ["select", "eq", "in"]) chain[m] = () => chain;
       chain.single = () => Promise.resolve(result);
+      chain.maybeSingle = () => Promise.resolve(result);
       chain.then = (res: (v: unknown) => unknown, rej?: (e: unknown) => unknown) =>
         Promise.resolve(result).then(res, rej);
       return chain;

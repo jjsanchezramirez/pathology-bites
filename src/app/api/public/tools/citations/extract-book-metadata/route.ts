@@ -6,7 +6,7 @@ import { log } from "@/shared/utils/logging";
  * /api/public/tools/citations/extract-book-metadata:
  *   get:
  *     summary: Extract book metadata from ISBN
- *     description: Retrieve book metadata from OpenLibrary and Google Books APIs using ISBN. Results are cached for 24 hours.
+ *     description: Retrieve book metadata from the Google Books API using ISBN. Results are cached for 24 hours.
  *     tags:
  *       - Public - Tools
  *     parameters:
@@ -122,66 +122,21 @@ export async function GET(request: NextRequest) {
     // Clean expired cache entries periodically
     cleanExpiredISBNCache()
 
-    // Try OpenLibrary first
+    // Google Books. Open Library was dropped (Nov 2026): it took ~7 s a lookup and pushed
+    // the route past the edge timeout. Keyless Google Books is rate-limited per IP, so a
+    // GOOGLE_BOOKS_API_KEY is used when set. The timeout keeps a slow upstream from
+    // hanging the request; on failure the generic fallback below is returned.
     try {
-      const openLibraryUrl = `https://openlibrary.org/api/books?bibkeys=ISBN:${cleanIsbn}&format=json&jscmd=data`
+      const key = process.env.GOOGLE_BOOKS_API_KEY
+      const googleBooksUrl =
+        `https://www.googleapis.com/books/v1/volumes?q=isbn:${cleanIsbn}` +
+        (key ? `&key=${encodeURIComponent(key)}` : '')
 
-      const response = await fetch(openLibraryUrl, {
-        headers: {
-          'User-Agent': 'PathologyBites/1.0 (mailto:contact@pathologybites.com)'
-        }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        const bookKey = `ISBN:${cleanIsbn}`
-        const book = data[bookKey]
-
-        if (book) {
-          // Ensure publisher is a string
-          let publisher = 'Unknown Publisher'
-          if (book.publishers && Array.isArray(book.publishers) && book.publishers.length > 0) {
-            // Handle publisher objects with name property
-            const publisherData = book.publishers[0]
-            if (typeof publisherData === 'object' && publisherData.name) {
-              publisher = publisherData.name
-            } else if (typeof publisherData === 'string') {
-              publisher = publisherData
-            }
-          } else if (book.publishers && typeof book.publishers === 'string') {
-            publisher = book.publishers
-          }
-
-          const result = {
-            title: book.title || 'Unknown Title',
-            authors: book.authors?.map((author: unknown) => (author as { name?: string }).name).filter((name: string): name is string => !!name) || ['Unknown Author'],
-            year: extractYearFromDate(book.publish_date),
-            publisher: publisher,
-            type: 'book'
-          }
-
-          // Cache the successful result
-          isbnCache.set(cleanIsbn, {
-            data: result,
-            timestamp: Date.now()
-          })
-          log.debug(`[ISBN Cache] Stored: ${cleanIsbn}`)
-
-          return NextResponse.json(result)
-        }
-      }
-    } catch (error) {
-      log.error('OpenLibrary API error:', error)
-    }
-
-    // Fallback to Google Books API
-    try {
-      const googleBooksUrl = `https://www.googleapis.com/books/v1/volumes?q=isbn:${cleanIsbn}`
-      
       const response = await fetch(googleBooksUrl, {
         headers: {
           'User-Agent': 'PathologyBites/1.0 (mailto:contact@pathologybites.com)'
-        }
+        },
+        signal: AbortSignal.timeout(5000),
       })
       
       if (response.ok) {
@@ -209,7 +164,7 @@ export async function GET(request: NextRequest) {
             data: result,
             timestamp: Date.now()
           })
-          log.debug(`[ISBN Cache] Stored (Google Books): ${cleanIsbn}`)
+          log.debug(`[ISBN Cache] Stored: ${cleanIsbn}`)
 
           return NextResponse.json(result)
         }
@@ -218,7 +173,7 @@ export async function GET(request: NextRequest) {
       log.error('Google Books API error:', error)
     }
     
-    // If both APIs fail, return a fallback response
+    // Lookup failed or found nothing: return a fallback response
     return NextResponse.json({
       title: 'Unknown Title',
       authors: ['Unknown Author'],

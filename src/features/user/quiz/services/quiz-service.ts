@@ -326,7 +326,8 @@ export class QuizService {
           "id, user_id, title, config, question_ids, current_question_index, status, score, total_questions, correct_answers, total_time_spent, total_time_limit, time_remaining, started_at, completed_at, created_at, updated_at"
         )
         .eq("id", sessionId)
-        .single();
+        // maybeSingle: an unknown id is "no session" (null → the routes' 404), not an error.
+        .maybeSingle();
 
       if (error) {
         log.error("Error getting quiz session:", error);

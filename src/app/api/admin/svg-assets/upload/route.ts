@@ -3,6 +3,7 @@ import { createClient } from "@/shared/services/server";
 import { uploadToR2, generateSvgStoragePath, deleteFromR2 } from "@/shared/services/r2-storage";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
+import { parseFormData } from "@/shared/utils/api/parse-body";
 
 export const runtime = "nodejs";
 
@@ -87,7 +88,8 @@ export async function POST(request: NextRequest) {
     const userId = auth.userId;
 
     // Parse form data
-    const formData = await request.formData();
+    const formData = await parseFormData(request);
+    if (formData instanceof NextResponse) return formData;
     const file = formData.get("file") as File;
     const name = formData.get("name") as string;
     const description = formData.get("description") as string | null;

@@ -5,6 +5,7 @@ import { formatImageName } from "@/features/admin/images/services/image-upload";
 import { getImageDimensionsFromFile } from "@/shared/utils/images/server-image-utils";
 import { requireUser } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
+import { parseFormData } from "@/shared/utils/api/parse-body";
 
 /**
  * @swagger
@@ -159,7 +160,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse form data
-    const formData = await request.formData();
+    const formData = await parseFormData(request);
+    if (formData instanceof NextResponse) return formData;
     const file = formData.get("file") as File;
     const imageId = formData.get("imageId") as string;
 

@@ -95,6 +95,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       .single();
 
     if (error) {
+      if (error.code === "PGRST116") {
+        return NextResponse.json({ error: "Subject not found" }, { status: 404 });
+      }
       if (error.code === "23505") {
         return NextResponse.json(
           { error: "A subject with this slug already exists" },

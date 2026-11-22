@@ -127,6 +127,9 @@ export async function POST(request: NextRequest) {
       .select()
       .single();
 
+    if (error?.code === "PGRST116") {
+      return NextResponse.json({ error: "Sequence not found" }, { status: 404 });
+    }
     if (error) {
       log.error("Failed to update interactive sequence:", error);
       return NextResponse.json(

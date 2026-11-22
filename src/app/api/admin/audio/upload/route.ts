@@ -4,6 +4,7 @@ import { uploadToR2, generateAudioStoragePath, deleteFromR2 } from "@/shared/ser
 import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { parseAudioFilename } from "@/shared/utils/images/filename-parser";
 import { log } from "@/shared/utils/logging";
+import { parseFormData } from "@/shared/utils/api/parse-body";
 
 const ALLOWED_AUDIO_TYPES = [
   "audio/mpeg",
@@ -126,7 +127,8 @@ export async function POST(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
 
-    const formData = await request.formData();
+    const formData = await parseFormData(request);
+    if (formData instanceof NextResponse) return formData;
     const file = formData.get("file") as File;
 
     if (!file) {

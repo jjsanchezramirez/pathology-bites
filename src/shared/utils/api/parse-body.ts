@@ -41,3 +41,19 @@ export async function parseBody<Schema extends z.ZodTypeAny>(
 
   return result.data;
 }
+
+/**
+ * Multipart form parsing for upload routes. `request.formData()` throws when the
+ * body isn't multipart/form-data or urlencoded; that is the client's mistake, so
+ * answer 400 rather than letting it surface as a 500.
+ *
+ *   const formData = await parseFormData(request);
+ *   if (formData instanceof NextResponse) return formData;
+ */
+export async function parseFormData(request: Request): Promise<FormData | NextResponse> {
+  try {
+    return await request.formData();
+  } catch {
+    return apiError("Expected a multipart/form-data body", 400);
+  }
+}

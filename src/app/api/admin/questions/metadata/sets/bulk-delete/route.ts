@@ -84,7 +84,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Delete the question sets
-    const { error, count } = await supabase.from("question_sets").delete().in("id", setIds);
+    const { error, count } = await supabase
+      .from("question_sets")
+      .delete({ count: "exact" })
+      .in("id", setIds);
 
     if (error) {
       throw error;
@@ -92,7 +95,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      deletedCount: count || setIds.length,
+      deletedCount: count ?? 0,
     });
   } catch (error) {
     log.error("Error bulk deleting question sets:", error);
