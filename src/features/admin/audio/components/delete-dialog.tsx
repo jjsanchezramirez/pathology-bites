@@ -2,7 +2,7 @@
 
 import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
 import { toast } from "@/shared/utils/ui/toast";
-import { softDeleteAudio } from "@/features/admin/audio/services/audio";
+import { deleteAudio } from "@/features/admin/audio/services/audio";
 import type { Audio } from "@/features/admin/audio/types";
 import { log } from "@/shared/utils/logging";
 
@@ -23,7 +23,7 @@ export function DeleteAudioDialog({
 
   const handleDelete = async () => {
     try {
-      await softDeleteAudio(audio.id);
+      await deleteAudio(audio.id);
       toast.success("Audio file deleted successfully");
       onSuccess();
     } catch (error) {

@@ -162,6 +162,22 @@ export async function designVoice(input: {
   };
 }
 
+/**
+ * Delete a stored voice (one made with designVoice). Gemini keeps designed voices
+ * until deleted, so without this they only ever accumulate. Prebuilt voices
+ * can't be deleted; Gemini rejects those.
+ */
+export async function deleteVoice(id: string): Promise<void> {
+  const res = await fetchWithTimeout(
+    `${BASE}/voices/${encodeURIComponent(id)}`,
+    { method: "DELETE", headers: headers() },
+    20_000,
+    undefined,
+    "DeleteVoice"
+  );
+  if (!res.ok) throw new Error(`Voice deletion failed: ${await errorText(res)}`);
+}
+
 // ---- Rate limit -----------------------------------------------------------------
 // Gemini TTS on the site's tier allows 10 requests a minute. Narration speaks
 // one request per sentence, so requests are spaced out here instead of firing

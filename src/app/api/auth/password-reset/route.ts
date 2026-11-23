@@ -76,6 +76,8 @@ const passwordUpdateSchema = z
  *                 error:
  *                   type: string
  *                   example: Please enter a valid email address
+ *       401:
+ *         description: Not signed in
  *       500:
  *         description: Internal server error
  *         content:
@@ -90,6 +92,18 @@ const passwordUpdateSchema = z
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
+
+    // Only signed-in users reach this (profile → change password); signed-out
+    // users reset through the forgot-password page, which calls Supabase directly.
+    // Without a session the users lookup below is denied by RLS, which used to
+    // surface as a 500.
+    const {
+      data: { user: sessionUser },
+    } = await supabase.auth.getUser();
+    if (!sessionUser) {
+      return NextResponse.json({ error: "Sign in to change your password" }, { status: 401 });
+    }
+
     const body = await request.json();
 
     // Validate request data

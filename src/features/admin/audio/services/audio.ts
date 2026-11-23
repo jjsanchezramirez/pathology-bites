@@ -110,17 +110,21 @@ export async function updateAudio(
 }
 
 /**
- * Delete audio file from database
- * Note: This does not delete from R2 storage
+ * Delete an audio track: its file in R2 and its row. Goes through the admin API
+ * route because R2 can only be reached server-side; deleting the row from the
+ * browser left every file behind in storage.
  */
-export async function softDeleteAudio(id: string): Promise<void> {
-  const supabase = createClient();
+export async function deleteAudio(id: string): Promise<void> {
+  const response = await fetch("/api/admin/audio/delete", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ audioId: id }),
+  });
 
-  const { error } = await supabase.from("audio").delete().eq("id", id);
-
-  if (error) {
-    log.error("Error deleting audio:", error);
-    throw new Error(error.message);
+  if (!response.ok) {
+    const result = await response.json().catch(() => ({}));
+    log.error("Error deleting audio:", result);
+    throw new Error(result.error || "Failed to delete audio file");
   }
 }
 
