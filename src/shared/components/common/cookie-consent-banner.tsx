@@ -1,208 +1,113 @@
 // src/shared/components/common/cookie-consent-banner.tsx
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
-import { X, Cookie } from "lucide-react";
-import { log } from "@/shared/utils/logging";
+import { X } from "lucide-react";
+import {
+  OPEN_COOKIE_SETTINGS_EVENT,
+  openCookieSettings,
+  readConsent,
+  saveConsent,
+  type ConsentChoice,
+} from "@/shared/utils/cookie-consent";
 
-const CONSENT_KEY = "pathology-bites-cookie-consent";
-const CONSENT_VERSION = "1.0"; // Increment this if you update the policy
+/** Short pause so the banner doesn't flash in during the first paint. */
+export const BANNER_DELAY_MS = 500;
 
-interface CookieConsent {
-  version: string;
-  essential: boolean; // Always true
-  analytics: boolean;
-  timestamp: string;
-}
-
+/**
+ * Asks once whether Google Analytics may be used, then stays away.
+ * The choice is kept in a first-party cookie (see utils/cookie-consent.ts),
+ * so it survives reloads, navigation, sign-in and sign-out.
+ * "Cookie settings" in the footer and on the privacy page reopens it.
+ */
 export function CookieConsentBanner() {
-  const [showBanner, setShowBanner] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const hasCheckedConsent = useRef(false); // Prevent double-checking in React Strict Mode
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    // Only run on client side
-    if (typeof window === "undefined") return;
-
-    // Skip cookie consent on localhost/dev
-    const hostname = window.location.hostname;
-    if (hostname === "localhost" || hostname === "127.0.0.1") return;
-
-    // Prevent double-checking in React Strict Mode
-    if (hasCheckedConsent.current) return;
-    hasCheckedConsent.current = true;
-
-    setMounted(true);
-
-    // Check if user has already consented
-    try {
-      const savedConsent = localStorage.getItem(CONSENT_KEY);
-
-      if (savedConsent) {
-        const consent: CookieConsent = JSON.parse(savedConsent);
-
-        // Check if consent version matches
-        if (consent.version === CONSENT_VERSION) {
-          // Apply consent preferences and don't show banner
-          applyConsent(consent);
-          setShowBanner(false);
-          log.debug("[CookieConsent] Valid consent found, not showing banner");
-          return;
-        } else {
-          log.debug("[CookieConsent] Consent version mismatch, showing banner");
-        }
-      }
-    } catch (e) {
-      log.warn("[CookieConsent] Failed to parse saved consent:", e);
-      // Invalid consent data, show banner
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    if (readConsent() === null) {
+      timer = setTimeout(() => setOpen(true), BANNER_DELAY_MS);
     }
-
-    // Show banner after a short delay for better UX
-    const timer = setTimeout(() => setShowBanner(true), 500);
-    return () => clearTimeout(timer);
+    const reopen = () => {
+      if (timer) clearTimeout(timer);
+      setOpen(true);
+    };
+    window.addEventListener(OPEN_COOKIE_SETTINGS_EVENT, reopen);
+    return () => {
+      if (timer) clearTimeout(timer);
+      window.removeEventListener(OPEN_COOKIE_SETTINGS_EVENT, reopen);
+    };
   }, []);
 
-  const applyConsent = (consent: CookieConsent) => {
-    // Apply analytics consent
-    if (consent.analytics && typeof window !== "undefined") {
-      // Enable Google Analytics
-      if (process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID) {
-        // GA4 is already loaded in layout, just enable it
-        window.gtag?.("consent", "update", {
-          analytics_storage: "granted",
-        });
-      }
-    } else {
-      // Disable analytics
-      window.gtag?.("consent", "update", {
-        analytics_storage: "denied",
-      });
-    }
+  const choose = (choice: ConsentChoice) => {
+    saveConsent(choice);
+    setOpen(false);
   };
 
-  const saveConsent = (analytics: boolean) => {
-    try {
-      const consent: CookieConsent = {
-        version: CONSENT_VERSION,
-        essential: true,
-        analytics,
-        timestamp: new Date().toISOString(),
-      };
-
-      // Save to localStorage
-      localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
-
-      // Verify it was saved
-      const saved = localStorage.getItem(CONSENT_KEY);
-      if (!saved) {
-        log.warn("[CookieConsent] Failed to save consent to localStorage");
-        return;
-      }
-
-      // Apply consent preferences
-      applyConsent(consent);
-      setShowBanner(false);
-      log.debug("[CookieConsent] Consent saved:", { analytics, timestamp: consent.timestamp });
-    } catch (error) {
-      log.error("[CookieConsent] Failed to save consent:", error);
-    }
-  };
-
-  const handleAcceptAll = () => {
-    saveConsent(true);
-  };
-
-  const handleAcceptEssential = () => {
-    saveConsent(false);
-  };
-
-  const handleReject = () => {
-    saveConsent(false);
-  };
-
-  // Don't render on server or if already consented
-  if (!mounted || !showBanner) {
-    return null;
-  }
+  if (!open) return null;
 
   return (
-    <>
-      {/* Bottom-left toast-style banner */}
-      <div className="fixed bottom-4 left-4 z-[100] pointer-events-none max-w-xs">
-        <Card className="pointer-events-auto animate-in slide-in-from-left duration-500 shadow-2xl border border-border bg-card">
-          <div className="p-4">
-            <div className="space-y-3">
-              {/* Header with close button */}
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-full bg-primary/10 shrink-0">
-                    <Cookie className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold">Take a bite of our cookies</h3>
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleReject}
-                  className="shrink-0 h-6 w-6"
-                  aria-label="Reject cookies and close banner"
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-
-              {/* Description */}
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                We use cookies to keep you logged in and improve your learning experience.
-              </p>
-
-              {/* Actions - stacked vertically for compact design */}
-              <div className="flex flex-col gap-1.5">
-                <Button
-                  onClick={handleAcceptAll}
-                  className="w-full bg-primary hover:bg-primary/90 text-xs h-8"
-                  size="sm"
-                >
-                  Accept All
-                </Button>
-                <div className="flex gap-1.5">
-                  <Button
-                    onClick={handleAcceptEssential}
-                    variant="outline"
-                    className="flex-1 text-xs h-7"
-                    size="sm"
-                  >
-                    Essential Only
-                  </Button>
-                  <Button
-                    onClick={handleReject}
-                    variant="ghost"
-                    className="flex-1 text-xs h-7"
-                    size="sm"
-                  >
-                    Reject
-                  </Button>
-                </div>
-              </div>
-
-              {/* Privacy Policy Link */}
-              <p className="text-[10px] text-muted-foreground">
-                <a href="/privacy" className="text-primary hover:underline font-medium">
-                  Privacy Policy
-                </a>
-                {" • "}
-                <a href="/terms" className="text-primary hover:underline font-medium">
-                  Terms
-                </a>
-              </p>
-            </div>
+    <div
+      className="fixed bottom-4 left-4 right-4 sm:right-auto z-[100] pointer-events-none sm:max-w-xs"
+      data-testid="cookie-banner"
+    >
+      <Card
+        role="dialog"
+        aria-modal="false"
+        aria-labelledby="cookie-banner-title"
+        aria-describedby="cookie-banner-text"
+        className="pointer-events-auto animate-in slide-in-from-bottom-4 duration-300 shadow-lg border border-border bg-card"
+      >
+        <div className="p-4 space-y-3">
+          <div className="flex items-start justify-between gap-2">
+            <h2 id="cookie-banner-title" className="text-base font-semibold">
+              Cookies
+            </h2>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => choose("denied")}
+              className="shrink-0 h-7 w-7 -mt-1 -mr-1"
+              aria-label="Close and decline analytics cookies"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
-        </Card>
-      </div>
-    </>
+
+          <p id="cookie-banner-text" className="text-sm text-muted-foreground leading-relaxed">
+            We use essential cookies to keep you signed in. With your OK, we also use Google
+            Analytics to see which pages help most.{" "}
+            <a href="/privacy#cookies" className="text-primary hover:underline">
+              Privacy Policy
+            </a>
+          </p>
+
+          <div className="flex gap-2">
+            <Button onClick={() => choose("granted")} className="flex-1 h-9" size="sm">
+              Accept
+            </Button>
+            <Button
+              onClick={() => choose("denied")}
+              variant="outline"
+              className="flex-1 h-9"
+              size="sm"
+            >
+              Decline
+            </Button>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+/** Small text button that reopens the banner so a visitor can change their choice. */
+export function CookieSettingsButton({ className }: { className?: string }) {
+  return (
+    <button type="button" onClick={openCookieSettings} className={className}>
+      Cookie settings
+    </button>
   );
 }

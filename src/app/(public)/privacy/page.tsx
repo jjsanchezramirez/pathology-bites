@@ -3,6 +3,7 @@
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { PolicyCard } from "@/shared/components/common/policy-card";
 import { PublicPageCTA } from "@/shared/components/common/public-page-cta";
+import { CookieSettingsButton } from "@/shared/components/common/cookie-consent-banner";
 
 export default function PrivacyPage() {
   return (
@@ -74,6 +75,33 @@ export default function PrivacyPage() {
                 platform.
               </p>
             </PolicyCard>
+
+            <div id="cookies" className="scroll-mt-24">
+              <PolicyCard title="Cookies and Analytics">
+                <p>We use a small number of cookies:</p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>
+                    Essential cookies that keep you signed in and remember your settings. The site
+                    cannot work without them.
+                  </li>
+                  <li>
+                    A first-party cookie that records how you first found the site (for example, a
+                    search engine or a link), so we can see which sources bring new members. It is
+                    not shared with anyone.
+                  </li>
+                  <li>
+                    Google Analytics cookies, only if you choose Accept in the cookie banner. They
+                    tell us which pages are used so we can improve them. If you decline, Google
+                    Analytics is not loaded.
+                  </li>
+                </ul>
+                <p>
+                  We also use Vercel Analytics, which counts page visits without cookies. You can
+                  change your choice at any time:{" "}
+                  <CookieSettingsButton className="text-primary hover:underline font-medium" />.
+                </p>
+              </PolicyCard>
+            </div>
 
             <PolicyCard title="Third-Party Websites">
               <p>

@@ -5,8 +5,13 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { captureSignupSource } from "@/shared/utils/analytics/signup-source";
+import {
+  CONSENT_CHANGED_EVENT,
+  readConsent,
+  type ConsentChoice,
+} from "@/shared/utils/cookie-consent";
 
 // Google Analytics 4 configuration
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
@@ -134,16 +139,36 @@ interface AnalyticsProviderProps {
   children: React.ReactNode;
 }
 
+/**
+ * The visitor's cookie choice, kept in sync with the banner.
+ * null until read on the client (and while no choice has been made).
+ */
+function useAnalyticsConsent(): ConsentChoice | null {
+  const [consent, setConsent] = useState<ConsentChoice | null>(null);
+  useEffect(() => {
+    setConsent(readConsent());
+    const onChange = (e: Event) => setConsent((e as CustomEvent<ConsentChoice | null>).detail);
+    window.addEventListener(CONSENT_CHANGED_EVENT, onChange);
+    return () => window.removeEventListener(CONSENT_CHANGED_EVENT, onChange);
+  }, []);
+  return consent;
+}
+
 export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
   // First-touch signup attribution (referrer + utm), saved to the user at signup.
   useEffect(() => {
     captureSignupSource();
   }, []);
 
+  // Google Analytics is the only non-essential tracker on the site, so it is not
+  // loaded at all until the visitor chooses "Accept" in the cookie banner.
+  // Vercel Analytics and Speed Insights below are cookieless and always on.
+  const consent = useAnalyticsConsent();
+
   return (
     <>
-      {/* Google Analytics 4 */}
-      {GA_MEASUREMENT_ID && (
+      {/* Google Analytics 4 (only after consent) */}
+      {GA_MEASUREMENT_ID && consent === "granted" && (
         <>
           {/* Load the heavy gtag.js library (~162 KB) on `lazyOnload` — i.e. after
               the window load event, when the browser is idle — NOT `afterInteractive`.
@@ -162,9 +187,13 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
 
-              // Set default consent to denied (will be updated by cookie banner)
+              // Only rendered after the visitor accepted analytics in the banner.
+              // Ads storage stays off: the site shows no ads.
               gtag('consent', 'default', {
-                'analytics_storage': 'denied'
+                'analytics_storage': 'granted',
+                'ad_storage': 'denied',
+                'ad_user_data': 'denied',
+                'ad_personalization': 'denied'
               });
 
               gtag('config', '${GA_MEASUREMENT_ID}', {

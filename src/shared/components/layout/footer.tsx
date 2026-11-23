@@ -12,6 +12,7 @@
 import Link from "next/link";
 import { MicroscopeIcon, ChevronUp } from "lucide-react";
 import { useState } from "react";
+import { CookieSettingsButton } from "@/shared/components/common/cookie-consent-banner";
 
 // Tool data with descriptive names and categories
 const tools = [
@@ -168,6 +169,7 @@ export function Footer() {
                 >
                   Contact
                 </Link>
+                <CookieSettingsButton className="col-span-2 flex items-center justify-center py-3 px-4 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]" />
               </div>
 
               {/* Mobile Tools section - collapsible */}
@@ -273,6 +275,7 @@ export function Footer() {
               <Link href="/contact" className="hover:text-primary transition-colors py-2">
                 Contact
               </Link>
+              <CookieSettingsButton className="hover:text-primary transition-colors py-2" />
             </div>
           </nav>
         </div>

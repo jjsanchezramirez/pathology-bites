@@ -23,7 +23,11 @@ const CACHE_VERSION = "v3";
 // Simplified: Only store what can't be handled by HTTP browser cache
 export const CACHE_NAMESPACES = {
   SWR: { name: "swr", ttl: 30 * 24 * 60 * 60 * 1000 }, // 30 days - All cached data (SWR + custom)
-  COOKIE: { name: "cookie", ttl: 30 * 24 * 60 * 60 * 1000 }, // 30 days - consent preferences
+  // No "cookie" namespace: its prefix ("pathology-bites-cookie-") swallowed the old
+  // cookie-consent key and the start-up cleanup deleted it on every page load,
+  // which brought the cookie banner back each visit. Consent now lives in a cookie
+  // (shared/utils/cookie-consent.ts). Don't add a namespace whose prefix matches a
+  // key the cache doesn't own.
 } as const;
 
 export type CacheNamespace = (typeof CACHE_NAMESPACES)[keyof typeof CACHE_NAMESPACES]["name"];
