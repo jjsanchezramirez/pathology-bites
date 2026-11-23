@@ -3,7 +3,7 @@
  * User deletion service
  *
  * Handles both soft and hard deletion of users:
- * - Soft delete: For admin/creator/reviewer users (preserves record for attribution)
+ * - Soft delete: For staff — admins and users holding any permission (preserves record for attribution)
  * - Hard delete: For student/user users (removes all data)
  *
  * This service is used by:
@@ -14,6 +14,7 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/shared/types/supabase";
 import { log } from "@/shared/utils/logging";
+import { isStaff, parsePermissions } from "@/shared/utils/auth/permissions";
 
 export interface UserDeletionResult {
   success: boolean;
@@ -27,16 +28,17 @@ export interface UserDeletionResult {
  * @param adminClient - Supabase admin client (service role)
  * @param userClient - Supabase user client (for RLS-aware queries)
  * @param userId - ID of user to delete
- * @param userRole - Role of user to determine deletion type
+ * @param target - Role and permissions of the user, to determine deletion type
  * @returns Deletion result
  */
 export async function deleteUser(
   adminClient: SupabaseClient,
   userClient: SupabaseClient,
   userId: string,
-  userRole: "admin" | "creator" | "reviewer" | "user"
+  target: { role: string | null; permissions?: unknown }
 ): Promise<UserDeletionResult> {
-  const isContentCreator = ["admin", "creator", "reviewer"].includes(userRole);
+  const userRole = target.role;
+  const isContentCreator = isStaff(target.role, parsePermissions(target.permissions));
   const deletionType = isContentCreator ? "soft_delete" : "hard_delete";
 
   try {

@@ -28,7 +28,7 @@ export function DashboardSettingsProvider({
   children: ReactNode;
   isGuest?: boolean;
 }) {
-  const { isAdmin } = useUserRole();
+  const { isStaff } = useUserRole();
   const { setTheme: setColorMode } = useTheme();
   const { mutate } = useSWRConfig();
   const [textZoom, setTextZoomState] = useState(1.0);
@@ -53,7 +53,7 @@ export function DashboardSettingsProvider({
     applyTextZoom(validZoom);
 
     // Apply dashboard theme using utility function
-    const adminMode = getAdminModeFromCookie(isAdmin);
+    const adminMode = getAdminModeFromCookie(isStaff);
     const themeKey = getThemeKeyForMode(adminMode);
     const theme = settings.ui_settings?.[themeKey] ?? "default";
     setDashboardThemeState(theme);
@@ -65,7 +65,7 @@ export function DashboardSettingsProvider({
     if (!storedTheme && settings.ui_settings?.theme) {
       setColorMode(settings.ui_settings.theme);
     }
-  }, [settings, config.default, isAdmin, setColorMode]);
+  }, [settings, config.default, isStaff, setColorMode]);
 
   // Update text zoom
   const setTextZoom = async (newZoom: number) => {
@@ -103,7 +103,7 @@ export function DashboardSettingsProvider({
     if (isGuest) return;
 
     try {
-      const adminMode = getAdminModeFromCookie(isAdmin);
+      const adminMode = getAdminModeFromCookie(isStaff);
       const themeKey = getThemeKeyForMode(adminMode);
 
       const updatedSettings = await userSettingsService.updateUISettings({ [themeKey]: theme });

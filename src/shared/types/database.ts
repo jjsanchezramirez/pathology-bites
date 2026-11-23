@@ -62,12 +62,7 @@ export const QUESTION_STATUSES: Database["public"]["Enums"]["question_status"][]
   "archived",
 ] as const;
 
-export const USER_ROLES: Database["public"]["Enums"]["user_role"][] = [
-  "admin",
-  "creator",
-  "reviewer",
-  "user",
-] as const;
+export const USER_ROLES: Database["public"]["Enums"]["user_role"][] = ["admin", "user"] as const;
 
 export const USER_STATUSES: Database["public"]["Enums"]["user_status"][] = [
   "active",
@@ -172,8 +167,6 @@ export const getQuestionStatusLabel = (
 export const getUserRoleLabel = (role: Database["public"]["Enums"]["user_role"]): string => {
   const labels: Record<Database["public"]["Enums"]["user_role"], string> = {
     admin: "Administrator",
-    creator: "Content Creator",
-    reviewer: "Reviewer",
     user: "User",
   };
   return labels[role];

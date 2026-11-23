@@ -75,15 +75,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       );
     }
 
-    // Check if user is the assigned reviewer or admin
-    const { data: userProfile } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
-
-    const isAdmin = userProfile?.role === "admin";
-    const isAssignedReviewer = question.reviewer_id === userId;
+    // Admins, or the assigned reviewer holding review_questions (never on their own
+    // question). RLS (questions update WITH CHECK) enforces the same rule.
+    const isAdmin = auth.role === "admin";
+    const isAssignedReviewer =
+      question.reviewer_id === userId &&
+      question.created_by !== userId &&
+      auth.can("review_questions");
 
     if (!isAdmin && !isAssignedReviewer) {
       return NextResponse.json(

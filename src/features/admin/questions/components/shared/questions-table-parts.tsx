@@ -319,14 +319,18 @@ function RowActions({
   onEditCategory?: (question: QuestionWithDetails) => void;
   onEditSet?: (question: QuestionWithDetails) => void;
 }) {
-  const { isAdmin, role } = useUserRole();
+  const { isAdmin, can } = useUserRole();
   const { user } = useAuthContext();
 
   // Check if user can edit this question
   const canEdit = question.status !== "published" || isAdmin;
 
   // Check if user can delete this question
-  const canDelete = shouldShowDeleteButton(question, role, user?.id || null);
+  const canDelete = shouldShowDeleteButton(question, {
+    isAdmin,
+    canCreate: can("create_questions"),
+    userId: user?.id || null,
+  });
 
   // Hide version history when question is at the initial v1.0.0 (nothing to show)
   const hasVersionBeyondInitial =

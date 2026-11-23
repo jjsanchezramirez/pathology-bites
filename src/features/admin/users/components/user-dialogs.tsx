@@ -19,7 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
+import { Checkbox } from "@/shared/components/ui/checkbox";
+import { Label } from "@/shared/components/ui/label";
 import { Loader2 } from "lucide-react";
+import { PERMISSIONS, PERMISSION_LABELS, type Permission } from "@/shared/utils/auth/permissions";
 import { type User, getUserDisplayName } from "./users-table-utils";
 
 interface FieldOption {
@@ -29,8 +32,6 @@ interface FieldOption {
 
 export const ROLE_OPTIONS: FieldOption[] = [
   { value: "admin", label: "Admin" },
-  { value: "creator", label: "Creator" },
-  { value: "reviewer", label: "Reviewer" },
   { value: "user", label: "User" },
 ];
 
@@ -111,6 +112,99 @@ export function UserFieldChangeDialog({
                 </>
               ) : (
                 "Confirm"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </DialogPortal>
+    </Dialog>
+  );
+}
+
+interface UserPermissionsDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  user: User | null;
+  value: Permission[];
+  onValueChange: (value: Permission[]) => void;
+  confirmDisabled: boolean;
+  isUpdating: boolean;
+  onConfirm: () => void;
+}
+
+/** Grant or revoke permissions. Admins hold every permission, so their boxes are locked. */
+export function UserPermissionsDialog({
+  open,
+  onOpenChange,
+  user,
+  value,
+  onValueChange,
+  confirmDisabled,
+  isUpdating,
+  onConfirm,
+}: UserPermissionsDialogProps) {
+  const isAdminTarget = user?.role === "admin";
+  const toggle = (permission: Permission, checked: boolean) =>
+    onValueChange(
+      checked
+        ? PERMISSIONS.filter((p) => p === permission || value.includes(p))
+        : value.filter((p) => p !== permission)
+    );
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogPortal>
+        <DialogOverlay className="backdrop-blur-md bg-black/20" />
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage Permissions</DialogTitle>
+            <DialogDescription>
+              {isAdminTarget ? (
+                <>{user && getUserDisplayName(user)} is an admin and holds every permission.</>
+              ) : (
+                <>
+                  Choose what {user && getUserDisplayName(user)} can do. Changes apply on their next
+                  request.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {PERMISSIONS.map((permission) => {
+              const id = `permission-${permission}`;
+              return (
+                <div key={permission} className="flex items-start gap-3">
+                  <Checkbox
+                    id={id}
+                    checked={isAdminTarget || value.includes(permission)}
+                    disabled={isAdminTarget || isUpdating}
+                    onCheckedChange={(checked) => toggle(permission, checked === true)}
+                    className="mt-0.5"
+                  />
+                  <div className="space-y-1">
+                    <Label htmlFor={id} className="font-medium">
+                      {PERMISSION_LABELS[permission].label}
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      {PERMISSION_LABELS[permission].description}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isUpdating}>
+              Cancel
+            </Button>
+            <Button onClick={onConfirm} disabled={isUpdating || confirmDisabled || isAdminTarget}>
+              {isUpdating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save"
               )}
             </Button>
           </DialogFooter>

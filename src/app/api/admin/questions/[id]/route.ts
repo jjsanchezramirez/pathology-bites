@@ -176,11 +176,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       );
     }
 
-    // Check permissions based on question status and user role
+    // Admins; authors (create_questions) on their own questions; reviewers on
+    // questions awaiting review.
     const canAccess =
       userRole === "admin" ||
-      (question.created_by === userId && ["admin", "creator"].includes(userRole || "")) ||
-      (["reviewer", "admin"].includes(userRole || "") && question.status === "pending_review");
+      (question.created_by === userId && auth.can("create_questions")) ||
+      (auth.can("review_questions") && question.status === "pending_review");
 
     if (!canAccess) {
       return NextResponse.json(
@@ -226,12 +227,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
  *   patch:
  *     summary: Update a question
  *     description: |
- *       Update question with role-based permissions and versioning.
+ *       Update question with permission-based access and versioning.
  *
  *       Permission Rules:
  *       - Admins: Can edit any question
- *       - Creators: Can edit own draft/rejected/pending questions
- *       - Reviewers: Can make patch edits to assigned pending questions
+ *       - create_questions: Can edit own draft/rejected/pending questions
+ *       - review_questions: Can edit assigned pending questions; patch edits on published
  *
  *       Versioning:
  *       - Published questions create version history
@@ -400,9 +401,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       );
     }
 
-    // Role/status/ownership permission matrix — see canEditQuestion
+    // Permission/status/ownership matrix — see canEditQuestion
     const permission = canEditQuestion({
       role: userRole,
+      permissions: auth.permissions,
       userId,
       question: currentQuestion,
       isPatchEdit: !!isPatchEdit,

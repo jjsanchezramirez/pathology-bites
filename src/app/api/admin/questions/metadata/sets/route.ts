@@ -1,7 +1,7 @@
 // src/app/api/admin/questions/sets/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { requireAdmin, requireStaff } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
 import { log } from "@/shared/utils/logging";
@@ -177,7 +177,7 @@ export async function GET(request: NextRequest) {
  * /api/admin/questions/metadata/sets:
  *   post:
  *     summary: Create a new question set
- *     description: Create a new question set. Requires content role (admin, creator, or reviewer).
+ *     description: Create a new question set. Requires admin or any granted permission.
  *     tags:
  *       - Admin - Question Metadata
  *     security:
@@ -220,7 +220,7 @@ export async function GET(request: NextRequest) {
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - content role required
+ *         description: Forbidden - admin or a granted permission required
  *       409:
  *         description: Conflict - set with this name already exists
  *       500:
@@ -230,8 +230,8 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require admin, creator, or reviewer role
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requireStaff(request);
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
 
@@ -276,7 +276,7 @@ export async function POST(request: NextRequest) {
  * /api/admin/questions/metadata/sets:
  *   patch:
  *     summary: Update a question set
- *     description: Update question set details. Requires content role (admin, creator, or reviewer).
+ *     description: Update question set details. Requires admin role.
  *     tags:
  *       - Admin - Question Metadata
  *     security:
@@ -312,7 +312,7 @@ export async function POST(request: NextRequest) {
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - content role required
+ *         description: Forbidden - admin role required
  *       500:
  *         description: Internal server error
  */
@@ -320,8 +320,8 @@ export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require admin, creator, or reviewer role
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
 
     const body = await parseBody(request, updateSetSchema);
@@ -352,7 +352,7 @@ export async function PATCH(request: NextRequest) {
  * /api/admin/questions/metadata/sets:
  *   delete:
  *     summary: Delete a question set
- *     description: Delete a question set. Cannot delete if it has associated questions. Requires content role (admin, creator, or reviewer).
+ *     description: Delete a question set. Cannot delete if it has associated questions. Requires admin role.
  *     tags:
  *       - Admin - Question Metadata
  *     security:
@@ -384,7 +384,7 @@ export async function PATCH(request: NextRequest) {
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - content role required
+ *         description: Forbidden - admin role required
  *       500:
  *         description: Internal server error
  */
@@ -392,8 +392,8 @@ export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require admin, creator, or reviewer role
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
 
     const body = await parseBody(request, deleteSetSchema);

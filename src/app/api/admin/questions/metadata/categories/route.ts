@@ -1,7 +1,7 @@
 // src/app/api/admin/questions/metadata/categories/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { requireAdmin, requireStaff } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
 import { log } from "@/shared/utils/logging";
@@ -30,7 +30,7 @@ const deleteCategorySchema = z.object({
  * /api/admin/questions/metadata/categories:
  *   get:
  *     summary: Get paginated categories
- *     description: Retrieve hierarchical categories with pagination, search, parent info, and question counts. Requires content role (admin, creator, or reviewer).
+ *     description: Retrieve hierarchical categories with pagination, search, parent info, and question counts. Requires admin or any granted permission.
  *     tags:
  *       - Admin - Question Metadata
  *     security:
@@ -93,7 +93,7 @@ const deleteCategorySchema = z.object({
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - content role required
+ *         description: Forbidden - admin or a granted permission required
  *       500:
  *         description: Internal server error
  */
@@ -101,8 +101,8 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require admin, creator, or reviewer role
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requireStaff(request);
     if (auth instanceof NextResponse) return auth;
 
     // Get query parameters
@@ -186,7 +186,7 @@ export async function GET(request: NextRequest) {
  * /api/admin/questions/metadata/categories:
  *   post:
  *     summary: Create a new category
- *     description: Create a new hierarchical category. Auto-calculates level based on parent. Requires content role (admin, creator, or reviewer).
+ *     description: Create a new hierarchical category. Auto-calculates level based on parent. Requires admin role.
  *     tags:
  *       - Admin - Question Metadata
  *     security:
@@ -228,7 +228,7 @@ export async function GET(request: NextRequest) {
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - content role required
+ *         description: Forbidden - admin role required
  *       409:
  *         description: Conflict - category with this name already exists
  *       500:
@@ -238,8 +238,8 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require admin, creator, or reviewer role
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
 
     const body = await parseBody(request, createCategorySchema);
@@ -296,7 +296,7 @@ export async function POST(request: NextRequest) {
  * /api/admin/questions/metadata/categories:
  *   patch:
  *     summary: Update a category
- *     description: Update category details. Auto-recalculates level based on parent. Requires content role (admin, creator, or reviewer).
+ *     description: Update category details. Auto-recalculates level based on parent. Requires admin role.
  *     tags:
  *       - Admin - Question Metadata
  *     security:
@@ -339,7 +339,7 @@ export async function POST(request: NextRequest) {
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - content role required
+ *         description: Forbidden - admin role required
  *       409:
  *         description: Conflict - category with this name already exists
  *       500:
@@ -349,8 +349,8 @@ export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require admin, creator, or reviewer role
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
 
     const body = await parseBody(request, updateCategorySchema);
@@ -408,7 +408,7 @@ export async function PATCH(request: NextRequest) {
  * /api/admin/questions/metadata/categories:
  *   delete:
  *     summary: Delete a category
- *     description: Delete a category. Cannot delete if it has subcategories. Unlinks all associated questions. Requires content role (admin, creator, or reviewer).
+ *     description: Delete a category. Cannot delete if it has subcategories. Unlinks all associated questions. Requires admin role.
  *     tags:
  *       - Admin - Question Metadata
  *     security:
@@ -440,7 +440,7 @@ export async function PATCH(request: NextRequest) {
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - content role required
+ *         description: Forbidden - admin role required
  *       500:
  *         description: Internal server error
  */
@@ -448,8 +448,8 @@ export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require admin, creator, or reviewer role
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
 
     const body = await parseBody(request, deleteCategorySchema);

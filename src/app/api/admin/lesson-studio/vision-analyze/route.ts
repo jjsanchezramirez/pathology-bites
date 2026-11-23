@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { analyzeSingleImageWithDebug } from "../generate-sequence/vision";
 import type { ImageInput } from "../generate-sequence/prompt";
-import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 
 export const maxDuration = 30;
 
@@ -81,16 +81,14 @@ export const maxDuration = 30;
  *       401:
  *         description: Unauthorized - missing authentication
  *       403:
- *         description: Forbidden - admin or creator access required
+ *         description: Forbidden - admin access required
  *       500:
  *         description: Internal server error - API key not configured or analysis failed
  */
 export async function POST(request: NextRequest) {
-  // Spends AI credits on vision analysis; the swagger doc above already promises
-  // "admin or creator role", but middleware only guarantees a session on
-  // /api/admin/* — enforce the content role here so any signed-in user can't
-  // burn model quota.
-  const auth = requireContentRole(request);
+  // Spends AI credits on vision analysis, and Lesson Studio is admin-only;
+  // middleware only lets staff into /api/admin/*, so enforce admin here.
+  const auth = requireAdmin(request);
   if (auth instanceof NextResponse) return auth;
 
   try {

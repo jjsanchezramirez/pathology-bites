@@ -1,5 +1,5 @@
 // src/app/api/user/account/delete/route.ts
-import { UserRole } from "@/shared/utils/auth/auth-helpers";
+import { isStaff, parsePermissions } from "@/shared/utils/auth/permissions";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/shared/utils/api/api-guard";
@@ -18,7 +18,7 @@ const deleteAccountSchema = z.object({
  * /api/user/account/delete:
  *   delete:
  *     summary: Delete own user account
- *     description: Allow authenticated user to delete their own account. Content creators (admin/creator/reviewer) are soft-deleted to preserve content attribution, while regular users are hard-deleted. Requires password verification and authentication.
+ *     description: Allow authenticated user to delete their own account. Staff (admins and users holding a permission) are soft-deleted to preserve content attribution, while regular users are hard-deleted. Requires password verification and authentication.
  *     tags:
  *       - User - Account
  *     security:
@@ -90,7 +90,7 @@ export async function DELETE(request: NextRequest) {
     // Get user data before deletion for audit purposes
     const { data: userData, error: userError } = await supabase
       .from("users")
-      .select("id, email, first_name, last_name, role, user_type")
+      .select("id, email, first_name, last_name, role, permissions, user_type")
       .eq("id", userId)
       .single();
 
@@ -100,7 +100,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Determine deletion type based on role
-    const isContentCreator = ["admin", "creator", "reviewer"].includes(userData.role);
+    // Staff (admin or any permission) are soft-deleted to keep attribution
+    const isContentCreator = isStaff(userData.role, parsePermissions(userData.permissions));
     const deletionType = isContentCreator ? "soft_delete" : "hard_delete";
 
     // Audit trail. There is no audit_logs table in the schema — the insert this
@@ -113,7 +114,7 @@ export async function DELETE(request: NextRequest) {
      *
      * Process:
      * 1. Delete user data from public.users and related tables based on role
-     *    - Soft delete: For admin/creator/reviewer (preserves record for attribution)
+     *    - Soft delete: For staff (preserves record for attribution)
      *    - Hard delete: For student/user (removes all data)
      * 2. Delete user from auth.users
      * 3. Sign out the user
@@ -122,7 +123,7 @@ export async function DELETE(request: NextRequest) {
     try {
       const adminClient = createServiceRoleClient();
 
-      const result = await deleteUser(adminClient, supabase, userId, userData.role as UserRole);
+      const result = await deleteUser(adminClient, supabase, userId, userData);
 
       // Delete user from auth system ONLY for hard deletes
       // For soft deletes, preserve auth record so user can log back in and be restored

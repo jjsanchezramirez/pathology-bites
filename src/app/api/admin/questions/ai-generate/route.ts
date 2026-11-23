@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { requirePermission } from "@/shared/utils/api/api-guard";
 import { resolveModelId, getModelProvider, ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
 import { log } from "@/shared/utils/logging";
 import { runAITask } from "@/shared/services/ai-fallback";
@@ -23,7 +23,7 @@ const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter((model) => model.available).map(
  * /api/admin/questions/ai-generate:
  *   post:
  *     summary: AI-generate or refine questions
- *     description: Use AI models to generate new questions from educational content, refine existing questions, or suggest metadata. Supports multiple AI models (Groq, Cloudflare Workers AI, Google Gemini). Requires admin, creator, or reviewer role.
+ *     description: Use AI models to generate new questions from educational content, refine existing questions, or suggest metadata. Supports multiple AI models (Groq, Cloudflare Workers AI, Google Gemini). Requires the create_questions permission (admins hold every permission).
  *     tags:
  *       - Admin - Questions
  *     security:
@@ -94,14 +94,14 @@ const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter((model) => model.available).map(
  *       401:
  *         description: Unauthorized - missing authentication
  *       403:
- *         description: Forbidden - requires admin, creator, or reviewer role
+ *         description: Forbidden - requires create_questions permission
  *       500:
  *         description: Internal server error or AI API error
  */
 export async function POST(request: NextRequest) {
   try {
-    // Auth check - require admin, creator, or reviewer role
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requirePermission(request, "create_questions");
     if (auth instanceof NextResponse) return auth;
 
     const body: QuestionGenerationRequest & { modelOverride?: string } = await request.json();

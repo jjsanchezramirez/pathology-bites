@@ -152,8 +152,6 @@ function pendingRow(overrides: Record<string, any> = {}) {
   };
 }
 
-const adminProfile = { data: { role: "admin" }, error: null };
-
 let mock: ReturnType<typeof createSupabaseMock>;
 
 beforeEach(() => {
@@ -172,7 +170,6 @@ describe("POST /approve — TOCTOU guard", () => {
       { data: pendingRow(), error: null },
       { data: pendingRow({ status: "published" }), error: null }
     );
-    mock.enqueue("users", adminProfile);
 
     const res = await approve(makeRequest(), routeParams);
 
@@ -183,7 +180,6 @@ describe("POST /approve — TOCTOU guard", () => {
   it("409s without notifying when the row already left pending_review", async () => {
     // Read sees pending_review; the guarded UPDATE matches zero rows.
     mock.enqueue("questions", { data: pendingRow(), error: null }, { data: null, error: null });
-    mock.enqueue("users", adminProfile);
 
     const res = await approve(makeRequest(), routeParams);
 
@@ -202,7 +198,6 @@ describe("POST /reject — TOCTOU guard", () => {
       { data: pendingRow(), error: null },
       { data: pendingRow({ status: "rejected" }), error: null }
     );
-    mock.enqueue("users", adminProfile);
 
     const res = await reject(makeRequest(body), routeParams);
 
@@ -212,7 +207,6 @@ describe("POST /reject — TOCTOU guard", () => {
 
   it("409s without notifying when the row already left pending_review", async () => {
     mock.enqueue("questions", { data: pendingRow(), error: null }, { data: null, error: null });
-    mock.enqueue("users", adminProfile);
 
     const res = await reject(makeRequest(body), routeParams);
 
@@ -226,11 +220,10 @@ describe("POST /submit-for-review — TOCTOU guard", () => {
   const body = { reviewer_id: "reviewer-1" };
 
   it("filters the UPDATE on the same draft/rejected set the pre-read checked", async () => {
-    mock.enqueue(
-      "users",
-      { data: { id: "reviewer-1", role: "reviewer" }, error: null },
-      adminProfile
-    );
+    mock.enqueue("users", {
+      data: { id: "reviewer-1", role: "user", permissions: ["review_questions"] },
+      error: null,
+    });
     mock.enqueue(
       "questions",
       { data: pendingRow({ status: "draft" }), error: null },
@@ -244,11 +237,10 @@ describe("POST /submit-for-review — TOCTOU guard", () => {
   });
 
   it("409s without notifying the reviewer when the row already moved", async () => {
-    mock.enqueue(
-      "users",
-      { data: { id: "reviewer-1", role: "reviewer" }, error: null },
-      adminProfile
-    );
+    mock.enqueue("users", {
+      data: { id: "reviewer-1", role: "user", permissions: ["review_questions"] },
+      error: null,
+    });
     mock.enqueue(
       "questions",
       { data: pendingRow({ status: "draft" }), error: null },
@@ -266,11 +258,10 @@ describe("POST /reassign — TOCTOU guard", () => {
   const body = { reviewer_id: "reviewer-1" };
 
   it("filters the UPDATE on status, not just the pre-read", async () => {
-    mock.enqueue(
-      "users",
-      { data: { id: "reviewer-1", role: "reviewer" }, error: null },
-      adminProfile
-    );
+    mock.enqueue("users", {
+      data: { id: "reviewer-1", role: "user", permissions: ["review_questions"] },
+      error: null,
+    });
     mock.enqueue(
       "questions",
       { data: pendingRow(), error: null },
@@ -284,11 +275,10 @@ describe("POST /reassign — TOCTOU guard", () => {
   });
 
   it("409s when the question left pending_review before the write", async () => {
-    mock.enqueue(
-      "users",
-      { data: { id: "reviewer-1", role: "reviewer" }, error: null },
-      adminProfile
-    );
+    mock.enqueue("users", {
+      data: { id: "reviewer-1", role: "user", permissions: ["review_questions"] },
+      error: null,
+    });
     mock.enqueue("questions", { data: pendingRow(), error: null }, { data: null, error: null });
 
     const res = await reassign(makeRequest(body), routeParams);
@@ -311,7 +301,6 @@ describe("POST /bulk-approve — TOCTOU guard", () => {
   }
 
   it("filters the bulk UPDATE on status and counts only rows that flipped", async () => {
-    mock.enqueue("users", adminProfile);
     mock.enqueue(
       "questions",
       { data: [bulkRow("q1"), bulkRow("q2")], error: null },
@@ -328,7 +317,6 @@ describe("POST /bulk-approve — TOCTOU guard", () => {
   });
 
   it("notifies only the creators of rows that actually flipped", async () => {
-    mock.enqueue("users", adminProfile);
     mock.enqueue(
       "questions",
       { data: [bulkRow("q1"), bulkRow("q2")], error: null },
@@ -347,7 +335,6 @@ describe("POST /bulk-approve — TOCTOU guard", () => {
   });
 
   it("records no review rows when every question lost the race", async () => {
-    mock.enqueue("users", adminProfile);
     mock.enqueue(
       "questions",
       { data: [bulkRow("q1"), bulkRow("q2")], error: null },

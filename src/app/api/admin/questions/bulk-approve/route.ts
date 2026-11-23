@@ -21,7 +21,7 @@ const bulkApproveSchema = z.object({
  *       recording a `question_reviews` "approved" action and notifying authors.
  *       Each question must be `pending_review`; non-admins may only approve questions they are
  *       assigned to review. Ineligible IDs are skipped and reported in `errors`.
- *       Gated by middleware via `x-user-id`; admin/reviewer role enforced per-question.
+ *       Gated by middleware via `x-user-id`; admin, or review_questions as the assigned reviewer, enforced per-question.
  *     tags:
  *       - Admin - Questions
  *     security:
@@ -83,14 +83,14 @@ export async function POST(request: NextRequest) {
     if (body instanceof NextResponse) return body;
     const { questionIds } = body;
 
-    // Check if user is admin or reviewer
-    const { data: userProfile } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
-
-    const isAdmin = userProfile?.role === "admin";
+    // Admins, or the assigned reviewer holding review_questions (checked per question)
+    const isAdmin = auth.role === "admin";
+    if (!auth.can("review_questions")) {
+      return NextResponse.json(
+        { error: "Forbidden - requires review_questions permission" },
+        { status: 403 }
+      );
+    }
 
     // Fetch all questions to validate
     const { data: questions, error: fetchError } = await supabase
@@ -118,6 +118,8 @@ export async function POST(request: NextRequest) {
         errors.push({ id: question.id, error: `Status is ${question.status}, not pending_review` });
       } else if (!isAdmin && question.reviewer_id !== userId) {
         errors.push({ id: question.id, error: "Not assigned as reviewer" });
+      } else if (!isAdmin && question.created_by === userId) {
+        errors.push({ id: question.id, error: "Cannot approve your own question" });
       } else {
         validIds.push(question.id);
       }

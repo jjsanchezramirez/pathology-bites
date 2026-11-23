@@ -28,6 +28,7 @@ import { useUserRole } from "@/shared/hooks/use-user-role";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { apiClient } from "@/shared/utils/api/api-client";
 import { log } from "@/shared/utils/logging";
+import { parsePermissions, type Permission } from "@/shared/utils/auth/permissions";
 import {
   type User,
   type UserSortKey,
@@ -42,6 +43,7 @@ import { UserDetailsSheet } from "./user-details-sheet";
 import { UsersPagination } from "./users-pagination";
 import {
   UserFieldChangeDialog,
+  UserPermissionsDialog,
   DeleteUserDialog,
   ROLE_OPTIONS,
   STATUS_OPTIONS,
@@ -94,6 +96,8 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
   const [detailUserId, setDetailUserId] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
+  const [showPermissionsDialog, setShowPermissionsDialog] = useState(false);
+  const [pendingPermissions, setPendingPermissions] = useState<Permission[]>([]);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [showTypeDialog, setShowTypeDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -174,6 +178,12 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
     setShowRoleDialog(true);
   }, []);
 
+  const handlePermissionsDialogOpen = useCallback((user: User) => {
+    setSelectedUser(user);
+    setPendingPermissions(parsePermissions(user.permissions));
+    setShowPermissionsDialog(true);
+  }, []);
+
   const handleStatusDialogOpen = useCallback((user: User) => {
     setSelectedUser(user);
     setPendingStatus(user.status);
@@ -226,6 +236,33 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
     } finally {
       setIsUpdating(false);
       setShowRoleDialog(false);
+      setSelectedUser(null);
+    }
+  };
+
+  const handlePermissionsChange = async (userId: string, permissions: Permission[]) => {
+    setIsUpdating(true);
+    try {
+      const response = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, updates: { permissions } }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update permissions");
+      }
+
+      toast.success("Permissions updated");
+      await mutate();
+      onUserChange?.();
+    } catch (error) {
+      log.error("Error updating permissions:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update permissions");
+    } finally {
+      setIsUpdating(false);
+      setShowPermissionsDialog(false);
       setSelectedUser(null);
     }
   };
@@ -377,8 +414,6 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
             <SelectContent>
               <SelectItem value="all">All Roles</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
-              <SelectItem value="creator">Creator</SelectItem>
-              <SelectItem value="reviewer">Reviewer</SelectItem>
               <SelectItem value="user">User</SelectItem>
             </SelectContent>
           </Select>
@@ -496,6 +531,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
                   user={user}
                   isAdmin={isAdmin}
                   onRoleChange={handleRoleDialogOpen}
+                  onPermissionsChange={handlePermissionsDialogOpen}
                   onStatusChange={handleStatusDialogOpen}
                   onTypeChange={handleTypeDialogOpen}
                   onDelete={handleDeleteDialogOpen}
@@ -515,6 +551,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
         canModify={!!detailUser && canModifyUser(detailUser)}
         canDelete={!!detailUser && canDeleteUser(detailUser)}
         onRoleChange={handleRoleDialogOpen}
+        onPermissionsChange={handlePermissionsDialogOpen}
         onStatusChange={handleStatusDialogOpen}
         onTypeChange={handleTypeDialogOpen}
         onDelete={handleDeleteDialogOpen}
@@ -542,6 +579,24 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
         }
         isUpdating={isUpdating}
         onConfirm={() => selectedUser && handleRoleChange(selectedUser.id, pendingRole)}
+      />
+
+      {/* Permissions Dialog */}
+      <UserPermissionsDialog
+        open={showPermissionsDialog}
+        onOpenChange={setShowPermissionsDialog}
+        user={selectedUser}
+        value={pendingPermissions}
+        onValueChange={setPendingPermissions}
+        confirmDisabled={
+          !selectedUser ||
+          !canModifyUser(selectedUser) ||
+          parsePermissions(selectedUser.permissions).join() === pendingPermissions.join()
+        }
+        isUpdating={isUpdating}
+        onConfirm={() =>
+          selectedUser && handlePermissionsChange(selectedUser.id, pendingPermissions)
+        }
       />
 
       {/* Status Change Dialog */}

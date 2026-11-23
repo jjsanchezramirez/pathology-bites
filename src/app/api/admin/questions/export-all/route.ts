@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { requireStaff } from "@/shared/utils/api/api-guard";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { log } from "@/shared/utils/logging";
 
@@ -11,8 +11,8 @@ import { log } from "@/shared/utils/logging";
  *     description: >
  *       Returns every question with its options, images, tags, question set, and category as JSON,
  *       along with a count and export timestamp.
- *       Gated by middleware via `x-user-id`; requires an `admin`, `creator`, or `reviewer` role
- *       (`x-user-role`). Data is read through a service-role Supabase client.
+ *       Gated by middleware via `x-user-id`; requires admin or any granted permission
+ *       (`x-user-role` / `x-user-permissions`). Data is read through a service-role Supabase client.
  *     tags:
  *       - Admin - Questions
  *     security:
@@ -45,7 +45,7 @@ import { log } from "@/shared/utils/logging";
  */
 export async function GET(request: NextRequest) {
   try {
-    const auth = requireContentRole(request);
+    const auth = requireStaff(request);
     if (auth instanceof NextResponse) return auth;
 
     const supabase = createServiceRoleClient();

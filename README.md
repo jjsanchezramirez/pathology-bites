@@ -194,7 +194,7 @@ Real defense lives at the edge and in the database, not the app layer. The app-l
 
 1. **Cloudflare edge** — DDoS scrubbing, WAF, bot management, TLS termination. Front of Vercel. Zero code, max value. Strongest layer.
 2. **Supabase auth + RLS** — JWT session, refresh-token rotation w/ reuse detection, server-side rate limits on `/auth/v1/token`, `/auth/v1/signup`, `/auth/v1/recover` (default 30 req/5min/IP). Per-table RLS scopes reads to `auth.uid()`. Real brute-force defense lives here.
-3. **Middleware** (`src/middleware.ts`) — JWT check on `/admin/*`, `/dashboard/*`, non-public `/api/*`. Role gate on `/admin` (admin/creator/reviewer). Injects trusted `x-user-id` + `x-user-role` headers downstream so handlers don't re-verify.
+3. **Middleware** (`src/middleware.ts`) — JWT check on `/admin/*`, `/dashboard/*`, non-public `/api/*`. Gate on `/admin` (admins, or users holding any permission). Injects trusted `x-user-id` + `x-user-role` + `x-user-permissions` headers downstream so handlers don't re-verify.
 4. **Session cookies** — Supabase sets httpOnly, secure (prod), `sameSite: lax`. Browser blocks cross-site POST/PATCH/DELETE → automatic CSRF defense.
 5. **Honeypot** — hidden `referral_source` input on signup + contact forms. Bots auto-fill, humans don't. Server-side reject on signup form. Server action silent-success on contact.
 6. **App-layer rate limiters** (decorative on Vercel) — `loginRateLimiter` on login server action, `authRateLimiter` on `/api/auth/callback`. In-memory Map per lambda → effective only single-instance / dev. Supabase's server-side limits do the real work.

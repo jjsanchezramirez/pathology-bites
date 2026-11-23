@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { requireStaff } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { PATHOLOGY_JOURNALS } from "@/shared/utils/domain/pathology-journals";
 import { log } from "@/shared/utils/logging";
@@ -19,7 +19,7 @@ const fetchReferencesSchema = z.object({
  * /api/admin/questions/fetch-references:
  *   post:
  *     summary: Fetch academic references from Semantic Scholar
- *     description: Search for academic papers using Semantic Scholar API (simplified version for question creation). Returns up to 5 references formatted as citation strings. Requires admin, creator, or reviewer role.
+ *     description: Search for academic papers using Semantic Scholar API (simplified version for question creation). Returns up to 5 references formatted as citation strings. Requires admin or any granted permission.
  *     tags:
  *       - Admin - Questions
  *     security:
@@ -58,14 +58,14 @@ const fetchReferencesSchema = z.object({
  *       401:
  *         description: Unauthorized - missing authentication
  *       403:
- *         description: Forbidden - requires admin, creator, or reviewer role
+ *         description: Forbidden - requires admin or a granted permission
  *       429:
  *         description: Rate limited by Semantic Scholar
  *       500:
  *         description: Internal server error
  *   get:
  *     summary: Advanced search for academic references
- *     description: Search Semantic Scholar with advanced filtering options (citations, open access, publication type, etc.). Returns detailed paper information. Requires admin, creator, or reviewer role.
+ *     description: Search Semantic Scholar with advanced filtering options (citations, open access, publication type, etc.). Returns detailed paper information. Requires admin or any granted permission.
  *     tags:
  *       - Admin - Questions
  *     security:
@@ -165,7 +165,7 @@ const fetchReferencesSchema = z.object({
  *       401:
  *         description: Unauthorized - missing authentication
  *       403:
- *         description: Forbidden - requires admin, creator, or reviewer role
+ *         description: Forbidden - requires admin or a granted permission
  *       500:
  *         description: Internal server error
  */
@@ -200,8 +200,8 @@ interface SemanticScholarPaper {
 
 export async function POST(request: NextRequest) {
   try {
-    // Auth check - require admin, creator, or reviewer role
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requireStaff(request);
     if (auth instanceof NextResponse) return auth;
 
     const body = await parseBody(request, fetchReferencesSchema);
@@ -280,8 +280,8 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Auth check - require admin, creator, or reviewer role
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requireStaff(request);
     if (auth instanceof NextResponse) return auth;
 
     const { searchParams } = new URL(request.url);

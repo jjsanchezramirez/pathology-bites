@@ -1,13 +1,15 @@
 // middleware.ts
 // Runs on every route except static assets (see `config.matcher`). Gates dashboard, admin, and
 // private API routes against the Supabase session, and injects `x-user-id` / `x-user-role`
-// headers on authenticated API requests for downstream handlers. Client-supplied copies of those
-// headers are stripped on every path, and the role comes only from app_metadata (see trustedRole).
+// / `x-user-permissions` headers on authenticated API requests for downstream handlers.
+// Client-supplied copies of those headers are stripped on every path, and role and permissions
+// come only from app_metadata (see trustedRole / trustedPermissions).
 // Identity comes from the cookie session, or from an `Authorization: Bearer <access-token>`
 // header (native clients like the iOS app, which have no cookies).
 
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { isStaff, parsePermissions, type Permission } from "@/shared/utils/auth/permissions";
 
 function redirectToLogin(request: NextRequest, pathname: string) {
   const url = new URL("/login", request.url);
@@ -36,12 +38,12 @@ function devFallbackIdentity(): { id: string; role: string } | null {
   return { id, role: process.env.DEBUG_USER_ROLE || "admin" };
 }
 
-const ROLES = ["admin", "creator", "reviewer", "user"] as const;
-const CONTENT_ROLES = ["admin", "creator", "reviewer"];
+const ROLES = ["admin", "user"] as const;
 /**
- * /admin pages only admins may open (each path covers its subpages); other staff are sent
- * to the admin dashboard. Keep in step with the adminOnly items in shared/config/navigation.ts.
- * Staff keep /admin, /admin/questions (+ create/edit), /admin/my-questions, /admin/review-queue.
+ * /admin pages only admins may open (each path covers its subpages); other staff (users
+ * holding a permission) are sent to the admin dashboard. Keep in step with the adminOnly
+ * items in shared/config/navigation.ts. Staff keep /admin, /admin/questions (+ create/edit),
+ * /admin/my-questions, /admin/review-queue; PAGE_PERMISSIONS narrows the last few.
  */
 const ADMIN_ONLY_PAGES = [
   "/admin/media",
@@ -52,6 +54,13 @@ const ADMIN_ONLY_PAGES = [
   "/admin/learn",
   "/admin/questions/metadata",
   "/admin/api-test",
+];
+
+/** /admin pages that need one specific permission (admins hold every permission). */
+const PAGE_PERMISSIONS: { path: string; permission: Permission }[] = [
+  { path: "/admin/questions/create", permission: "create_questions" },
+  { path: "/admin/my-questions", permission: "create_questions" },
+  { path: "/admin/review-queue", permission: "review_questions" },
 ];
 
 /**
@@ -65,15 +74,23 @@ function trustedRole(user: { app_metadata?: object } | null): string | null {
   return typeof role === "string" && (ROLES as readonly string[]).includes(role) ? role : null;
 }
 
+/** Grantable permissions, from app_metadata only (mirrored from public.users.permissions). */
+function trustedPermissions(user: { app_metadata?: object } | null): Permission[] {
+  return parsePermissions(
+    (user?.app_metadata as { permissions?: unknown } | undefined)?.permissions
+  );
+}
+
 /**
  * Request headers with any client-supplied identity removed. Route handlers trust
- * `x-user-id` / `x-user-role`, so only this middleware may set them — on every
- * path, public ones included.
+ * `x-user-id` / `x-user-role` / `x-user-permissions`, so only this middleware may
+ * set them — on every path, public ones included.
  */
 function withoutIdentityHeaders(request: NextRequest): Headers {
   const headers = new Headers(request.headers);
   headers.delete("x-user-id");
   headers.delete("x-user-role");
+  headers.delete("x-user-permissions");
   return headers;
 }
 
@@ -159,19 +176,25 @@ export async function middleware(request: NextRequest) {
     return redirectToLogin(request, pathname);
   }
 
-  // Admin: session + a privileged role.
+  // Admin: session + admin role or at least one permission.
   if (isAdminRoute) {
     if (!user) {
       return redirectToLogin(request, pathname);
     }
     const role = trustedRole(user);
-    const isAuthorized = role !== null && CONTENT_ROLES.includes(role);
-    if (!isAuthorized) {
+    const permissions = trustedPermissions(user);
+    if (!isStaff(role, permissions)) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
-    const adminOnly = ADMIN_ONLY_PAGES.some((p) => pathname === p || pathname.startsWith(p + "/"));
-    if (adminOnly && role !== "admin") {
-      return NextResponse.redirect(new URL("/admin", request.url));
+    if (role !== "admin") {
+      const under = (p: string) => pathname === p || pathname.startsWith(p + "/");
+      const adminOnly = ADMIN_ONLY_PAGES.some(under);
+      const missing = PAGE_PERMISSIONS.some(
+        ({ path, permission }) => under(path) && !permissions.includes(permission)
+      );
+      if (adminOnly || missing) {
+        return NextResponse.redirect(new URL("/admin", request.url));
+      }
     }
   }
 
@@ -183,14 +206,18 @@ export async function middleware(request: NextRequest) {
     }
     const userId = user?.id ?? fallback!.id;
     const role = user ? trustedRole(user) : fallback!.role;
-    // Admin APIs: privileged role required here too, not only inside each handler.
-    if (pathname.startsWith("/api/admin/") && !(role && CONTENT_ROLES.includes(role))) {
+    const permissions = user ? trustedPermissions(user) : [];
+    // Admin APIs: staff only here too; each handler then checks the specific permission.
+    if (pathname.startsWith("/api/admin/") && !isStaff(role, permissions)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     const requestHeaders = withoutIdentityHeaders(request);
     requestHeaders.set("x-user-id", userId);
     if (role) {
       requestHeaders.set("x-user-role", role);
+    }
+    if (permissions.length > 0) {
+      requestHeaders.set("x-user-permissions", permissions.join(","));
     }
     response = NextResponse.next({ request: { headers: requestHeaders } });
   }

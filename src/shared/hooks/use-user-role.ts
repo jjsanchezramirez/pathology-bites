@@ -1,94 +1,99 @@
 // src/shared/hooks/use-user-role.ts
 "use client";
 
-import { useState, useEffect, useRef } from "react";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
+import type { UserRole as AuthUserRole } from "@/shared/utils/auth/auth-helpers";
+import { hasPermission, isStaff, type Permission } from "@/shared/utils/auth/permissions";
 
-import { UserRole as DatabaseUserRole } from "@/shared/types/database";
-
-export type UserRole = DatabaseUserRole | null;
+export type UserRole = AuthUserRole | null;
 
 interface UserRoleData {
   role: UserRole;
+  permissions: Permission[];
   isLoading: boolean;
   error: string | null;
+  /** Whether the user may use a feature (see FEATURE_ACCESS). */
   canAccess: (feature: string) => boolean;
+  /** Whether the user holds a permission (always true for admins). */
+  can: (permission: Permission) => boolean;
   isAdmin: boolean;
-  isCreator: boolean;
-  isReviewer: boolean;
-  isAdminOrReviewer: boolean;
-  isCreatorOrAbove: boolean;
+  /** Admin, or holds at least one permission — may open the admin area. */
+  isStaff: boolean;
 }
 
-// Define feature permissions based on 4-role system
-const FEATURE_PERMISSIONS: Record<string, UserRole[]> = {
-  // Admin-only permissions
-  "users.manage": ["admin"],
-  "users.view": ["admin"],
-  "categories.manage": ["admin"],
-  "tags.manage": ["admin"],
-  "sets.manage": ["admin"],
-  "images.manage": ["admin"],
-  "audio.manage": ["admin"],
-  "inquiries.manage": ["admin"],
-  "notifications.manage": ["admin"],
-  "analytics.view": ["admin"],
-  "settings.manage": ["admin"],
-  "system.monitor": ["admin"],
+/**
+ * Feature → what grants it. "admin" means admins only; a permission means
+ * admins plus anyone granted it; "staff" means admins plus anyone holding any
+ * permission; "everyone" means any signed-in user.
+ */
+type Access = "admin" | "staff" | "everyone" | Permission;
 
-  // Creator permissions - can create and manage content
-  "questions.create": ["admin", "creator"],
-  "questions.edit.own": ["admin", "creator"], // Can edit own draft questions
-  "questions.update": ["admin", "creator", "reviewer"], // Can update questions (with API-level permission checks)
-  "questions.submit": ["admin", "creator"], // Can submit for review
+const FEATURE_ACCESS: Record<string, Access> = {
+  // Admin-only
+  "users.manage": "admin",
+  "users.view": "admin",
+  "categories.manage": "admin",
+  "tags.manage": "admin",
+  "sets.manage": "admin",
+  "images.manage": "admin",
+  "audio.manage": "admin",
+  "inquiries.manage": "admin",
+  "notifications.manage": "admin",
+  "analytics.view": "admin",
+  "settings.manage": "admin",
+  "system.monitor": "admin",
+  "questions.edit": "admin",
+  "questions.delete": "admin",
 
-  // Reviewer permissions - can review and approve
-  "questions.review": ["admin", "reviewer"],
-  "questions.approve": ["admin", "reviewer"],
-  "questions.reject": ["admin", "reviewer"],
+  // Writing questions
+  "questions.create": "create_questions",
+  "questions.edit.own": "create_questions",
+  "questions.submit": "create_questions",
 
-  // Admin can edit any question directly
-  "questions.edit": ["admin"],
-  "questions.delete": ["admin"],
+  // Reviewing questions
+  "questions.review": "review_questions",
+  "questions.approve": "review_questions",
+  "questions.reject": "review_questions",
 
-  // Shared permissions
-  "questions.view": ["admin", "creator", "reviewer"],
-  "dashboard.view": ["admin", "creator", "reviewer"],
-  "questions.flag": ["admin", "creator", "reviewer", "user"], // Users can flag questions
-} as const;
+  // Shared
+  "questions.update": "staff", // API-level checks decide the specific edit
+  "questions.view": "staff",
+  "dashboard.view": "staff",
+  "questions.flag": "everyone",
+};
 
 export function useUserRole(): UserRoleData {
-  const { role: authRole, isLoading: authLoading } = useAuthContext();
-  const [role, setRole] = useState<UserRole>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, _setError] = useState<string | null>(null);
+  const { role: authRole, permissions, isLoading } = useAuthContext();
+  const role = (authRole ?? null) as UserRole;
 
-  // Track the previous user ID to prevent unnecessary re-fetches
-  const _previousUserIdRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    // Use role from useAuth hook directly (it's already fetched from JWT/database)
-    if (!authLoading) {
-      setRole(authRole as UserRole);
-      setIsLoading(false);
-    }
-  }, [authRole, authLoading]);
+  const can = (permission: Permission) => hasPermission(role, permissions, permission);
+  const staff = isStaff(role, permissions);
 
   const canAccess = (feature: string): boolean => {
     if (!role) return false;
-    const allowedRoles = FEATURE_PERMISSIONS[feature];
-    return allowedRoles ? allowedRoles.includes(role) : false;
+    const access = FEATURE_ACCESS[feature];
+    switch (access) {
+      case undefined:
+        return false;
+      case "admin":
+        return role === "admin";
+      case "staff":
+        return staff;
+      case "everyone":
+        return true;
+      default:
+        return can(access);
+    }
   };
 
   return {
     role,
-    isLoading: authLoading || isLoading,
-    error,
+    permissions,
+    isLoading,
+    error: null,
     canAccess,
+    can,
     isAdmin: role === "admin",
-    isCreator: role === "creator",
-    isReviewer: role === "reviewer",
-    isAdminOrReviewer: role === "admin" || role === "reviewer",
-    isCreatorOrAbove: role === "admin" || role === "creator" || role === "reviewer",
+    isStaff: staff,
   };
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
-import { requireRole } from "@/shared/utils/api/api-guard";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import type { ImageInput } from "../generate-sequence/prompt";
 import type { GenerateLessonRequest } from "./types";
 import { analyzeTranscript } from "./transcript-analysis";
@@ -32,7 +32,7 @@ export const maxDuration = 60;
 export async function POST(request: NextRequest) {
   try {
     // Auth check
-    const auth = requireRole(request, ["admin", "creator"]);
+    const auth = requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
 
     const body: GenerateLessonRequest = await request.json();

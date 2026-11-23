@@ -7,10 +7,13 @@ import { log } from "@/shared/utils/logging";
 
 const PAGE = 1000;
 
-/** Announcement audiences other than "all", mapped to the user roles they reach. */
-const AUDIENCE_ROLES = {
-  user: ["user"],
-  staff: ["admin", "creator", "reviewer"],
+/**
+ * Announcement audiences other than "all", as PostgREST filters on public.users.
+ * Staff = admins plus anyone holding a permission; user = everyone else.
+ */
+const AUDIENCE_FILTERS = {
+  user: "and(role.eq.user,permissions.eq.{})",
+  staff: "role.eq.admin,permissions.neq.{}",
 } as const;
 
 export const notificationGenerators = {
@@ -126,11 +129,11 @@ export const notificationGenerators = {
     targetAudience: string
   ): Promise<void> {
     // "all" = every active account; otherwise the roles behind the audience.
-    const roles =
+    const audienceFilter =
       targetAudience === "all"
         ? null
-        : AUDIENCE_ROLES[targetAudience as keyof typeof AUDIENCE_ROLES];
-    if (roles === undefined) throw new Error(`Unknown target audience: ${targetAudience}`);
+        : AUDIENCE_FILTERS[targetAudience as keyof typeof AUDIENCE_FILTERS];
+    if (audienceFilter === undefined) throw new Error(`Unknown target audience: ${targetAudience}`);
 
     // The admin's own session, only to record who sent it.
     const {
@@ -143,7 +146,7 @@ export const notificationGenerators = {
     const targetUserIds: string[] = [];
     for (let from = 0; ; from += PAGE) {
       let query = admin.from("users").select("id").eq("status", "active");
-      if (roles) query = query.in("role", roles);
+      if (audienceFilter) query = query.or(audienceFilter);
       const { data, error } = await query.order("id").range(from, from + PAGE - 1);
       if (error) throw new Error(`Failed to fetch users: ${error.message}`);
       targetUserIds.push(...data.map((u) => u.id));

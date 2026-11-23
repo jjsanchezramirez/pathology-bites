@@ -78,6 +78,42 @@ describe("middleware identity headers", () => {
     expect(res.headers.get("location")).toContain("/dashboard");
   });
 
+  it("strips a forged permissions header on public API routes", async () => {
+    const res = await middleware(
+      req("/api/public/tools/anki", { "x-user-permissions": "create_questions" })
+    );
+    expect(forwarded(res, "x-user-permissions")).toBeNull();
+  });
+
+  it("forwards permissions from app_metadata only, ignoring user_metadata and forgeries", async () => {
+    currentUser = {
+      id: "w1",
+      app_metadata: { role: "user", permissions: ["create_questions", "bogus"] },
+      user_metadata: { permissions: ["review_questions"] },
+    };
+    const res = await middleware(
+      req("/api/admin/questions/create", { "x-user-permissions": "review_questions" })
+    );
+    expect(res.status).toBe(200);
+    expect(forwarded(res, "x-user-permissions")).toBe("create_questions");
+  });
+
+  it("returns 403 on /api/admin for a user holding no permission", async () => {
+    currentUser = { id: "u5", app_metadata: { role: "user", permissions: [] } };
+    const res = await middleware(req("/api/admin/questions/reviewers"));
+    expect(res.status).toBe(403);
+  });
+
+  it("lets a permission holder into /admin but not admin-only or other-permission pages", async () => {
+    currentUser = { id: "r1", app_metadata: { role: "user", permissions: ["review_questions"] } };
+    expect((await middleware(req("/admin/review-queue"))).status).toBe(200);
+    for (const path of ["/admin/users", "/admin/questions/create", "/admin/my-questions"]) {
+      const res = await middleware(req(path));
+      expect(res.status).toBe(307);
+      expect(new URL(res.headers.get("location")!).pathname).toBe("/admin");
+    }
+  });
+
   it("returns 401 on private APIs without a session", async () => {
     const res = await middleware(req("/api/admin/questions/create"));
     expect(res.status).toBe(401);

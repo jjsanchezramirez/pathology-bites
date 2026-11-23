@@ -6,7 +6,6 @@ export interface NavigationItem {
   icon: string; // Use string identifier instead of component
   requiredPermission?: string;
   adminOnly?: boolean;
-  showToRoles?: string[]; // Array of roles that can see this item
   isNew?: boolean; // Badge to indicate feature is new
   isSoon?: boolean; // Badge to indicate feature is coming soon
   showBadge?: boolean; // Whether to show a badge count
@@ -20,10 +19,10 @@ export interface NavigationSection {
 
 export interface NavigationConfig {
   sections: NavigationSection[];
-  userRole?: "admin" | "creator" | "reviewer" | "user";
+  mode?: "admin" | "user";
 }
 
-// Admin/Creator/Reviewer Navigation Sections Configuration
+// Admin-area navigation (admins and anyone holding a permission; items gate on canAccess)
 export const adminNavigationSections: NavigationSection[] = [
   {
     title: "Overview",
@@ -44,14 +43,12 @@ export const adminNavigationSections: NavigationSection[] = [
         href: "/admin/questions",
         icon: "FileQuestion",
         requiredPermission: "questions.view",
-        showToRoles: ["admin", "creator", "reviewer"], // Visible to all, but bulk operations only for admin
       },
       {
         name: "My Questions",
         href: "/admin/my-questions",
         icon: "FolderOpen",
-        requiredPermission: "questions.view",
-        showToRoles: ["admin", "creator", "reviewer"],
+        requiredPermission: "questions.create",
         showBadge: true,
         badgeKey: "myQuestions",
       },
@@ -60,7 +57,6 @@ export const adminNavigationSections: NavigationSection[] = [
         href: "/admin/review-queue",
         icon: "ClipboardList",
         requiredPermission: "questions.review",
-        showToRoles: ["admin", "reviewer"],
         showBadge: true,
         badgeKey: "reviewQueue",
       },
@@ -69,7 +65,6 @@ export const adminNavigationSections: NavigationSection[] = [
         href: "/admin/questions/create",
         icon: "Brain",
         requiredPermission: "questions.create",
-        showToRoles: ["admin", "creator"],
       },
       {
         name: "Question Metadata",
@@ -280,24 +275,10 @@ export function getUserNavigationSections(): NavigationSection[] {
 // }
 
 // Navigation configuration factory
-export function getNavigationConfig(
-  userRole: "admin" | "creator" | "reviewer" | "user"
-): NavigationConfig {
-  switch (userRole) {
-    case "admin":
-    case "creator":
-    case "reviewer":
-      return {
-        sections: adminNavigationSections,
-        userRole,
-      };
-    case "user":
-    default:
-      return {
-        sections: getUserNavigationSections(),
-        userRole: "user",
-      };
-  }
+export function getNavigationConfig(mode: "admin" | "user"): NavigationConfig {
+  return mode === "admin"
+    ? { sections: adminNavigationSections, mode }
+    : { sections: getUserNavigationSections(), mode: "user" };
 }
 
 // Helper function to filter navigation items based on permissions and admin mode
@@ -317,14 +298,8 @@ export function filterNavigationItems(
     if (item.adminOnly && !isAdmin) return false;
     if (item.requiredPermission && !canAccess(item.requiredPermission)) return false;
 
-    // Filter adminOnly items based on selected adminMode for role simulation
+    // Admin-only items never show in the student view
     if (item.adminOnly && adminMode && adminMode !== "admin") return false;
-
-    // Filter based on adminMode if showToRoles is specified
-    if (item.showToRoles && adminMode) {
-      const currentViewRole = adminMode === "user" ? "user" : adminMode;
-      if (!item.showToRoles.includes(currentViewRole)) return false;
-    }
 
     return true;
   });

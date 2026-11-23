@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { format, formatDistanceToNowStrict } from "date-fns";
-import { GraduationCap, Shield, Trash2, UserCheck } from "lucide-react";
+import { GraduationCap, KeyRound, Shield, Trash2, UserCheck } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -13,6 +13,7 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Separator } from "@/shared/components/ui/separator";
 import { RoleBadge } from "@/shared/components/ui/role-badge";
+import { PermissionBadge } from "@/shared/components/ui/permission-badge";
 import { UserStatusBadge } from "@/shared/components/ui/user-status-badge";
 import { type User, userTypeConfig, getUserDisplayName } from "./users-table-utils";
 
@@ -22,6 +23,7 @@ interface UserDetailsSheetProps {
   canModify: boolean;
   canDelete: boolean;
   onRoleChange: (user: User) => void;
+  onPermissionsChange: (user: User) => void;
   onStatusChange: (user: User) => void;
   onTypeChange: (user: User) => void;
   onDelete: (user: User) => void;
@@ -53,6 +55,7 @@ export function UserDetailsSheet({
   canModify,
   canDelete,
   onRoleChange,
+  onPermissionsChange,
   onStatusChange,
   onTypeChange,
   onDelete,
@@ -93,6 +96,19 @@ export function UserDetailsSheet({
                 <Field label="Role">
                   <RoleBadge role={user.role} />
                 </Field>
+                <Field label="Permissions">
+                  {user.role === "admin" ? (
+                    <span className="text-muted-foreground">All (admin)</span>
+                  ) : (user.permissions ?? []).length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {user.permissions.map((p) => (
+                        <PermissionBadge key={p} permission={p} />
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">None</span>
+                  )}
+                </Field>
                 <Field label="Status">
                   <UserStatusBadge status={user.status} />
                 </Field>
@@ -125,6 +141,16 @@ export function UserDetailsSheet({
                           <Shield className="mr-2 h-4 w-4" />
                           Change role
                         </Button>
+                        {user.role !== "admin" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onPermissionsChange(user)}
+                          >
+                            <KeyRound className="mr-2 h-4 w-4" />
+                            Manage permissions
+                          </Button>
+                        )}
                         <Button variant="outline" size="sm" onClick={() => onStatusChange(user)}>
                           <UserCheck className="mr-2 h-4 w-4" />
                           Change status

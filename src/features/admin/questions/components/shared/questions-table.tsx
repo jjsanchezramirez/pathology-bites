@@ -72,9 +72,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
   const [showBulkSubmitDialog, setShowBulkSubmitDialog] = useState(false);
   const [showBulkRejectDialog, setShowBulkRejectDialog] = useState(false);
 
-  // Get user role to determine admin access
-  const { role } = useUserRole();
-  const isActualAdmin = role === "admin";
+  const { isAdmin: isActualAdmin } = useUserRole();
 
   // Use adminMode to determine what features to show (but still check actual permissions for security)
   const showAdminFeatures = adminMode === "admin" && isActualAdmin;

@@ -2,12 +2,14 @@
 /**
  * Utilities for admin mode detection and management
  *
- * Admin mode determines which dashboard theme is available:
- * - admin/creator/reviewer: Only 'default' theme available
- * - user (student): 'notebook' and 'tangerine' themes available
+ * Admin mode is which area a staff member is looking at, and so which
+ * dashboard theme is available:
+ * - admin (the /admin area; admins and anyone holding a permission): only 'default'
+ * - user (the student dashboard): 'notebook' and 'tangerine'
+ * What a staff member can do inside /admin depends on their permissions, not the mode.
  */
 
-export type AdminMode = "admin" | "creator" | "reviewer" | "user";
+export type AdminMode = "admin" | "user";
 
 const ADMIN_MODE_COOKIE_NAME = "admin-mode";
 const ADMIN_MODE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
@@ -15,43 +17,25 @@ const ADMIN_MODE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 /**
  * Get admin mode from cookie with fallback logic
  *
- * @param isAdmin - Whether the user has admin/creator/reviewer role
- * @param userRole - The user's actual role (admin, creator, reviewer, or user)
+ * @param isStaff - Whether the user may open the admin area (admin or any permission)
  * @returns The current admin mode
  *
- * Logic:
- * 1. If cookie exists, use it
- * 2. If no cookie and user has admin-type role, default to their actual role (admin/creator/reviewer)
- * 3. If no cookie and user is regular user, default to 'user' mode
- *
- * Note: The default is ALWAYS admin-type role for admin/creator/reviewer users
+ * Logic: a valid cookie wins (old "creator"/"reviewer" values read as "admin");
+ * otherwise staff default to "admin" and everyone else to "user".
  */
-export function getAdminModeFromCookie(
-  isAdmin: boolean = false,
-  userRole?: "admin" | "creator" | "reviewer" | "user"
-): AdminMode {
+export function getAdminModeFromCookie(isStaff: boolean = false): AdminMode {
   if (typeof document === "undefined") {
-    // Server-side: use role-based default
-    return userRole || (isAdmin ? "admin" : "user");
+    return isStaff ? "admin" : "user";
   }
 
   const adminModeCookie = document.cookie
     .split("; ")
     .find((row) => row.startsWith(`${ADMIN_MODE_COOKIE_NAME}=`))
-    ?.split("=")[1] as AdminMode | undefined;
+    ?.split("=")[1];
 
-  // If cookie exists, use it
-  if (adminModeCookie) {
-    return adminModeCookie;
-  }
-
-  // If no cookie, default to actual role for admin-type users, 'user' for regular users
-  // This ensures admin/creator/reviewer users start in their admin-type role by default
-  if (userRole && (userRole === "admin" || userRole === "creator" || userRole === "reviewer")) {
-    return userRole;
-  }
-
-  return isAdmin ? "admin" : "user";
+  if (adminModeCookie === "user") return "user";
+  if (adminModeCookie) return isStaff ? "admin" : "user";
+  return isStaff ? "admin" : "user";
 }
 
 /**
@@ -91,11 +75,8 @@ export function getThemeKeyForMode(
 }
 
 /**
- * Check if a mode is an admin-type mode (admin/creator/reviewer)
- *
- * @param mode - The mode to check
- * @returns True if the mode is admin/creator/reviewer
+ * Check if a mode is the admin-area mode
  */
 export function isAdminTypeMode(mode: AdminMode): boolean {
-  return mode === "admin" || mode === "creator" || mode === "reviewer";
+  return mode === "admin";
 }

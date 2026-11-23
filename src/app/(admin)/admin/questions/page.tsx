@@ -11,7 +11,7 @@ import { Loader2 } from "lucide-react";
 import { AccessDenied, AccessDeniedPresets } from "@/shared/components/common/access-denied";
 
 export default function QuestionsPage() {
-  const { role, isLoading } = useUserRole();
+  const { isAdmin, isStaff, isLoading } = useUserRole();
   const { adminMode } = useDashboardTheme();
 
   // Show loading while checking role
@@ -24,44 +24,27 @@ export default function QuestionsPage() {
     );
   }
 
-  // All admin roles can access the question database
-  if (!role || !["admin", "creator", "reviewer"].includes(role)) {
-    return <AccessDenied {...AccessDeniedPresets.creatorOrAbove} />;
+  // Anyone with admin-area access can browse the question database
+  if (!isStaff) {
+    return <AccessDenied {...AccessDeniedPresets.staff} />;
   }
-  // Get role-specific content based on adminMode
-  const getPageContent = () => {
-    switch (adminMode) {
-      case "creator":
-        return {
-          title: "Question Database (Creator View)",
-          description:
-            "Browse and search questions in the system. Limited to viewing and basic operations.",
-          cardTitle: "All Questions (Read-Only)",
-          cardDescription:
-            "View questions in the database. Bulk operations are not available in creator view.",
-        };
-      case "reviewer":
-        return {
-          title: "Question Database (Reviewer View)",
-          description:
-            "Browse and search questions for review purposes. Limited to viewing and basic operations.",
-          cardTitle: "All Questions (Read-Only)",
-          cardDescription:
-            "View questions in the database. Bulk operations are not available in reviewer view.",
-        };
-      default: // admin
-        return {
-          title: "Question Database",
-          description:
-            "Browse, search, and manage all questions in the system. Export, edit, and organize questions with advanced filtering and bulk operations.",
-          cardTitle: "All Questions",
-          cardDescription:
-            "Comprehensive view of all questions with advanced search, filtering, and bulk operations. Role-based permissions apply to editing and deletion.",
-        };
-    }
-  };
-
-  const content = getPageContent();
+  // Non-admins browse read-only; bulk operations are admin-only
+  const content = isAdmin
+    ? {
+        title: "Question Database",
+        description:
+          "Browse, search, and manage all questions in the system. Export, edit, and organize questions with advanced filtering and bulk operations.",
+        cardTitle: "All Questions",
+        cardDescription:
+          "Comprehensive view of all questions with advanced search, filtering, and bulk operations. Permissions apply to editing and deletion.",
+      }
+    : {
+        title: "Question Database",
+        description:
+          "Browse and search questions in the system. Limited to viewing and basic operations.",
+        cardTitle: "All Questions (Read-Only)",
+        cardDescription: "View questions in the database. Bulk operations are admin-only.",
+      };
 
   return (
     <PageContainer>

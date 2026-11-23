@@ -5,14 +5,24 @@
 
 import { describe, it, expect } from "vitest";
 import { canEditQuestion } from "@/features/admin/questions/services/can-edit-question";
-import type { UserRole } from "@/shared/utils/auth/auth-helpers";
+import type { Permission } from "@/shared/utils/auth/permissions";
+
+// Test personas: a "writer" holds create_questions, a "reviewer" holds review_questions.
+type Persona = "admin" | "writer" | "reviewer" | "user" | null;
+const PERSONA: Record<string, { role: "admin" | "user" | null; permissions: Permission[] }> = {
+  admin: { role: "admin", permissions: [] },
+  writer: { role: "user", permissions: ["create_questions"] },
+  reviewer: { role: "user", permissions: ["review_questions"] },
+  user: { role: "user", permissions: [] },
+  null: { role: null, permissions: [] },
+};
 
 const CREATOR_ID = "creator-1";
 const OTHER_ID = "someone-else";
 const REVIEWER_ID = "reviewer-1";
 
 function decide(options: {
-  role: UserRole | null;
+  role: Persona;
   userId: string;
   status: string;
   createdBy?: string;
@@ -20,7 +30,7 @@ function decide(options: {
   isPatchEdit?: boolean;
 }) {
   return canEditQuestion({
-    role: options.role,
+    ...PERSONA[String(options.role)],
     userId: options.userId,
     question: {
       status: options.status,
@@ -42,13 +52,13 @@ describe("canEditQuestion", () => {
 
     it.each(["draft", "rejected"])("allows creator on own %s question", (status) => {
       expect(
-        decide({ role: "creator", userId: CREATOR_ID, status, createdBy: CREATOR_ID }).allowed
+        decide({ role: "writer", userId: CREATOR_ID, status, createdBy: CREATOR_ID }).allowed
       ).toBe(true);
     });
 
     it("denies creator on another creator's draft", () => {
       const result = decide({
-        role: "creator",
+        role: "writer",
         userId: OTHER_ID,
         status: "draft",
         createdBy: CREATOR_ID,
@@ -102,7 +112,7 @@ describe("canEditQuestion", () => {
 
     it("allows the creator of the question", () => {
       const result = decide({
-        role: "creator",
+        role: "writer",
         userId: CREATOR_ID,
         status: "pending_review",
         createdBy: CREATOR_ID,
@@ -113,7 +123,7 @@ describe("canEditQuestion", () => {
 
     it("denies a creator who did not create the question", () => {
       const result = decide({
-        role: "creator",
+        role: "writer",
         userId: OTHER_ID,
         status: "pending_review",
         createdBy: CREATOR_ID,
@@ -137,7 +147,7 @@ describe("canEditQuestion", () => {
   describe("published + patch edit", () => {
     it("allows creator on own published question", () => {
       const result = decide({
-        role: "creator",
+        role: "writer",
         userId: CREATOR_ID,
         status: "published",
         createdBy: CREATOR_ID,
@@ -148,7 +158,7 @@ describe("canEditQuestion", () => {
 
     it("denies creator on another creator's published question", () => {
       const result = decide({
-        role: "creator",
+        role: "writer",
         userId: OTHER_ID,
         status: "published",
         createdBy: CREATOR_ID,
@@ -158,7 +168,7 @@ describe("canEditQuestion", () => {
         allowed: false,
         error: "Insufficient permissions for patch edit",
         message:
-          "Only creators (of their own questions) and reviewers can make patch edits to published questions.",
+          "Only authors (of their own questions) and reviewers can make patch edits to published questions.",
       });
     });
 
@@ -196,14 +206,14 @@ describe("canEditQuestion", () => {
 
     it("allows creator on own published question", () => {
       expect(
-        decide({ role: "creator", userId: CREATOR_ID, status: "published", createdBy: CREATOR_ID })
+        decide({ role: "writer", userId: CREATOR_ID, status: "published", createdBy: CREATOR_ID })
           .allowed
       ).toBe(true);
     });
 
     it("allows creator on another creator's published question (role-only check, preserved behavior)", () => {
       expect(
-        decide({ role: "creator", userId: OTHER_ID, status: "published", createdBy: CREATOR_ID })
+        decide({ role: "writer", userId: OTHER_ID, status: "published", createdBy: CREATOR_ID })
           .allowed
       ).toBe(true);
     });
@@ -219,7 +229,7 @@ describe("canEditQuestion", () => {
         allowed: false,
         error: "Cannot edit published questions",
         message:
-          "Only admins and creators can make non-patch edits to published questions. Non-patch edits require review.",
+          "Only admins and question writers can make non-patch edits to published questions. Non-patch edits require review.",
       });
     });
 

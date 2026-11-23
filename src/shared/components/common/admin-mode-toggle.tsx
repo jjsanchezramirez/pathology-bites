@@ -4,29 +4,26 @@
 import { useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 
-import { Shield, User, PenTool, Eye } from "lucide-react";
+import { Shield, User, PenTool } from "lucide-react";
 import { useUserRole } from "@/shared/hooks/use-user-role";
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
 import { useRouter } from "next/navigation";
 import { log } from "@/shared/utils/logging";
 
 export function AdminModeToggle() {
-  const { isAdmin, isCreator, isReviewer, role } = useUserRole();
+  const { isAdmin, isStaff } = useUserRole();
   const { adminMode, setAdminMode, isTransitioning, setTransitioning } = useDashboardTheme();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Only show for admin, creator, or reviewer users - ALL HOOKS MUST BE CALLED BEFORE THIS
-  if (!isAdmin && !isCreator && !isReviewer) return null;
+  // Only show for staff (admins and anyone holding a permission) - ALL HOOKS MUST BE CALLED BEFORE THIS
+  if (!isStaff) return null;
 
-  // Determine if currently in admin-type mode
-  const isInAdminMode =
-    adminMode === "admin" || adminMode === "creator" || adminMode === "reviewer";
+  const isInAdminMode = adminMode === "admin";
   const isInStudentMode = adminMode === "user";
 
   const switchToMode = async (newMode: "admin" | "user") => {
-    // Map 'admin' to actual role
-    const targetMode = newMode === "admin" ? (role as "admin" | "creator" | "reviewer") : "user";
+    const targetMode = newMode;
 
     if (targetMode === adminMode) return; // Already in this mode
 
@@ -54,24 +51,8 @@ export function AdminModeToggle() {
     }
   };
 
-  // Get role label based on actual user role
-  const getRoleLabel = () => {
-    if (isAdmin) return "Admin";
-    if (isCreator) return "Creator";
-    if (isReviewer) return "Reviewer";
-    return "Student";
-  };
-
-  // Get role icon based on actual user role
-  const getRoleIcon = () => {
-    if (isAdmin) return Shield;
-    if (isCreator) return PenTool;
-    if (isReviewer) return Eye;
-    return User;
-  };
-
   const modes = [
-    { key: "admin", label: getRoleLabel(), icon: getRoleIcon() },
+    { key: "admin", label: isAdmin ? "Admin" : "Contributor", icon: isAdmin ? Shield : PenTool },
     { key: "user", label: "Student", icon: User },
   ];
 

@@ -1,6 +1,7 @@
 import { createClient } from "@/shared/services/server";
 import { NextResponse } from "next/server";
-import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { requireStaff } from "@/shared/utils/api/api-guard";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { log } from "@/shared/utils/logging";
 
 /**
@@ -8,7 +9,7 @@ import { log } from "@/shared/utils/logging";
  * /api/admin/questions/reviewers:
  *   get:
  *     summary: Get list of available reviewers
- *     description: Retrieve all users with admin or reviewer role, including their current workload (number of pending review questions assigned). Requires admin, creator, or reviewer role.
+ *     description: Retrieve admins and users holding review_questions, including their current workload (number of pending review questions assigned). Requires admin or any granted permission.
  *     tags:
  *       - Admin - Questions
  *     security:
@@ -40,14 +41,14 @@ import { log } from "@/shared/utils/logging";
  *                         description: Computed full name or email if name not available
  *                       role:
  *                         type: string
- *                         enum: [admin, reviewer]
+ *                         enum: [admin, user]
  *                       pending_count:
  *                         type: integer
  *                         description: Number of pending review questions assigned
  *       401:
  *         description: Unauthorized - missing authentication
  *       403:
- *         description: Forbidden - requires admin, creator, or reviewer role
+ *         description: Forbidden - requires admin or a granted permission
  *       500:
  *         description: Internal server error
  */
@@ -55,19 +56,22 @@ export async function GET(request: Request) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require admin, creator, or reviewer role
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requireStaff(request);
     if (auth instanceof NextResponse) return auth;
 
     // Parallel: reviewers list + workload (all pending_review questions). Workload query
     // intentionally doesn't filter on reviewer_ids — they aren't known yet, and the result
     // set is small (pending_review count is bounded). Saves a round-trip vs sequential.
     const [reviewersResult, workloadResult] = await Promise.all([
-      supabase
+      // Service role: users RLS only lets a non-admin read their own row, so an author
+      // picking a reviewer saw an empty list. Columns are limited to what the picker shows.
+      createServiceRoleClient()
         .from("users")
         .select("id, email, first_name, last_name, role")
-        .in("role", ["admin", "reviewer"])
+        .or("role.eq.admin,permissions.cs.{review_questions}")
         .eq("status", "active")
+        .is("deleted_at", null)
         .order("first_name", { ascending: true }),
       supabase.from("questions").select("reviewer_id").eq("status", "pending_review"),
     ]);

@@ -3354,6 +3354,7 @@ export type Database = {
           id: string;
           institution: string | null;
           last_name: string | null;
+          permissions: string[];
           role: Database["public"]["Enums"]["user_role"];
           status: Database["public"]["Enums"]["user_status"];
           updated_at: string | null;
@@ -3367,6 +3368,7 @@ export type Database = {
           id?: string;
           institution?: string | null;
           last_name?: string | null;
+          permissions?: string[];
           role?: Database["public"]["Enums"]["user_role"];
           status: Database["public"]["Enums"]["user_status"];
           updated_at?: string | null;
@@ -3380,6 +3382,7 @@ export type Database = {
           id?: string;
           institution?: string | null;
           last_name?: string | null;
+          permissions?: string[];
           role?: Database["public"]["Enums"]["user_role"];
           status?: Database["public"]["Enums"]["user_status"];
           updated_at?: string | null;
@@ -4060,7 +4063,7 @@ export type Database = {
           p_dir?: string;
           p_limit?: number;
           p_offset?: number;
-          p_role?: Database["public"]["Enums"]["user_role"] | null;
+          p_role?: string | null;
           p_search?: string | null;
           p_sort?: string;
           p_status?: Database["public"]["Enums"]["user_status"] | null;
@@ -4077,8 +4080,9 @@ export type Database = {
           last_quiz_at: string | null;
           last_sign_in_at: string | null;
           quizzes_completed: number;
+          permissions: string[];
           quizzes_started: number;
-          role: Database["public"]["Enums"]["user_role"];
+          role: string;
           status: Database["public"]["Enums"]["user_status"];
           total_count: number;
           updated_at: string;
@@ -4197,11 +4201,9 @@ export type Database = {
         Args: never;
         Returns: {
           active_admins: number;
-          active_creators: number;
           active_end_users: number;
           active_internal_users: number;
           active_percentage: string;
-          active_reviewers: number;
           active_users: number;
           end_users: number;
           end_users_percentage: string;
@@ -4214,8 +4216,8 @@ export type Database = {
           suspended_percentage: string;
           suspended_users: number;
           total_admins: number;
-          total_creators: number;
-          total_reviewers: number;
+          total_question_reviewers: number;
+          total_question_writers: number;
           total_users: number;
         }[];
       };
@@ -4332,7 +4334,7 @@ export type Database = {
         | "rejected"
         | "published";
       session_status: "not_started" | "in_progress" | "completed" | "abandoned";
-      user_role: "admin" | "creator" | "reviewer" | "user";
+      user_role: "admin" | "user";
       user_status: "active" | "inactive" | "suspended" | "deleted";
       user_type: "student" | "resident" | "faculty" | "other" | "fellow" | "attending";
     };
@@ -4464,7 +4466,7 @@ export const Constants = {
       image_category: ["microscopic", "gross", "figure", "table", "external"],
       question_status: ["draft", "pending_review", "flagged", "archived", "rejected", "published"],
       session_status: ["not_started", "in_progress", "completed", "abandoned"],
-      user_role: ["admin", "creator", "reviewer", "user"],
+      user_role: ["admin", "user"],
       user_status: ["active", "inactive", "suspended", "deleted"],
       user_type: ["student", "resident", "faculty", "other", "fellow", "attending"],
     },

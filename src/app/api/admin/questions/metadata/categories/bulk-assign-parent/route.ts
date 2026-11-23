@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
 import { log } from "@/shared/utils/logging";
@@ -15,7 +15,7 @@ const bulkAssignParentSchema = z.object({
  * /api/admin/questions/metadata/categories/bulk-assign-parent:
  *   post:
  *     summary: Bulk assign parent to categories
- *     description: Assign a parent category to multiple categories at once. Prevents circular references and auto-recalculates hierarchy levels. Requires content role (admin, creator, or reviewer).
+ *     description: Assign a parent category to multiple categories at once. Prevents circular references and auto-recalculates hierarchy levels. Requires admin role.
  *     tags:
  *       - Admin - Question Metadata
  *     security:
@@ -56,7 +56,7 @@ const bulkAssignParentSchema = z.object({
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - content role required
+ *         description: Forbidden - admin role required
  *       500:
  *         description: Internal server error
  */
@@ -64,8 +64,8 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require admin, creator, or reviewer role
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
 
     const body = await parseBody(request, bulkAssignParentSchema);
