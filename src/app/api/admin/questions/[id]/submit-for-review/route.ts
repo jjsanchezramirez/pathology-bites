@@ -1,4 +1,5 @@
 import { createClient } from "@/shared/services/server";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { NotificationTriggers } from "@/shared/services/notification-triggers";
@@ -84,12 +85,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (body instanceof NextResponse) return body;
     const { reviewer_id, resubmission_notes } = body;
 
-    // Verify reviewer exists and has appropriate role
-    const { data: reviewer, error: reviewerError } = await supabase
+    // Verify reviewer exists and has appropriate role. Service-role read: users RLS only
+    // lets a non-admin read their own row, so a creator submitting to a reviewer got
+    // nothing back here and the route answered 500.
+    const { data: reviewer, error: reviewerError } = await createServiceRoleClient()
       .from("users")
       .select("id, role")
       .eq("id", reviewer_id)
-      .single();
+      .maybeSingle();
 
     if (reviewerError) {
       log.error("Error fetching reviewer:", reviewerError);

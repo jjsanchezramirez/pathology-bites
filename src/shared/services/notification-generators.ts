@@ -63,6 +63,40 @@ export const notificationGenerators = {
     log.debug("Creating achievement notification for user:", _userId);
   },
 
+  /**
+   * Notify a user about a question in the review workflow: "question_review" tells a
+   * reviewer a question is waiting for them, "question_status" tells the author it was
+   * approved or rejected. The row only points at the question (source_id); the text is
+   * built from the question when notifications are listed.
+   *
+   * Service-role client: notification_states RLS only lets a user insert rows for
+   * themselves, and these go to someone else. The table allows one row per
+   * (user, type, question), so a repeat event (rejected, then approved) replaces the
+   * old row, which brings it back to the top as unread.
+   */
+  async createQuestionNotification(
+    userId: string,
+    sourceType: "question_review" | "question_status",
+    questionId: string
+  ): Promise<void> {
+    const admin = createServiceRoleClient();
+    const { error: clearError } = await admin
+      .from("notification_states")
+      .delete()
+      .eq("user_id", userId)
+      .eq("source_type", sourceType)
+      .eq("source_id", questionId);
+    if (clearError) throw new Error(`Failed to replace notification: ${clearError.message}`);
+
+    const { error } = await admin.from("notification_states").insert({
+      user_id: userId,
+      source_type: sourceType,
+      source_id: questionId,
+      read: false,
+    });
+    if (error) throw new Error(`Failed to create notification: ${error.message}`);
+  },
+
   async checkStudyTimeMilestone(_userId: string, _totalHours: number): Promise<void> {
     log.debug("Checking study time milestone for user:", _userId);
   },
