@@ -70,16 +70,22 @@ export class NotificationsService {
       );
 
       // Fetch source data for existing tables only
-      const [inquiries, systemUpdates] = await Promise.all([
+      const questionIds = [
+        ...(sourceIdsByType.question_review ?? []),
+        ...(sourceIdsByType.question_status ?? []),
+      ];
+      const [inquiries, systemUpdates, questions] = await Promise.all([
         sourceIdsByType.inquiry?.length > 0 ? this.getInquiries(sourceIdsByType.inquiry) : [],
         sourceIdsByType.system_update?.length > 0
           ? this.getSystemUpdates(sourceIdsByType.system_update)
           : [],
+        questionIds.length > 0 ? this.getQuestionSummaries(questionIds) : [],
       ]);
 
       // Create lookup maps for existing source types
       const inquiryMap = new Map(inquiries.map((i) => [i.id, i] as const));
       const systemUpdateMap = new Map(systemUpdates.map((s) => [s.id, s] as const));
+      const questionMap = new Map(questions.map((q) => [q.id, q] as const));
 
       // Combine notification states with source data
       const notifications: NotificationWithSource[] = notificationStates
@@ -114,20 +120,48 @@ export class NotificationsService {
               metadata: {},
             };
           } else if (state.source_type === "question_review") {
+            // The question itself carries the details; fall back to generic text if it
+            // can't be read (e.g. reassigned to another reviewer since).
+            const question = questionMap.get(state.source_id);
             return {
               ...state,
               title: "Question Review Required",
-              description: "A question needs your review",
+              description: question
+                ? `"${question.title}" was submitted for your review`
+                : "A question needs your review",
               status: "pending",
-              metadata: {},
+              metadata: question ? { question_id: question.id } : {},
             };
           } else if (state.source_type === "question_status") {
+            const question = questionMap.get(state.source_id);
+            if (question?.status === "published") {
+              return {
+                ...state,
+                title: "Question Approved",
+                description: `"${question.title}" was approved and is now live`,
+                status: "approved",
+                metadata: { question_id: question.id },
+              };
+            }
+            if (question?.status === "rejected") {
+              return {
+                ...state,
+                title: "Question Needs Revision",
+                description: question.reviewer_feedback
+                  ? `"${question.title}" was rejected: ${question.reviewer_feedback}`
+                  : `"${question.title}" was rejected`,
+                status: "rejected",
+                metadata: { question_id: question.id },
+              };
+            }
             return {
               ...state,
               title: "Question Status Update",
-              description: "Your question status has changed",
+              description: question
+                ? `"${question.title}" is now ${question.status.replace("_", " ")}`
+                : "Your question status has changed",
               status: "updated",
-              metadata: {},
+              metadata: question ? { question_id: question.id } : {},
             };
           } else if (state.source_type === "system_update") {
             const systemUpdate = systemUpdateMap.get(state.source_id);
@@ -175,6 +209,27 @@ export class NotificationsService {
     }
 
     return data || [];
+  }
+
+  /** Title/status/feedback for question review notifications. RLS lets the author,
+   * the assigned reviewer and admins read these. */
+  private async getQuestionSummaries(
+    ids: string[]
+  ): Promise<
+    Array<{ id: string; title: string; status: string; reviewer_feedback: string | null }>
+  > {
+    if (ids.length === 0) return [];
+    const { data, error } = await this.getSupabase()
+      .from("questions")
+      .select("id, title, status, reviewer_feedback")
+      .in("id", [...new Set(ids)]);
+    if (error) throw error;
+    return (data ?? []) as Array<{
+      id: string;
+      title: string;
+      status: string;
+      reviewer_feedback: string | null;
+    }>;
   }
 
   private async getSystemUpdates(ids: string[]): Promise<

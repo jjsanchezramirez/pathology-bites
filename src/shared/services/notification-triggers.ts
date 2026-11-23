@@ -147,17 +147,14 @@ export class NotificationTriggers {
     reviewerId: string
   ): Promise<void> {
     try {
-      await notificationGenerators.createAchievementNotification(
-        creatorId,
-        "question_approved",
-        "✅ Question Approved!",
-        `Great news! Your question "${questionTitle}" has been approved and is now live for all users.`,
-        {
-          question_id: questionId,
-          reviewer_id: reviewerId,
-          action: "approved",
-        }
-      );
+      // No notification for approving your own question.
+      if (creatorId && creatorId !== reviewerId) {
+        await notificationGenerators.createQuestionNotification(
+          creatorId,
+          "question_status",
+          questionId
+        );
+      }
     } catch (error) {
       log.error("Error creating question approval notification:", error);
     }
@@ -168,21 +165,16 @@ export class NotificationTriggers {
     questionId: string,
     questionTitle: string,
     reviewerId: string,
-    feedback: string
+    _feedback: string // shown from the question's reviewer_feedback instead
   ): Promise<void> {
     try {
-      await notificationGenerators.createAchievementNotification(
-        creatorId,
-        "question_rejected",
-        "📝 Question Needs Revision",
-        `Your question "${questionTitle}" requires some changes. Please review the feedback and resubmit when ready.`,
-        {
-          question_id: questionId,
-          reviewer_id: reviewerId,
-          feedback: feedback,
-          action: "rejected",
-        }
-      );
+      if (creatorId && creatorId !== reviewerId) {
+        await notificationGenerators.createQuestionNotification(
+          creatorId,
+          "question_status",
+          questionId
+        );
+      }
     } catch (error) {
       log.error("Error creating question rejection notification:", error);
     }
@@ -195,17 +187,14 @@ export class NotificationTriggers {
     creatorId: string
   ): Promise<void> {
     try {
-      await notificationGenerators.createAchievementNotification(
-        reviewerId,
-        "question_submitted_for_review",
-        "👀 New Question to Review",
-        `A new question "${questionTitle}" has been submitted for your review.`,
-        {
-          question_id: questionId,
-          creator_id: creatorId,
-          action: "submitted_for_review",
-        }
-      );
+      // No notification when you assign a question to yourself.
+      if (reviewerId && reviewerId !== creatorId) {
+        await notificationGenerators.createQuestionNotification(
+          reviewerId,
+          "question_review",
+          questionId
+        );
+      }
     } catch (error) {
       log.error("Error creating question submission notification:", error);
     }

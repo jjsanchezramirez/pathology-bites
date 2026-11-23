@@ -226,7 +226,7 @@ export async function PATCH(request: NextRequest) {
     // Update user with service role to bypass RLS
     const { data, error } = await supabase
       .from("users")
-      .update(updates)
+      .update({ ...updates, updated_at: new Date().toISOString() }) // no trigger maintains it
       .eq("id", userId)
       .select()
       .single();

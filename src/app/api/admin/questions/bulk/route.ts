@@ -5,6 +5,7 @@ import { parseBody } from "@/shared/utils/api/parse-body";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
+import { NotificationTriggers } from "@/shared/services/notification-triggers";
 
 const bulkQuestionsSchema = z
   .object({
@@ -154,6 +155,10 @@ export async function POST(request: NextRequest) {
 
     let result;
     let affectedCount = 0;
+    // Review notifications to send once the update has succeeded (same triggers as the
+    // single-question routes).
+    let notify: (() => Promise<unknown>) | null = null;
+    const triggers = new NotificationTriggers();
 
     switch (action) {
       case "submit_for_review":
@@ -198,6 +203,12 @@ export async function POST(request: NextRequest) {
           );
 
         affectedCount = draftQuestions.length;
+        notify = () =>
+          Promise.allSettled(
+            draftQuestions.map((q) =>
+              triggers.onQuestionSubmittedForReview(reviewer_id!, q.id, "", userId)
+            )
+          );
         break;
 
       case "approve":
@@ -228,6 +239,10 @@ export async function POST(request: NextRequest) {
           );
 
         affectedCount = pendingQuestions.length;
+        notify = () =>
+          Promise.allSettled(
+            pendingQuestions.map((q) => triggers.onQuestionApproved(q.created_by, q.id, "", userId))
+          );
         break;
 
       case "reject":
@@ -273,6 +288,12 @@ export async function POST(request: NextRequest) {
         }
 
         affectedCount = rejectableQuestions.length;
+        notify = () =>
+          Promise.allSettled(
+            rejectableQuestions.map((q) =>
+              triggers.onQuestionRejected(q.created_by, q.id, "", userId, feedback!)
+            )
+          );
         break;
 
       case "delete":
@@ -365,6 +386,7 @@ export async function POST(request: NextRequest) {
     // Revalidate caches to update all admin pages (for mutation operations).
     // The export action returns early inside the switch, so this only runs for mutations.
     revalidateQuestions({ includeDashboard: true });
+    if (notify) await notify();
 
     return NextResponse.json({
       success: true,

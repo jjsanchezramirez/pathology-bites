@@ -23,7 +23,12 @@ const createQuestionSchema = z.object({
   title: z.string().min(1),
   stem: z.string().min(1),
   difficulty: z.enum(["easy", "medium", "hard"]).optional(),
-  teaching_point: z.string().nullish(),
+  // NOT NULL in the database but empty strings are allowed (drafts can be saved without
+  // one), so a missing value becomes "" instead of a null that failed the insert with a 500.
+  teaching_point: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
   question_references: z.string().nullish(),
   question_set_id: z.string().nullish(),
   category_id: z.string().nullish(),
