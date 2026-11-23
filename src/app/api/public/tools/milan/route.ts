@@ -268,35 +268,3 @@ function parseHarmonizomeData(data: unknown) {
     description: harmonizomeData.description || ''
   }
 }
-
-/**
- * @swagger
- * /api/public/tools/milan:
- *   delete:
- *     summary: Clear gene lookup cache
- *     description: Clears the server-side cache for gene lookups. This endpoint is useful for debugging or forcing fresh data retrieval.
- *     tags:
- *       - Public - Tools
- *     responses:
- *       200:
- *         description: Cache cleared successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Gene lookup cache cleared
- */
-export async function DELETE() {
-  geneCache.clear()
-  
-  return NextResponse.json({
-    success: true,
-    message: 'Gene lookup cache cleared'
-  })
-}

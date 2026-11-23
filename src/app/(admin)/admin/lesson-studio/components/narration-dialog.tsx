@@ -15,7 +15,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import { Loader2, Mic, Sparkles } from "lucide-react";
+import { Loader2, Mic, Sparkles, Trash2 } from "lucide-react";
 import { useEditorStore } from "../model/store";
 import type { SlideCue } from "@/shared/lesson/narration";
 import type { LessonAudio } from "../model/types";
@@ -126,6 +126,8 @@ export function NarrationDialogBase({
   const [result, setResult] = useState<string | null>(null);
 
   const [designOpen, setDesignOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
   const [designName, setDesignName] = useState("");
   const [designText, setDesignText] = useState("");
   const [designBusy, setDesignBusy] = useState(false);
@@ -164,6 +166,32 @@ export function NarrationDialogBase({
 
   const custom = meta?.voices.filter((v) => v.type !== "prebuilt") ?? [];
   const prebuilt = meta?.voices.filter((v) => v.type === "prebuilt") ?? [];
+
+  const selectedCustom = custom.find((v) => v.id === voice) ?? null;
+
+  // Designed voices persist on the Gemini account until deleted.
+  async function deleteSelectedVoice() {
+    if (!selectedCustom) return;
+    setDeleteBusy(true);
+    setError(null);
+    try {
+      const r = await fetch("/api/admin/lesson-studio/narration/voices", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: selectedCustom.id }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error ?? "Voice deletion failed");
+      const remaining = (meta?.voices ?? []).filter((v) => v.id !== selectedCustom.id);
+      setMeta((m) => (m ? { ...m, voices: remaining } : m));
+      setVoice(remaining.find((v) => v.type === "prebuilt")?.id ?? remaining[0]?.id ?? "");
+      setConfirmDelete(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setDeleteBusy(false);
+    }
+  }
 
   async function designVoice() {
     setDesignBusy(true);
@@ -265,7 +293,10 @@ export function NarrationDialogBase({
               <select
                 className={selectCls}
                 value={voice}
-                onChange={(e) => setVoice(e.target.value)}
+                onChange={(e) => {
+                  setVoice(e.target.value);
+                  setConfirmDelete(false);
+                }}
                 disabled={!meta}
               >
                 {custom.length > 0 && (
@@ -286,14 +317,48 @@ export function NarrationDialogBase({
                   ))}
                 </optgroup>
               </select>
-              <button
-                type="button"
-                className="justify-self-start text-xs text-blue-600 hover:underline"
-                onClick={() => setDesignOpen((o) => !o)}
-              >
-                <Sparkles className="mr-1 inline h-3 w-3" />
-                Design a new voice
-              </button>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                <button
+                  type="button"
+                  className="text-xs text-blue-600 hover:underline"
+                  onClick={() => setDesignOpen((o) => !o)}
+                >
+                  <Sparkles className="mr-1 inline h-3 w-3" />
+                  Design a new voice
+                </button>
+                {selectedCustom &&
+                  (confirmDelete ? (
+                    <span className="flex items-center gap-2 text-xs">
+                      <span>Delete &ldquo;{selectedCustom.label}&rdquo;?</span>
+                      <button
+                        type="button"
+                        className="font-medium text-red-600 hover:underline disabled:opacity-50"
+                        onClick={deleteSelectedVoice}
+                        disabled={deleteBusy}
+                      >
+                        {deleteBusy && <Loader2 className="mr-1 inline h-3 w-3 animate-spin" />}
+                        Yes, delete
+                      </button>
+                      <button
+                        type="button"
+                        className="text-muted-foreground hover:underline"
+                        onClick={() => setConfirmDelete(false)}
+                        disabled={deleteBusy}
+                      >
+                        Cancel
+                      </button>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="text-xs text-red-600 hover:underline"
+                      onClick={() => setConfirmDelete(true)}
+                    >
+                      <Trash2 className="mr-1 inline h-3 w-3" />
+                      Delete this voice
+                    </button>
+                  ))}
+              </div>
             </label>
 
             {designOpen && (

@@ -6,6 +6,7 @@ import {
   DEFAULT_TTS_MODEL,
   PREBUILT_VOICES,
   TTS_MODELS,
+  deleteVoice,
   designVoice,
   listVoices,
   type VoiceOption,
@@ -104,6 +105,61 @@ export async function POST(request: NextRequest) {
     log.error("[narration] voice design failed:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Voice design failed" },
+      { status: 502 }
+    );
+  }
+}
+
+const deleteSchema = z.object({ id: z.string().trim().min(1).max(100) });
+
+/**
+ * @swagger
+ * /api/admin/lesson-studio/narration/voices:
+ *   delete:
+ *     summary: Delete a designed narration voice
+ *     description: Deletes a voice created with "Design a new voice" from the Gemini account. Prebuilt Gemini voices can't be deleted. Requires admin role.
+ *     tags:
+ *       - Admin - Lesson Studio
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: The designed voice's id (e.g. voice_abc123)
+ *     responses:
+ *       200:
+ *         description: Voice deleted
+ *       400:
+ *         description: Invalid id, or a prebuilt voice
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Admin role required
+ *       502:
+ *         description: Gemini rejected the deletion
+ */
+export async function DELETE(request: NextRequest) {
+  const auth = requireAdmin(request);
+  if (auth instanceof NextResponse) return auth;
+  const body = await parseBody(request, deleteSchema);
+  if (body instanceof NextResponse) return body;
+  const prebuilt = (PREBUILT_VOICES as readonly string[]).map((v) => v.toLowerCase());
+  if (prebuilt.includes(body.id.toLowerCase())) {
+    return NextResponse.json({ error: "Prebuilt voices can't be deleted" }, { status: 400 });
+  }
+  try {
+    await deleteVoice(body.id);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    log.error("[narration] voice deletion failed:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Voice deletion failed" },
       { status: 502 }
     );
   }
