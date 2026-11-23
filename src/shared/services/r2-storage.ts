@@ -39,7 +39,11 @@ function getR2Config() {
   const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
   const CLOUDFLARE_R2_ACCESS_KEY_ID = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
   const CLOUDFLARE_R2_SECRET_ACCESS_KEY = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-  const CLOUDFLARE_R2_PUBLIC_URL = process.env.CLOUDFLARE_R2_PUBLIC_URL || R2_IMAGES_PUBLIC_URL;
+  // Trimmed (and trailing slashes dropped): the production variable picked up two
+  // trailing newlines in Nov 2026, and every upload saved a URL with "\n\n" in it.
+  const CLOUDFLARE_R2_PUBLIC_URL = (
+    process.env.CLOUDFLARE_R2_PUBLIC_URL?.trim() || R2_IMAGES_PUBLIC_URL
+  ).replace(/\/+$/, "");
 
   if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_R2_ACCESS_KEY_ID || !CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
     throw new Error(
@@ -365,10 +369,11 @@ export function getR2PublicUrl(key: string, bucket?: string): string {
 
     // Public access buckets
     if (bucketName === "pathology-bites-images") {
-      const publicUrl =
-        process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL ||
-        process.env.CLOUDFLARE_R2_PUBLIC_URL ||
-        R2_IMAGES_PUBLIC_URL;
+      const publicUrl = (
+        process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL?.trim() ||
+        process.env.CLOUDFLARE_R2_PUBLIC_URL?.trim() ||
+        R2_IMAGES_PUBLIC_URL
+      ).replace(/\/+$/, "");
       return `${publicUrl}/${key}`;
     }
 

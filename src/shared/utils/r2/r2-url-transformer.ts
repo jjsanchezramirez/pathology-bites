@@ -9,7 +9,7 @@ import { R2_IMAGES_PUBLIC_URL, isR2PublicUrl } from "@/shared/config/r2-public-u
 // Get R2 public URL from environment
 // Use server-side env var on server, client-side env var on client
 const getR2PublicUrl = () => {
-  return process.env.CLOUDFLARE_R2_PUBLIC_URL || R2_IMAGES_PUBLIC_URL;
+  return (process.env.CLOUDFLARE_R2_PUBLIC_URL?.trim() || R2_IMAGES_PUBLIC_URL).replace(/\/+$/, "");
 };
 
 const R2_PUBLIC_URL = getR2PublicUrl();

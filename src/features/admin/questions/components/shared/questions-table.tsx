@@ -25,6 +25,8 @@ import { VersionHistoryDialog } from "../versioning/version-history-dialog";
 import { QuestionPreviewDialog } from "../dialogs/question-preview-dialog";
 import { ChangeCategoryDialog } from "../dialogs/change-category-dialog";
 import { ChangeSetDialog } from "../dialogs/change-set-dialog";
+import { BulkSubmitDialog } from "../dialogs/bulk-submit-dialog";
+import { BulkRejectDialog } from "../dialogs/bulk-reject-dialog";
 import { createClient } from "@/shared/services/client";
 import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
 import { apiClient } from "@/shared/utils/api/api-client";
@@ -65,6 +67,10 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  // Bulk submit needs a reviewer and bulk reject needs feedback (both are database
+  // constraints), so those two actions collect input in a dialog first.
+  const [showBulkSubmitDialog, setShowBulkSubmitDialog] = useState(false);
+  const [showBulkRejectDialog, setShowBulkRejectDialog] = useState(false);
 
   // Get user role to determine admin access
   const { role } = useUserRole();
@@ -309,7 +315,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
 
   // Bulk operations
   const handleBulkOperation = useCallback(
-    async (action: string) => {
+    async (action: string, extra?: { reviewer_id?: string; feedback?: string }) => {
       if (selectedQuestions.length === 0) {
         toast.error("Please select questions first");
         return;
@@ -320,11 +326,20 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
         setShowBulkDeleteConfirm(true);
         return;
       }
+      if (action === "submit_for_review" && !extra?.reviewer_id) {
+        setShowBulkSubmitDialog(true);
+        return;
+      }
+      if (action === "reject" && !extra?.feedback) {
+        setShowBulkRejectDialog(true);
+        return;
+      }
 
       try {
         const response = await apiClient.post("/api/admin/questions/bulk", {
           action,
           questionIds: selectedQuestions,
+          ...extra,
         });
 
         const data = await response.json();
@@ -562,6 +577,22 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
         />
 
         {/* Delete Confirmation Dialog */}
+        <BulkSubmitDialog
+          open={showBulkSubmitDialog}
+          onOpenChange={setShowBulkSubmitDialog}
+          questionCount={selectedQuestions.length}
+          onConfirm={(reviewerId) =>
+            handleBulkOperation("submit_for_review", { reviewer_id: reviewerId })
+          }
+        />
+
+        <BulkRejectDialog
+          open={showBulkRejectDialog}
+          onOpenChange={setShowBulkRejectDialog}
+          questionCount={selectedQuestions.length}
+          onConfirm={(feedback) => handleBulkOperation("reject", { feedback })}
+        />
+
         <DeleteQuestionDialog
           open={showDeleteDialog}
           onOpenChange={setShowDeleteDialog}

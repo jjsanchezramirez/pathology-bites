@@ -50,7 +50,7 @@ import { R2_DATA_PUBLIC_URL } from "@/shared/config/r2-public-urls";
 export async function GET() {
   // Source object is `.json.br` w/ Content-Encoding: br — Node fetch (undici)
   // auto-decompresses, we still call .json() on the response normally.
-  const base = process.env.CLOUDFLARE_R2_DATA_PUBLIC_URL || R2_DATA_PUBLIC_URL
+  const base = (process.env.CLOUDFLARE_R2_DATA_PUBLIC_URL?.trim() || R2_DATA_PUBLIC_URL).replace(/\/+$/, "")
   const url = `${base}/cell-quiz/cell-quiz-images.json.br?v=1`
   try {
     const res = await fetch(url, { next: { revalidate: 86400 } })

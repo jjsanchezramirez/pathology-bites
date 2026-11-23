@@ -106,7 +106,9 @@ export async function POST(request: NextRequest) {
     // Start transaction by moving all questions from source sets to target set
     const { error: moveError, count: movedCount } = await supabase
       .from("questions")
-      .update({ question_set_id: targetSetId })
+      // count: "exact" — without it `count` is always null and the response
+      // reported movedQuestions: 0 for every merge.
+      .update({ question_set_id: targetSetId }, { count: "exact" })
       .in("question_set_id", sourceSetIds);
 
     if (moveError) {
@@ -128,7 +130,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       mergedCount: sourceSetIds.length,
-      movedQuestions: movedCount || 0,
+      movedQuestions: movedCount ?? 0,
       targetSet: targetSet.name,
     });
   } catch (error) {

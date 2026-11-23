@@ -6,11 +6,34 @@ import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
 
-const bulkQuestionsSchema = z.object({
-  action: z.enum(["submit_for_review", "approve", "reject", "delete", "export"]),
-  // Bulk operations limited to 100 questions at a time to prevent excessive resource usage
-  questionIds: z.array(z.string()).min(1).max(100),
-});
+const bulkQuestionsSchema = z
+  .object({
+    action: z.enum(["submit_for_review", "approve", "reject", "delete", "export"]),
+    // Bulk operations limited to 100 questions at a time to prevent excessive resource usage
+    questionIds: z.array(z.string()).min(1).max(100),
+    // Required for submit_for_review: pending_review rows must name a reviewer
+    // (check_pending_has_reviewer), exactly as the single submit route requires.
+    reviewer_id: z.string().uuid().optional(),
+    // Required for reject: rejected rows must carry feedback (check_rejected_has_feedback).
+    feedback: z.string().trim().min(1).max(5000).optional(),
+  })
+  .superRefine((body, ctx) => {
+    if (body.action === "submit_for_review" && !body.reviewer_id) {
+      ctx.addIssue({ code: "custom", path: ["reviewer_id"], message: "Select a reviewer" });
+    }
+    if (body.action === "reject" && !body.feedback) {
+      ctx.addIssue({ code: "custom", path: ["feedback"], message: "Feedback is required" });
+    }
+  });
+
+// For the success message ("submit_for_reviewed" read badly).
+const ACTION_PAST_TENSE: Record<z.infer<typeof bulkQuestionsSchema>["action"], string> = {
+  submit_for_review: "submitted for review",
+  approve: "approved",
+  reject: "rejected",
+  delete: "deleted",
+  export: "exported",
+};
 
 /**
  * @swagger
@@ -43,6 +66,13 @@ const bulkQuestionsSchema = z.object({
  *                   format: uuid
  *                 maxItems: 100
  *                 description: Array of question IDs to operate on (maximum 100)
+ *               reviewer_id:
+ *                 type: string
+ *                 format: uuid
+ *                 description: Required for submit_for_review. An admin or reviewer to assign.
+ *               feedback:
+ *                 type: string
+ *                 description: Required for reject. Stored as reviewer feedback on each question.
  *     responses:
  *       200:
  *         description: Bulk operation completed successfully
@@ -85,7 +115,7 @@ export async function POST(request: NextRequest) {
 
     const body = await parseBody(request, bulkQuestionsSchema);
     if (body instanceof NextResponse) return body;
-    const { action, questionIds } = body;
+    const { action, questionIds, reviewer_id, feedback } = body;
 
     const supabase = createServiceRoleClient();
 
@@ -140,11 +170,27 @@ export async function POST(request: NextRequest) {
           );
         }
 
+        // Same reviewer check as the single submit route.
+        const { data: reviewer } = await supabase
+          .from("users")
+          .select("id, role")
+          .eq("id", reviewer_id!)
+          .maybeSingle();
+        if (!reviewer || (reviewer.role !== "admin" && reviewer.role !== "reviewer")) {
+          return NextResponse.json(
+            { error: "Selected user is not a reviewer or admin" },
+            { status: 400 }
+          );
+        }
+
         result = await supabase
           .from("questions")
           .update({
             status: "pending_review",
-            submitted_for_review_at: new Date().toISOString(),
+            reviewer_id: reviewer_id!,
+            reviewer_feedback: null, // clear feedback from an earlier rejection
+            updated_at: new Date().toISOString(),
+            updated_by: userId,
           })
           .in(
             "id",
@@ -204,6 +250,7 @@ export async function POST(request: NextRequest) {
           .from("questions")
           .update({
             status: "rejected",
+            reviewer_feedback: feedback!,
             updated_at: new Date().toISOString(),
             updated_by: userId,
           })
@@ -211,6 +258,19 @@ export async function POST(request: NextRequest) {
             "id",
             rejectableQuestions.map((q) => q.id)
           );
+
+        if (!result.error) {
+          // One review record per question, as the single reject route writes.
+          const { error: reviewError } = await supabase.from("question_reviews").insert(
+            rejectableQuestions.map((q) => ({
+              question_id: q.id,
+              reviewer_id: userId,
+              action: "rejected",
+              feedback: feedback!,
+            }))
+          );
+          if (reviewError) log.error("Error recording bulk rejection reviews:", reviewError);
+        }
 
         affectedCount = rejectableQuestions.length;
         break;
@@ -310,7 +370,7 @@ export async function POST(request: NextRequest) {
       success: true,
       action,
       affectedCount,
-      message: `Successfully ${action.replace("_", " ")}ed ${affectedCount} question(s)`,
+      message: `Successfully ${ACTION_PAST_TENSE[action]} ${affectedCount} question(s)`,
     });
   } catch (error) {
     log.error("Bulk questions operation error:", error);
