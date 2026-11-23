@@ -26,6 +26,12 @@ vi.mock("@/shared/services/server", () => ({
   createClient: vi.fn(),
 }));
 
+// submit-for-review reads the reviewer through the service-role client (users RLS
+// hides other users from non-admins); it shares the same queued mock.
+vi.mock("@/shared/services/service-role-client", () => ({
+  createServiceRoleClient: vi.fn(),
+}));
+
 vi.mock("@/shared/utils/api/revalidation", () => ({
   revalidateQuestions: vi.fn(),
 }));
@@ -52,6 +58,7 @@ vi.mock("@/shared/services/notification-triggers", () => ({
 }));
 
 import { createClient } from "@/shared/services/server";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { POST as approve } from "@/app/api/admin/questions/[id]/approve/route";
 import { POST as reject } from "@/app/api/admin/questions/[id]/reject/route";
 import { POST as submitForReview } from "@/app/api/admin/questions/[id]/submit-for-review/route";
@@ -153,6 +160,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mock = createSupabaseMock();
   (createClient as any).mockResolvedValue(mock.client);
+  (createServiceRoleClient as any).mockReturnValue(mock.client);
 });
 
 // ---------------------------------------------------------------------------
