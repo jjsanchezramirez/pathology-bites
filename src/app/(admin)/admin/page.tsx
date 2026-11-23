@@ -150,8 +150,9 @@ export default function AdminDashboardPage() {
             <RecentActivityCard activities={activities} />
             <QuickActionsCard actions={quickActions} />
           </ContentGrid>
-          {/* System Status - Only show for admin mode */}
-          {adminMode === "admin" && <SystemStatus />}
+          {/* System Status - admins only: /api/admin/system-status returns active-user and
+              storage figures and 403s everyone else (contributors share admin mode) */}
+          {adminMode === "admin" && isAdmin && <SystemStatus />}
         </>
       )}
     </PageContainer>
