@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireContentRole, requireUser } from "@/shared/utils/api/api-guard";
+import { requireStaff, requireUser } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { formatVersion } from "@/shared/utils/version";
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     // Bumps the version of a published question with the service-role client, so it
     // needs a privileged role (it had no check at all before).
-    const auth = requireContentRole(request);
+    const auth = requireStaff(request);
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
     const { id: questionId } = await params;

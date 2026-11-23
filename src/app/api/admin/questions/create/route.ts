@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { requirePermission } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
@@ -48,7 +48,7 @@ type QuestionImageInput = z.infer<typeof questionImageInputSchema>;
  * /api/admin/questions/create:
  *   post:
  *     summary: Create a new question
- *     description: Create a new draft question with options, tags, and images. Requires admin, creator, or reviewer role.
+ *     description: Create a new draft question with options, tags, and images. Requires the create_questions permission (admins hold every permission).
  *     tags:
  *       - Admin - Questions
  *     security:
@@ -159,14 +159,14 @@ type QuestionImageInput = z.infer<typeof questionImageInputSchema>;
  *       401:
  *         description: Unauthorized - missing authentication
  *       403:
- *         description: Forbidden - requires admin, creator, or reviewer role
+ *         description: Forbidden - requires create_questions permission
  *       500:
  *         description: Internal server error
  */
 export async function POST(request: NextRequest) {
   try {
-    // Auth check - require admin, creator, or reviewer role
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requirePermission(request, "create_questions");
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
 

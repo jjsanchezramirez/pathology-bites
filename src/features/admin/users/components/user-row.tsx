@@ -4,6 +4,7 @@ import { memo } from "react";
 import { TableCell, TableRow } from "@/shared/components/ui/table";
 import { Button } from "@/shared/components/ui/button";
 import { RoleBadge } from "@/shared/components/ui/role-badge";
+import { PermissionBadge } from "@/shared/components/ui/permission-badge";
 import { UserStatusBadge } from "@/shared/components/ui/user-status-badge";
 import {
   DropdownMenu,
@@ -13,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
-import { MoreVertical, Shield, UserCheck, GraduationCap, Trash2 } from "lucide-react";
+import { MoreVertical, Shield, KeyRound, UserCheck, GraduationCap, Trash2 } from "lucide-react";
 import { format, formatDistanceToNowStrict } from "date-fns";
 import { type User, userTypeConfig, getUserDisplayName } from "./users-table-utils";
 
@@ -25,6 +26,7 @@ interface UserRowProps {
   user: User;
   isAdmin: boolean;
   onRoleChange: (user: User) => void;
+  onPermissionsChange: (user: User) => void;
   onStatusChange: (user: User) => void;
   onTypeChange: (user: User) => void;
   onDelete: (user: User) => void;
@@ -37,6 +39,7 @@ export const UserRow = memo(function UserRow({
   user,
   isAdmin,
   onRoleChange,
+  onPermissionsChange,
   onStatusChange,
   onTypeChange,
   onDelete,
@@ -67,7 +70,13 @@ export const UserRow = memo(function UserRow({
         </div>
       </TableCell>
       <TableCell>
-        <RoleBadge role={user.role} className="text-[10px] px-1.5 py-0" />
+        <div className="flex flex-wrap gap-1">
+          <RoleBadge role={user.role} className="text-[10px] px-1.5 py-0" />
+          {user.role !== "admin" &&
+            (user.permissions ?? []).map((p) => (
+              <PermissionBadge key={p} permission={p} className="text-[10px] px-1.5 py-0" />
+            ))}
+        </div>
       </TableCell>
       <TableCell className="hidden md:table-cell">
         <span className="text-sm">
@@ -101,6 +110,13 @@ export const UserRow = memo(function UserRow({
               <DropdownMenuItem onClick={() => onRoleChange(user)} disabled={!canModifyUser(user)}>
                 <Shield className="h-4 w-4 mr-2" />
                 Change Role
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onPermissionsChange(user)}
+                disabled={!canModifyUser(user) || user.role === "admin"}
+              >
+                <KeyRound className="h-4 w-4 mr-2" />
+                Manage Permissions
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onStatusChange(user)}

@@ -76,7 +76,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: FileQuestion,
       trend: "neutral",
       permission: "questions.create",
-      showToRoles: ["admin", "creator"],
     },
     {
       title: "Pending Reviews",
@@ -85,7 +84,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: Clock,
       trend: stats.pendingQuestions > 0 ? "warning" : "positive",
       permission: "questions.review",
-      showToRoles: ["admin", "reviewer"],
     },
     {
       title: "Rejected Questions",
@@ -94,7 +92,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: AlertCircle,
       trend: "critical", // Always critical styling for rejected questions
       permission: "questions.create",
-      showToRoles: ["admin", "creator"],
     },
     {
       title: "Flagged Questions",
@@ -108,23 +105,13 @@ export function StatsCards({ stats }: StatsCardsProps) {
 
   // Filter cards based on selected admin mode and user permissions
   const cards = allCards.filter((card) => {
-    // Use adminMode to determine what to show, but still check actual permissions
     const viewingAsAdmin = adminMode === "admin";
-    const _viewingAsCreator = adminMode === "creator";
-    const _viewingAsReviewer = adminMode === "reviewer";
-    const _viewingAsUser = adminMode === "user";
 
     // Admin-only cards should only show when viewing as admin AND user has admin permissions
     if (card.adminOnly && (!viewingAsAdmin || !isAdmin)) return false;
 
     // Still check actual permissions for security
     if (card.permission && !canAccess(card.permission)) return false;
-
-    // Check role-specific visibility based on adminMode
-    if (card.showToRoles) {
-      const currentViewRole = adminMode === "user" ? "user" : adminMode;
-      if (!card.showToRoles.includes(currentViewRole)) return false;
-    }
 
     return true;
   });

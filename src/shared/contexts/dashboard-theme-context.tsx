@@ -24,20 +24,14 @@ import { log } from "@/shared/utils/logging";
 
 /**
  * Derive admin mode from the current URL pathname.
- * /admin* → user's actual admin-type role (admin/creator/reviewer) if they have one
+ * /admin* → "admin" for staff (admins and anyone holding a permission)
  * everything else → "user"
  * Manual URL nav (typing /admin or /dashboard) should switch the theme even
  * without clicking the mode toggle — this is the source of truth, not the cookie.
  */
-function deriveAdminModeFromPathname(
-  pathname: string | null,
-  role: "admin" | "creator" | "reviewer" | "user" | null
-): AdminMode {
+function deriveAdminModeFromPathname(pathname: string | null, isStaff: boolean): AdminMode {
   const isAdminPath = !!pathname && pathname.startsWith("/admin");
-  if (isAdminPath && role && (role === "admin" || role === "creator" || role === "reviewer")) {
-    return role;
-  }
-  return "user";
+  return isAdminPath && isStaff ? "admin" : "user";
 }
 
 interface DashboardThemeContextType {
@@ -59,7 +53,7 @@ interface DashboardThemeProviderProps {
 }
 
 export function DashboardThemeProvider({ children, isGuest = false }: DashboardThemeProviderProps) {
-  const { isAdmin, role } = useUserRole();
+  const { isStaff } = useUserRole();
   const { mutate } = useSWRConfig();
   const pathname = usePathname();
 
@@ -67,14 +61,12 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
   // pathname is now the source of truth. Manual URL nav between /admin and
   // /dashboard now flips the theme correctly without needing the button.
   const derivedMode = useMemo(
-    () => deriveAdminModeFromPathname(pathname, role ?? null),
-    [pathname, role]
+    () => deriveAdminModeFromPathname(pathname, isStaff),
+    [pathname, isStaff]
   );
 
   const [currentTheme, setCurrentTheme] = useState<DashboardTheme>(getDefaultTheme());
-  const [adminMode, setAdminModeState] = useState<AdminMode>(() =>
-    getAdminModeFromCookie(isAdmin, role)
-  );
+  const [adminMode, setAdminModeState] = useState<AdminMode>(() => getAdminModeFromCookie(isStaff));
   const [isLoading, setIsLoading] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -95,7 +87,7 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
   // Get available themes based on admin mode
   const getAvailableThemes = (mode: AdminMode): DashboardTheme[] => {
     if (isAdminTypeMode(mode)) {
-      // Admin/Creator/Reviewer modes: only default theme
+      // Admin area: only default theme
       return dashboardThemes.filter((theme) => theme.id === "default");
     } else {
       // User mode: notebook and tangerine themes
@@ -160,7 +152,7 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
       // Mode is derived from URL pathname (see derivedMode above). Cookie sync
       // happens in the dedicated effect.
       const defaultMode = derivedMode;
-      log.debug("[DashboardTheme] Admin mode:", defaultMode, "isAdmin:", isAdmin, "role:", role);
+      log.debug("[DashboardTheme] Admin mode:", defaultMode, "isStaff:", isStaff);
 
       // Load theme based on admin mode from SWR cache
       const availableThemes = getAvailableThemes(defaultMode);
@@ -198,7 +190,7 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
       setCurrentTheme(getDefaultTheme());
       setIsLoading(false);
     }
-  }, [settings, isAdmin, role, derivedMode]);
+  }, [settings, isStaff, derivedMode]);
 
   // (Removed: 100ms cookie polling. The derivedMode useMemo above reacts to
   // pathname/role changes directly, and the sync effect updates state +

@@ -13,14 +13,14 @@ const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 interface AccessDeniedProps {
   title?: string;
   description?: string;
-  requiredRole?: string;
+  required?: string;
   backHref?: string;
 }
 
 export function AccessDenied({
   title = "Access Denied",
   description = "You don't have permission to access this resource. If you believe you should have access, please contact an administrator on Discord.",
-  requiredRole,
+  required,
   backHref = "/dashboard",
 }: AccessDeniedProps) {
   const { animationData } = useLottieAnimation("access_denied");
@@ -42,10 +42,9 @@ export function AccessDenied({
         {/* Title */}
         <div className="space-y-3">
           <h1 className="text-4xl font-bold tracking-tight">{title}</h1>
-          {requiredRole && (
+          {required && (
             <p className="text-sm font-medium text-muted-foreground">
-              Required Role:{" "}
-              <span className="font-semibold capitalize text-foreground">{requiredRole}</span>
+              Required: <span className="font-semibold text-foreground">{required}</span>
             </p>
           )}
           <p className="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
@@ -98,24 +97,24 @@ export const AccessDeniedPresets = {
     title: "Admin Access Required",
     description:
       "This area is restricted to administrators only. If you believe you should have access, please contact an administrator on Discord.",
-    requiredRole: "admin",
+    required: "Admin",
   },
-  creatorOnly: {
-    title: "Creator Access Required",
+  createQuestions: {
+    title: "Question Writing Access Required",
     description:
-      "You need creator privileges to access this feature. If you'd like to become a content creator, reach out to us on Discord.",
-    requiredRole: "creator",
+      "You need the Create questions permission to use this feature. If you'd like to write questions, reach out to us on Discord.",
+    required: "Create questions permission",
   },
-  reviewerOnly: {
+  reviewQuestions: {
     title: "Reviewer Access Required",
     description:
       "This page is only accessible to question reviewers. If you're interested in reviewing questions, please contact us on Discord.",
-    requiredRole: "reviewer",
+    required: "Review questions permission",
   },
-  creatorOrAbove: {
-    title: "Creator Privileges Required",
+  staff: {
+    title: "Contributor Access Required",
     description:
-      "You need at least creator-level access to use this feature. Join our Discord to learn more about contributor roles.",
-    requiredRole: "creator or above",
+      "You need a contributor permission to use this feature. Join our Discord to learn more about contributing.",
+    required: "Any contributor permission",
   },
 };

@@ -35,7 +35,7 @@ export const DEFAULT_NOTIFICATION_SETTINGS = {
  *
  * Field explanations:
  * - text_zoom: Zoom level multiplier (0.8 to 1.5)
- * - dashboard_theme_admin: Dashboard theme for admin/creator/reviewer mode (always 'default')
+ * - dashboard_theme_admin: Dashboard theme for the admin area (always 'default')
  * - dashboard_theme_user: Dashboard theme for student mode (default 'tangerine', can be 'notebook' or 'tangerine')
  * - theme: Color mode preference ('light', 'dark', or 'system') - synced with next-themes
  * - welcome_message_seen: Whether user has seen the welcome message

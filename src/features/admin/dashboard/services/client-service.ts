@@ -2,6 +2,7 @@
 import { createClient } from "@/shared/services/client";
 import { DashboardStats, RecentActivity, QuickAction } from "./service";
 import { log } from "@/shared/utils/logging";
+import { hasPermission, type Permission } from "@/shared/utils/auth/permissions";
 
 class ClientDashboardService {
   private supabase = createClient();
@@ -116,36 +117,35 @@ class ClientDashboardService {
     };
   }
 
-  async getRecentActivity(userRole?: string, userId?: string): Promise<RecentActivity[]> {
+  async getRecentActivity(
+    userRole?: string | null,
+    permissions: readonly Permission[] = [],
+    userId?: string
+  ): Promise<RecentActivity[]> {
     try {
       const activities: RecentActivity[] = [];
 
       log.debug(
         "[DashboardService] getRecentActivity called with role:",
         userRole,
+        "permissions:",
+        permissions,
         "userId:",
         userId
       );
 
-      // Role-based activity filtering
       if (userRole === "admin") {
         // Admins see all activities
-        log.debug("[DashboardService] Fetching ADMIN activities (questions, users, inquiries)");
         await this.getAdminActivities(activities);
-      } else if (userRole === "creator") {
-        // Creators see their own questions and status changes
-        log.debug("[DashboardService] Fetching CREATOR activities");
-        await this.getCreatorActivities(activities, userId);
-      } else if (userRole === "reviewer") {
-        // Reviewers see pending reviews and their review activity
-        log.debug("[DashboardService] Fetching REVIEWER activities");
-        await this.getReviewerActivities(activities, userId);
       } else {
-        // Default: get general recent questions
-        log.debug(
-          "[DashboardService] Fetching GENERAL activities (questions only - NO users/inquiries)"
-        );
-        await this.getGeneralActivities(activities);
+        const writes = hasPermission(userRole, permissions, "create_questions");
+        const reviews = hasPermission(userRole, permissions, "review_questions");
+        // Authors see their own questions and status changes
+        if (writes) await this.getCreatorActivities(activities, userId);
+        // Reviewers see pending reviews and their review activity
+        if (reviews) await this.getReviewerActivities(activities, userId);
+        // Neither: general recent questions (no users/inquiries)
+        if (!writes && !reviews) await this.getGeneralActivities(activities);
       }
 
       // Sort all activities by timestamp and return top 10
@@ -167,16 +167,21 @@ class ClientDashboardService {
     }
   }
 
-  getQuickActions(stats: DashboardStats, userRole?: string): QuickAction[] {
-    if (userRole === "admin") {
-      return this.getAdminQuickActions(stats);
-    } else if (userRole === "creator") {
-      return this.getCreatorQuickActions(stats);
-    } else if (userRole === "reviewer") {
-      return this.getReviewerQuickActions(stats);
-    } else {
-      return this.getDefaultQuickActions(stats);
-    }
+  getQuickActions(
+    stats: DashboardStats,
+    userRole?: string | null,
+    permissions: readonly Permission[] = []
+  ): QuickAction[] {
+    if (userRole === "admin") return this.getAdminQuickActions(stats);
+    const actions = [
+      ...(hasPermission(userRole, permissions, "create_questions")
+        ? this.getCreatorQuickActions(stats)
+        : []),
+      ...(hasPermission(userRole, permissions, "review_questions")
+        ? this.getReviewerQuickActions(stats)
+        : []),
+    ];
+    return actions.length > 0 ? actions : this.getDefaultQuickActions(stats);
   }
 
   private getAdminQuickActions(stats: DashboardStats): QuickAction[] {

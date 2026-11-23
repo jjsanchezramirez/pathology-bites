@@ -3,11 +3,11 @@
 // SECURITY DEFINER with no `authenticated` EXECUTE grant, and its body
 // previously rejected service-role callers via `auth.uid() IS NULL` — that
 // internal auth check was dropped in a migration since this route gates access
-// to admin/creator/reviewer roles before calling the RPC.
+// to admins before calling the RPC.
 
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
-import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 export const dynamic = "force-dynamic";
@@ -19,8 +19,7 @@ export const dynamic = "force-dynamic";
  *     summary: Get aggregate user statistics
  *     description: >
  *       Returns aggregate user statistics by proxying the SECURITY DEFINER `get_user_statistics`
- *       RPC through a service-role client. Gated via the middleware-injected `x-user-role` header
- *       to admin, creator, or reviewer roles.
+ *       RPC through a service-role client. Admins only (middleware-injected `x-user-role`).
  *     tags:
  *       - Admin - Users
  *     security:
@@ -38,14 +37,14 @@ export const dynamic = "force-dynamic";
  *       401:
  *         description: Missing user identity (no x-user-id header).
  *       403:
- *         description: Caller lacks an allowed role (admin/creator/reviewer).
+ *         description: Caller is not an admin.
  *       404:
  *         description: No user statistics found.
  *       500:
  *         description: RPC failure fetching user statistics.
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  const auth = requireContentRole(request);
+  const auth = requireAdmin(request);
   if (auth instanceof NextResponse) return auth;
 
   const adminSupabase = createServiceRoleClient();

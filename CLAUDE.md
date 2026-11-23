@@ -83,7 +83,7 @@ src/
 
 - Feature code → `src/features/{domain}/`. Shared code → `src/shared/`.
 - Route groups map to layouts: (admin) uses UnifiedLayoutClient w/ admin nav, (dashboard) w/ user nav.
-- Auth: Supabase JWT. Middleware checks roles (admin/creator/reviewer/user). Public APIs under `api/public/*`, `api/auth/*`, `api/content/*`.
+- Auth: Supabase JWT. Two roles (`admin`, `user`) plus grantable permissions (`create_questions`, `review_questions`; `src/shared/utils/auth/permissions.ts`), both read only from `app_metadata` (a trigger mirrors `public.users.role` / `.permissions`). Admins hold every permission. Route guards: `requireAdmin` / `requirePermission` / `requireStaff`; RLS twin is `internal.has_permission()`. Public APIs under `api/public/*`, `api/auth/*`, `api/content/*`.
 - Imports: use `@/` alias (maps to `src/`).
 - Toasts: import from `@/shared/utils/toast`, never direct from `sonner` (ESLint enforced).
 - Components: shadcn/ui in `src/shared/components/ui/`. Prefer existing over new.

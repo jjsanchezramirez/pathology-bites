@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import { hasPermission, parsePermissions } from "@/shared/utils/auth/permissions";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
@@ -70,7 +71,7 @@ const ACTION_PAST_TENSE: Record<z.infer<typeof bulkQuestionsSchema>["action"], s
  *               reviewer_id:
  *                 type: string
  *                 format: uuid
- *                 description: Required for submit_for_review. An admin or reviewer to assign.
+ *                 description: Required for submit_for_review. An admin or a holder of review_questions to assign.
  *               feedback:
  *                 type: string
  *                 description: Required for reject. Stored as reviewer feedback on each question.
@@ -120,14 +121,11 @@ export async function POST(request: NextRequest) {
 
     const supabase = createServiceRoleClient();
 
-    // Get user role for permission checks
-    const { data: userProfile } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
-
-    const userRole = userProfile?.role || "user";
+    const userRole = auth.role ?? "user";
+    // Authors may act on their own drafts only while they hold create_questions.
+    const ownsDraft = (q: { status: string; created_by: string }) =>
+      q.status === "draft" &&
+      (userRole === "admin" || (q.created_by === userId && auth.can("create_questions")));
 
     // Fetch questions to validate permissions
     const { data: questions, error: fetchError } = await supabase
@@ -163,10 +161,7 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case "submit_for_review":
         // Only allow submitting own draft questions or admin can submit any draft
-        const draftQuestions =
-          questions?.filter(
-            (q) => q.status === "draft" && (q.created_by === userId || userRole === "admin")
-          ) || [];
+        const draftQuestions = questions?.filter(ownsDraft) || [];
 
         if (draftQuestions.length === 0) {
           return NextResponse.json(
@@ -178,10 +173,14 @@ export async function POST(request: NextRequest) {
         // Same reviewer check as the single submit route.
         const { data: reviewer } = await supabase
           .from("users")
-          .select("id, role")
+          .select("id, role, permissions")
           .eq("id", reviewer_id!)
           .maybeSingle();
-        if (!reviewer || (reviewer.role !== "admin" && reviewer.role !== "reviewer")) {
+        if (
+          !reviewer ||
+          reviewer.id === userId ||
+          !hasPermission(reviewer.role, parsePermissions(reviewer.permissions), "review_questions")
+        ) {
           return NextResponse.json(
             { error: "Selected user is not a reviewer or admin" },
             { status: 400 }
@@ -298,10 +297,7 @@ export async function POST(request: NextRequest) {
 
       case "delete":
         // Only allow deleting own draft questions or admin can delete any draft
-        const deletableQuestions =
-          questions?.filter(
-            (q) => q.status === "draft" && (q.created_by === userId || userRole === "admin")
-          ) || [];
+        const deletableQuestions = questions?.filter(ownsDraft) || [];
 
         if (deletableQuestions.length === 0) {
           return NextResponse.json(

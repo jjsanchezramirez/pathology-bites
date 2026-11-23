@@ -2,8 +2,9 @@
 //
 // Route-handler auth guards over the middleware-injected identity headers.
 // Middleware (src/middleware.ts) validates the Supabase session and sets
-// `x-user-id` / `x-user-role` on every request that reaches a private API
-// route — these guards only read those headers, they never hit the DB.
+// `x-user-id` / `x-user-role` / `x-user-permissions` on every request that
+// reaches a private API route — these guards only read those headers, they
+// never hit the DB.
 //
 // On failure the guard returns the 401/403 NextResponse itself; narrow with
 // `instanceof` (this repo compiles with `strict: false`, where discriminated
@@ -11,15 +12,25 @@
 //
 //   const auth = requireAdmin(request);
 //   if (auth instanceof NextResponse) return auth;
-//   // auth.userId / auth.role are ready to use
+//   // auth.userId / auth.role / auth.permissions are ready to use
 
 import { NextResponse } from "next/server";
 import { type UserRole, isValidRole } from "@/shared/utils/auth/auth-helpers";
+import {
+  type Permission,
+  hasPermission,
+  isStaff,
+  permissionsFromHeader,
+} from "@/shared/utils/auth/permissions";
 
 export interface AuthContext {
   userId: string;
   /** Validated role, or null when the header is missing/unrecognized. */
   role: UserRole | null;
+  /** Granted permissions (admins implicitly hold all; use `can`). */
+  permissions: Permission[];
+  /** Whether this caller holds `permission` (true for admins). */
+  can: (permission: Permission) => boolean;
 }
 
 export type GuardResult = AuthContext | NextResponse;
@@ -35,33 +46,51 @@ export function requireUser(request: Request): GuardResult {
   }
 
   const rawRole = request.headers.get("x-user-role");
+  const role = rawRole && isValidRole(rawRole) ? rawRole : null;
+  const permissions = permissionsFromHeader(request.headers.get("x-user-permissions"));
   return {
     userId,
-    role: rawRole && isValidRole(rawRole) ? rawRole : null,
+    role,
+    permissions,
+    can: (permission: Permission) => hasPermission(role, permissions, permission),
   };
 }
 
-/**
- * Require an authenticated user with one of the given roles.
- * 401 when unauthenticated, 403 when authenticated but the role doesn't match
- * (same semantics the admin routes hand-rolled before this helper existed).
- */
-export function requireRole(request: Request, roles: UserRole[]): GuardResult {
+/** 401 when unauthenticated, 403 unless the caller is an admin. */
+export function requireAdmin(request: Request): GuardResult {
   const auth = requireUser(request);
   if (auth instanceof NextResponse) return auth;
-
-  if (!auth.role || !roles.includes(auth.role)) {
-    const label = roles.map((r) => r.charAt(0).toUpperCase() + r.slice(1)).join(" or ");
-    return NextResponse.json({ error: `Forbidden - ${label} access required` }, { status: 403 });
+  if (auth.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 });
   }
-
   return auth;
 }
 
-export function requireAdmin(request: Request): GuardResult {
-  return requireRole(request, ["admin"]);
+/**
+ * 401 when unauthenticated, 403 unless the caller holds at least one of the
+ * given permissions (admins hold all of them).
+ */
+export function requirePermission(
+  request: Request,
+  ...permissions: [Permission, ...Permission[]]
+): GuardResult {
+  const auth = requireUser(request);
+  if (auth instanceof NextResponse) return auth;
+  if (!permissions.some((p) => auth.can(p))) {
+    return NextResponse.json(
+      { error: `Forbidden - requires ${permissions.join(" or ")} permission` },
+      { status: 403 }
+    );
+  }
+  return auth;
 }
 
-export function requireContentRole(request: Request): GuardResult {
-  return requireRole(request, ["admin", "creator", "reviewer"]);
+/** 401 when unauthenticated, 403 unless the caller is an admin or holds any permission. */
+export function requireStaff(request: Request): GuardResult {
+  const auth = requireUser(request);
+  if (auth instanceof NextResponse) return auth;
+  if (!isStaff(auth.role, auth.permissions)) {
+    return NextResponse.json({ error: "Forbidden - staff access required" }, { status: 403 });
+  }
+  return auth;
 }

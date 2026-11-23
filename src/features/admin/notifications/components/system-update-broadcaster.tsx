@@ -104,7 +104,7 @@ export function SystemUpdateBroadcaster({ onSent }: { onSent?: () => void } = {}
   const audienceOptions = [
     { value: "all", label: "Everyone", description: "Every active account" },
     { value: "user", label: "Learners", description: "Accounts with the user role" },
-    { value: "staff", label: "Staff", description: "Admins, creators and reviewers" },
+    { value: "staff", label: "Staff", description: "Admins and users with any permission" },
   ];
 
   return (

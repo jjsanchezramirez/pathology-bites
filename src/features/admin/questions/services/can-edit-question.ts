@@ -2,9 +2,10 @@
 //
 // Pure permission decision for PATCH /api/admin/questions/[id].
 //
-// The matrix (status × role, ownership/assignment aware):
+// The matrix (status × permission, ownership/assignment aware). "writer" holds
+// create_questions, "reviewer" holds review_questions; admins hold both.
 //
-// | Question status      | admin | creator (own)  | creator (other's)       | reviewer (assigned)   | reviewer (other)      | user/null |
+// | Question status      | admin | writer (own)   | writer (other's)        | reviewer (assigned)   | reviewer (other)      | neither   |
 // |----------------------|-------|----------------|-------------------------|-----------------------|-----------------------|-----------|
 // | draft / rejected / * | allow | allow          | deny                    | deny                  | deny                  | deny      |
 // | pending_review       | allow | allow          | deny                    | allow                 | deny                  | deny      |
@@ -12,13 +13,14 @@
 // | published, non-patch | allow | allow          | allow (role-only check) | deny                  | deny                  | deny      |
 //
 // Notes preserved from the original inline logic:
-// - The published non-patch branch only checks the role (admin/creator), not
-//   ownership. Creators' minor/major edits are forced through review later by
+// - The published non-patch branch only checks the permission, not
+//   ownership. Writers' minor/major edits are forced through review later by
 //   the status-transition rules, not here.
 // - Statuses other than published/pending_review (draft, rejected, flagged,
 //   archived) all fall into the "own draft/rejected" branch.
 
 import type { UserRole } from "@/shared/utils/auth/auth-helpers";
+import { hasPermission, type Permission } from "@/shared/utils/auth/permissions";
 
 export interface EditableQuestionRow {
   status: string;
@@ -39,15 +41,17 @@ export interface EditPermissionResult {
 
 export function canEditQuestion(input: {
   role: UserRole | null;
+  permissions: readonly Permission[];
   userId: string;
   question: EditableQuestionRow;
   isPatchEdit: boolean;
 }): EditPermissionResult {
-  const { role, userId, question, isPatchEdit } = input;
+  const { role, permissions, userId, question, isPatchEdit } = input;
 
   const isAdmin = role === "admin";
-  const isCreator = role === "creator";
-  const isReviewer = role === "reviewer";
+  // Non-admin capabilities (admins are handled by isAdmin in every branch).
+  const isCreator = !isAdmin && hasPermission(role, permissions, "create_questions");
+  const isReviewer = !isAdmin && hasPermission(role, permissions, "review_questions");
   const isQuestionCreator = question.created_by === userId;
   const isAssignedReviewer = question.reviewer_id === userId;
 
@@ -62,17 +66,17 @@ export function canEditQuestion(input: {
         allowed: false,
         error: "Insufficient permissions for patch edit",
         message:
-          "Only creators (of their own questions) and reviewers can make patch edits to published questions.",
+          "Only authors (of their own questions) and reviewers can make patch edits to published questions.",
       };
     }
 
-    // Non-patch edits (minor/major) require admin or creator role.
+    // Non-patch edits (minor/major) require admin or create_questions.
     if (!isAdmin && !isCreator) {
       return {
         allowed: false,
         error: "Cannot edit published questions",
         message:
-          "Only admins and creators can make non-patch edits to published questions. Non-patch edits require review.",
+          "Only admins and question writers can make non-patch edits to published questions. Non-patch edits require review.",
       };
     }
     return { allowed: true };
@@ -90,7 +94,7 @@ export function canEditQuestion(input: {
     };
   }
 
-  // draft / rejected (and any other non-published status): own creator or admin.
+  // draft / rejected (and any other non-published status): own author or admin.
   if ((isCreator && isQuestionCreator) || isAdmin) {
     return { allowed: true };
   }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { requireStaff } from "@/shared/utils/api/api-guard";
 import { createClient } from "@/shared/services/server";
 import { log } from "@/shared/utils/logging";
 
@@ -8,7 +8,7 @@ import { log } from "@/shared/utils/logging";
  * /api/admin/questions/metadata/tags/{id}/questions:
  *   get:
  *     summary: Get questions for a tag
- *     description: Retrieve all questions associated with a specific tag. Requires content role (admin, creator, or reviewer).
+ *     description: Retrieve all questions associated with a specific tag. Requires admin or any granted permission.
  *     tags:
  *       - Admin - Question Metadata
  *     security:
@@ -50,7 +50,7 @@ import { log } from "@/shared/utils/logging";
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - content role required
+ *         description: Forbidden - admin or a granted permission required
  *       500:
  *         description: Internal server error
  */
@@ -58,8 +58,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const supabase = await createClient();
 
-    // Auth check - require admin, creator, or reviewer role
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requireStaff(request);
     if (auth instanceof NextResponse) return auth;
 
     // Await params in Next.js 15

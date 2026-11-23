@@ -1,73 +1,23 @@
 // src/shared/utils/auth-helpers.ts
 /**
- * Centralized authorization utilities
- * Reduces duplicate role-checking logic across API routes
+ * Role helpers. There are two roles, `user` and `admin`; finer access comes
+ * from grantable permissions (see ./permissions.ts).
  */
 
-import { type User } from "@supabase/supabase-js";
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-export type UserRole = "admin" | "creator" | "reviewer" | "user";
-
-export interface AuthUser extends User {
-  app_metadata: {
-    role?: UserRole;
-  };
-  user_metadata: {
-    role?: UserRole;
-  };
-}
-
-/**
- * Get user role from JWT (fastest, no database call)
- * Falls back to database if not in JWT
- */
-export async function getUserRole(supabase: SupabaseClient, user: User): Promise<UserRole> {
-  // app_metadata only: users can edit their own user_metadata, so it is never an
-  // authorization source. A DB trigger mirrors public.users.role into app_metadata.
-  const authUser = user as AuthUser;
-  const roleFromJWT = authUser.app_metadata?.role;
-
-  if (roleFromJWT && isValidRole(roleFromJWT)) {
-    return roleFromJWT;
-  }
-
-  // Fallback: query database (should rarely happen)
-  const { data, error } = await supabase.from("users").select("role").eq("id", user.id).single();
-
-  if (error || !data) {
-    return "user"; // Default to least privileged
-  }
-
-  return data.role as UserRole;
-}
-
-/**
- * Check if user has required role(s)
- */
-export function hasRole(userRole: UserRole, requiredRoles: UserRole[]): boolean {
-  return requiredRoles.includes(userRole);
-}
+export type UserRole = "admin" | "user";
 
 /**
  * Check if user is admin
  */
-export function isAdmin(role: UserRole): boolean {
+export function isAdmin(role: UserRole | null | undefined): boolean {
   return role === "admin";
-}
-
-/**
- * Check if user is admin, creator, or reviewer
- */
-export function isContentRole(role: UserRole): boolean {
-  return ["admin", "creator", "reviewer"].includes(role);
 }
 
 /**
  * Validate role string
  */
 export function isValidRole(role: string): role is UserRole {
-  return ["admin", "creator", "reviewer", "user"].includes(role);
+  return role === "admin" || role === "user";
 }
 
 /**

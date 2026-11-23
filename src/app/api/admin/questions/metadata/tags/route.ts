@@ -1,7 +1,7 @@
 // src/app/api/admin/questions/metadata/tags/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { requireAdmin, requireStaff } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
 import { log } from "@/shared/utils/logging";
@@ -24,7 +24,7 @@ const deleteTagSchema = z.object({
  * /api/admin/questions/metadata/tags:
  *   get:
  *     summary: Get paginated tags
- *     description: Retrieve tags with pagination, search, and question counts. Requires content role (admin, creator, or reviewer).
+ *     description: Retrieve tags with pagination, search, and question counts. Requires admin or any granted permission.
  *     tags:
  *       - Admin - Question Metadata
  *     security:
@@ -86,7 +86,7 @@ const deleteTagSchema = z.object({
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - content role required
+ *         description: Forbidden - admin or a granted permission required
  *       500:
  *         description: Internal server error
  */
@@ -94,8 +94,8 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require content role (admin, creator, or reviewer)
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requireStaff(request);
     if (auth instanceof NextResponse) return auth;
 
     // Get query parameters
@@ -182,7 +182,7 @@ export async function GET(request: NextRequest) {
  * /api/admin/questions/metadata/tags:
  *   post:
  *     summary: Create a new tag
- *     description: Create a new tag for categorizing questions. Requires content role (admin, creator, or reviewer).
+ *     description: Create a new tag for categorizing questions. Requires admin or any granted permission.
  *     tags:
  *       - Admin - Question Metadata
  *     security:
@@ -214,7 +214,7 @@ export async function GET(request: NextRequest) {
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - content role required
+ *         description: Forbidden - admin or a granted permission required
  *       409:
  *         description: Conflict - tag with this name already exists
  *       500:
@@ -224,8 +224,8 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require content role (admin, creator, or reviewer)
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requireStaff(request);
     if (auth instanceof NextResponse) return auth;
 
     const body = await parseBody(request, createTagSchema);
@@ -259,7 +259,7 @@ export async function POST(request: NextRequest) {
  * /api/admin/questions/metadata/tags:
  *   patch:
  *     summary: Update a tag
- *     description: Update tag name. Requires content role (admin, creator, or reviewer).
+ *     description: Update tag name. Requires admin role.
  *     tags:
  *       - Admin - Question Metadata
  *     security:
@@ -295,7 +295,7 @@ export async function POST(request: NextRequest) {
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - content role required
+ *         description: Forbidden - admin role required
  *       409:
  *         description: Conflict - tag with this name already exists
  *       500:
@@ -305,8 +305,8 @@ export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require content role (admin, creator, or reviewer)
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
 
     const body = await parseBody(request, updateTagSchema);
@@ -341,7 +341,7 @@ export async function PATCH(request: NextRequest) {
  * /api/admin/questions/metadata/tags:
  *   delete:
  *     summary: Delete a tag
- *     description: Delete a tag and remove all question associations. Requires content role (admin, creator, or reviewer).
+ *     description: Delete a tag and remove all question associations. Requires admin role.
  *     tags:
  *       - Admin - Question Metadata
  *     security:
@@ -373,7 +373,7 @@ export async function PATCH(request: NextRequest) {
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - content role required
+ *         description: Forbidden - admin role required
  *       500:
  *         description: Internal server error
  */
@@ -381,8 +381,8 @@ export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require content role (admin, creator, or reviewer)
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
 
     const body = await parseBody(request, deleteTagSchema);

@@ -106,8 +106,8 @@ export const UserStatsCards = forwardRef<UserStatsRef>((_props, ref) => {
         icon={UserCog}
         hint={
           <>
-            Admin: {stats.internalUsers.breakdown.admins}, Creator:{" "}
-            {stats.internalUsers.breakdown.creators}, Reviewer:{" "}
+            Admins: {stats.internalUsers.breakdown.admins}, Writers:{" "}
+            {stats.internalUsers.breakdown.writers}, Reviewers:{" "}
             {stats.internalUsers.breakdown.reviewers}
           </>
         }

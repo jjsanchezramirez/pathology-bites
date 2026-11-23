@@ -8,6 +8,7 @@ import { headers } from "next/headers";
 import { loginRateLimiter } from "@/features/auth/utils/rate-limiter";
 import { getSafeRedirectPath } from "@/shared/utils/route-helpers";
 import { log } from "@/shared/utils/logging";
+import { isStaff, parsePermissions } from "@/shared/utils/auth/permissions";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -138,8 +139,8 @@ export async function login(formData: FormData) {
     }
   }
 
-  // Redirect based on role
-  if (userRole === "admin" || userRole === "creator" || userRole === "reviewer") {
+  // Staff (admin or any permission, from app_metadata) land on /admin
+  if (isStaff(userRole, parsePermissions(authData.user.app_metadata?.permissions))) {
     log.debug("[Auth] Redirecting to admin dashboard for role:", userRole);
     redirect("/admin");
   } else {

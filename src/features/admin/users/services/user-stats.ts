@@ -16,13 +16,11 @@ export interface UserStats {
   active_internal_users: number;
   active_end_users: number;
 
-  // Role breakdown for internal users
+  // Internal users: admins, plus holders of each permission (a user can hold both)
   total_admins: number;
-  total_creators: number;
-  total_reviewers: number;
+  total_question_writers: number;
+  total_question_reviewers: number;
   active_admins: number;
-  active_creators: number;
-  active_reviewers: number;
 
   // Calculated percentages
   active_percentage: string;
@@ -52,7 +50,7 @@ export interface UserStatsFormatted {
     description: string;
     breakdown: {
       admins: number;
-      creators: number;
+      writers: number;
       reviewers: number;
     };
   };
@@ -84,7 +82,7 @@ export async function getUserStats(): Promise<UserStats> {
   try {
     // Fetches via the admin API route which proxies the SECURITY DEFINER
     // get_user_statistics RPC via a service-role client and gates access on
-    // admin/creator/reviewer role at the route boundary.
+    // admin role at the route boundary.
     const res = await fetch("/api/admin/users/stats");
     if (!res.ok) {
       throw new Error(`Failed to fetch user statistics (${res.status})`);
@@ -108,11 +106,9 @@ export async function getUserStats(): Promise<UserStats> {
       active_internal_users: stats.active_internal_users,
       active_end_users: stats.active_end_users,
       total_admins: stats.total_admins,
-      total_creators: stats.total_creators,
-      total_reviewers: stats.total_reviewers,
+      total_question_writers: stats.total_question_writers,
+      total_question_reviewers: stats.total_question_reviewers,
       active_admins: stats.active_admins,
-      active_creators: stats.active_creators,
-      active_reviewers: stats.active_reviewers,
       active_percentage: stats.active_percentage,
       inactive_percentage: stats.inactive_percentage,
       suspended_percentage: stats.suspended_percentage,
@@ -145,8 +141,8 @@ export async function getFormattedUserStats(): Promise<UserStatsFormatted> {
       description: "",
       breakdown: {
         admins: stats.total_admins,
-        creators: stats.total_creators,
-        reviewers: stats.total_reviewers,
+        writers: stats.total_question_writers,
+        reviewers: stats.total_question_reviewers,
       },
     },
     activeUsers: {
@@ -170,51 +166,4 @@ export async function getFormattedUserStats(): Promise<UserStatsFormatted> {
     recentUsers: stats.recent_users,
     lastUpdated: stats.last_updated,
   };
-}
-
-// Helper function to get role distribution
-export async function getRoleDistribution(): Promise<
-  {
-    role: string;
-    count: number;
-    percentage: string;
-  }[]
-> {
-  const stats = await getUserStats();
-
-  const roles = [
-    { role: "admin", count: stats.total_admins },
-    { role: "creator", count: stats.total_creators },
-    { role: "reviewer", count: stats.total_reviewers },
-    { role: "user", count: stats.end_users },
-  ];
-
-  return roles.map((role) => ({
-    ...role,
-    percentage:
-      stats.total_users > 0 ? `${Math.round((role.count / stats.total_users) * 100)}%` : "0%",
-  }));
-}
-
-// Helper function to get status distribution
-export async function getStatusDistribution(): Promise<
-  {
-    status: string;
-    count: number;
-    percentage: string;
-  }[]
-> {
-  const stats = await getUserStats();
-
-  const statuses = [
-    { status: "active", count: stats.active_users },
-    { status: "inactive", count: stats.inactive_users },
-    { status: "suspended", count: stats.suspended_users },
-  ];
-
-  return statuses.map((status) => ({
-    ...status,
-    percentage:
-      stats.total_users > 0 ? `${Math.round((status.count / stats.total_users) * 100)}%` : "0%",
-  }));
 }

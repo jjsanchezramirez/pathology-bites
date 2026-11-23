@@ -1,4 +1,4 @@
-import { UserRole } from "@/shared/utils/auth/auth-helpers";
+import { PERMISSIONS, isStaff, parsePermissions } from "@/shared/utils/auth/permissions";
 import { isUserRole, isUserStatus, isUserType } from "@/shared/types/database";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { NextRequest, NextResponse } from "next/server";
@@ -9,9 +9,20 @@ import { deleteUser, deleteUserFromAuth } from "@/shared/services/user-deletion"
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
 
+// Only the fields the admin users page edits. A free-form record let any column
+// (permissions included) be written unchecked.
 const updateUserSchema = z.object({
-  userId: z.string().min(1),
-  updates: z.record(z.unknown()),
+  userId: z.string().uuid(),
+  updates: z
+    .object({
+      role: z.enum(["admin", "user"]),
+      status: z.enum(["active", "inactive", "suspended"]),
+      user_type: z.enum(["student", "resident", "fellow", "attending", "faculty", "other"]),
+      permissions: z.array(z.enum(PERMISSIONS)).transform((p) => parsePermissions(p)),
+    })
+    .partial()
+    .strict()
+    .refine((u) => Object.keys(u).length > 0, "No updates given"),
 });
 
 const deleteUserSchema = z.object({
@@ -51,7 +62,7 @@ const deleteUserSchema = z.object({
  *         name: role
  *         schema:
  *           type: string
- *           enum: [all, admin, creator, reviewer, user]
+ *           enum: [all, admin, user]
  *           default: all
  *         description: Filter by user role
  *       - in: query
@@ -171,7 +182,7 @@ export async function GET(request: NextRequest) {
  * /api/admin/users:
  *   patch:
  *     summary: Update user information
- *     description: Update user details including role and other metadata. Requires admin role.
+ *     description: Update a user's role (admin/user), permissions, status or type. Requires admin role.
  *     tags:
  *       - Admin - Users
  *     security:
@@ -235,22 +246,8 @@ export async function PATCH(request: NextRequest) {
       throw error;
     }
 
-    // If role was updated, also update the user's auth metadata
-    if (updates.role) {
-      try {
-        const { error: authError } = await supabase.auth.admin.updateUserById(userId, {
-          app_metadata: { role: updates.role },
-        });
-
-        if (authError) {
-          log.error("Error updating auth metadata:", authError);
-          // Don't fail the request if auth metadata update fails
-        }
-      } catch (authUpdateError) {
-        log.error("Error updating user auth metadata:", authUpdateError);
-        // Don't fail the request if auth metadata update fails
-      }
-    }
+    // No app_metadata write here: internal.sync_user_role_to_app_metadata mirrors role and
+    // permissions into auth.users on every change, and middleware reads them fresh.
 
     return NextResponse.json({ user: data });
   } catch (error) {
@@ -264,7 +261,7 @@ export async function PATCH(request: NextRequest) {
  * /api/admin/users:
  *   delete:
  *     summary: Delete a user
- *     description: Delete a user from the system. Content creators (admin/creator/reviewer) are soft-deleted to preserve attribution, while regular users are hard-deleted. Requires admin role.
+ *     description: Delete a user from the system. Staff (admins and users holding a permission) are soft-deleted to preserve attribution, while regular users are hard-deleted. Requires admin role.
  *     tags:
  *       - Admin - Users
  *     security:
@@ -327,7 +324,7 @@ export async function DELETE(request: NextRequest) {
     // Check if the user to be deleted exists
     const { data: targetUser, error: targetUserError } = await supabase
       .from("users")
-      .select("id, email, role, user_type")
+      .select("id, email, role, permissions, user_type")
       .eq("id", userId)
       .single();
 
@@ -337,7 +334,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Determine deletion type based on role
-    const isContentCreator = ["admin", "creator", "reviewer"].includes(targetUser.role);
+    // Staff (admin or any permission) are soft-deleted to keep attribution
+    const isContentCreator = isStaff(targetUser.role, parsePermissions(targetUser.permissions));
     const deletionType = isContentCreator ? "soft_delete" : "hard_delete";
 
     // Create admin client for auth operations
@@ -360,13 +358,13 @@ export async function DELETE(request: NextRequest) {
      *
      * Process:
      * 1. Delete user data from public.users and related tables based on role
-     *    - Soft delete: For admin/creator/reviewer (preserves record for attribution)
+     *    - Soft delete: For staff (preserves record for attribution)
      *    - Hard delete: For student/user (removes all data)
      * 2. Delete user from auth.users
      */
 
     try {
-      const result = await deleteUser(adminClient, supabase, userId, targetUser.role as UserRole);
+      const result = await deleteUser(adminClient, supabase, userId, targetUser);
 
       // Delete user from auth system ONLY for hard deletes
       // For soft deletes, preserve auth record so user can log back in and be restored

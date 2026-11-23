@@ -8,6 +8,7 @@ import {
   DEFAULT_UI_SETTINGS,
 } from "@/shared/config/user-settings-defaults";
 import { log } from "@/shared/utils/logging";
+import { isStaff, parsePermissions } from "@/shared/utils/auth/permissions";
 import { SIGNUP_SOURCE_COOKIE, parseSignupSource } from "@/shared/utils/analytics/signup-source";
 
 // An OAuth account counts as a fresh signup for attribution if it was created this recently.
@@ -37,7 +38,7 @@ const rateLimitedHandler = withRateLimit(authRateLimiter);
  *           Location:
  *             schema:
  *               type: string
- *               description: URL to redirect to - /admin for admin/creator/reviewer roles, /dashboard for regular users, or /auth-error on failure
+ *               description: URL to redirect to - /admin for admins and users holding a permission, /dashboard for regular users, or /auth-error on failure
  *       400:
  *         description: Bad request - missing or invalid code parameter
  *       401:
@@ -73,7 +74,7 @@ export const GET = rateLimitedHandler(async function (request: NextRequest) {
       let userData = null;
       const { data: existingUser, error: profileError } = await supabase
         .from("users")
-        .select("id, role, status")
+        .select("id, role, permissions, status")
         .eq("id", data.user.id)
         .single();
 
@@ -166,7 +167,7 @@ export const GET = rateLimitedHandler(async function (request: NextRequest) {
             updated_at: new Date().toISOString(),
           })
           .eq("id", data.user.id)
-          .select("role")
+          .select("role, permissions")
           .single();
 
         if (restoreError) {
@@ -257,11 +258,10 @@ export const GET = rateLimitedHandler(async function (request: NextRequest) {
         }
       }
 
-      // Redirect based on user role - consistent with middleware logic
-      const redirectUrl =
-        userData?.role === "admin" || userData?.role === "creator" || userData?.role === "reviewer"
-          ? `${origin}/admin`
-          : `${origin}/dashboard`;
+      // Staff (admin or any permission) land on /admin - consistent with middleware logic
+      const redirectUrl = isStaff(userData?.role, parsePermissions(userData?.permissions))
+        ? `${origin}/admin`
+        : `${origin}/dashboard`;
 
       return NextResponse.redirect(redirectUrl);
     }

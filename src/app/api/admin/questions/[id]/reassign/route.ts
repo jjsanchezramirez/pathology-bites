@@ -1,7 +1,9 @@
 import { createClient } from "@/shared/services/server";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import { hasPermission, parsePermissions } from "@/shared/utils/auth/permissions";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
@@ -15,7 +17,7 @@ const reassignQuestionSchema = z.object({
  * /api/admin/questions/{id}/reassign:
  *   post:
  *     summary: Reassign question to different reviewer
- *     description: Change the assigned reviewer for a pending_review question. Only admin or question creator can reassign. Requires new reviewer to have admin or reviewer role.
+ *     description: Change the assigned reviewer for a pending_review question. Only an admin or the question author (with create_questions) can reassign. Requires the new reviewer to be an admin or hold review_questions.
  *     tags:
  *       - Admin - Questions
  *     security:
@@ -40,7 +42,7 @@ const reassignQuestionSchema = z.object({
  *               reviewer_id:
  *                 type: string
  *                 format: uuid
- *                 description: ID of new reviewer (must have admin or reviewer role)
+ *                 description: ID of new reviewer (must be an admin or hold review_questions)
  *     responses:
  *       200:
  *         description: Question reassigned successfully
@@ -60,7 +62,7 @@ const reassignQuestionSchema = z.object({
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - only admin or creator can reassign
+ *         description: Forbidden - only an admin or the author can reassign
  *       404:
  *         description: Question or reviewer not found
  *       500:
@@ -81,10 +83,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (body instanceof NextResponse) return body;
     const { reviewer_id } = body;
 
-    // Verify new reviewer exists and has appropriate role
-    const { data: reviewer, error: reviewerError } = await supabase
+    // Verify new reviewer exists and may review. Service-role read: users RLS only lets a
+    // non-admin read their own row.
+    const adminClient = createServiceRoleClient();
+    const { data: reviewer, error: reviewerError } = await adminClient
       .from("users")
-      .select("id, role")
+      .select("id, role, permissions")
       .eq("id", reviewer_id)
       .single();
 
@@ -95,8 +99,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       );
     }
 
-    // Verify reviewer is admin or has reviewer role
-    if (reviewer.role !== "admin" && reviewer.role !== "reviewer") {
+    // The reviewer must be an admin or hold review_questions.
+    if (!hasPermission(reviewer.role, parsePermissions(reviewer.permissions), "review_questions")) {
       return NextResponse.json(
         { error: "Selected user is not a reviewer or admin" },
         { status: 400 }
@@ -122,25 +126,26 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       );
     }
 
-    // Check if user is admin or creator
-    const { data: userProfile } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
+    // Admins, or the author holding create_questions.
+    const isAdmin = auth.role === "admin";
+    const isAuthor = question.created_by === userId && auth.can("create_questions");
 
-    const isAdmin = userProfile?.role === "admin";
-    const isCreator = question.created_by === userId;
-
-    if (!isAdmin && !isCreator) {
+    if (!isAdmin && !isAuthor) {
       return NextResponse.json(
-        { error: "Only admin or creator can reassign this question" },
+        { error: "Only an admin or the question's author can reassign this question" },
         { status: 403 }
       );
     }
+    if (reviewer.id === question.created_by) {
+      return NextResponse.json(
+        { error: "An author cannot review their own question" },
+        { status: 400 }
+      );
+    }
 
-    // Update reviewer assignment
-    const { data: updatedQuestion, error: updateError } = await supabase
+    // Update reviewer assignment. Service role after the checks above: RLS only lets an
+    // author update draft/rejected rows, so a caller-client update matched nothing.
+    const { data: updatedQuestion, error: updateError } = await adminClient
       .from("questions")
       .update({
         reviewer_id: reviewer_id,

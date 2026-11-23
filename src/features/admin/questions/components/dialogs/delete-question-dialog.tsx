@@ -35,11 +35,15 @@ export function DeleteQuestionDialog({
   onDelete,
 }: DeleteQuestionDialogProps) {
   const [isDeleting, setIsDeleting] = React.useState(false);
-  const { role } = useUserRole();
+  const { isAdmin, can } = useUserRole();
   const { user } = useAuthContext();
 
   // Check if deletion is allowed
-  const deletionCheck = canDeleteQuestion(question, role, user?.id || null);
+  const deletionCheck = canDeleteQuestion(question, {
+    isAdmin,
+    canCreate: can("create_questions"),
+    userId: user?.id || null,
+  });
 
   const handleDelete = async () => {
     if (!question || !deletionCheck.canDelete) return;

@@ -23,14 +23,13 @@ import {
   StatGrid,
 } from "@/shared/components/ui/page-layout";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { UserRole } from "@/shared/utils/auth/auth-helpers";
 
 export default function AdminDashboardPage() {
   // Get user data from auth context
   const { user } = useAuthContext();
 
   // Get role information
-  const { role, isLoading: roleLoading } = useUserRole();
+  const { role, permissions, isAdmin, can, isLoading: roleLoading } = useUserRole();
 
   // Get theme and admin mode
   const { adminMode, isTransitioning, setTransitioning } = useDashboardTheme();
@@ -47,15 +46,11 @@ export default function AdminDashboardPage() {
     activities,
     isLoading: dataLoading,
     error,
-  } = useDashboardData(role, user?.id, roleLoading);
+  } = useDashboardData(role, permissions, user?.id, roleLoading);
 
-  // Compute effective role for UI (quick actions only)
-  // This is NOT used for data fetching (eliminates stale closure issues)
-  const effectiveRole = adminMode === "user" ? "user" : adminMode;
-
-  // Get quick actions based on stats and effective role
+  // Quick actions follow what the user may do (admin, or their permissions)
   const quickActions = stats
-    ? clientDashboardService.getQuickActions(stats, effectiveRole as UserRole)
+    ? clientDashboardService.getQuickActions(stats, role, permissions)
     : [];
 
   // Single loading state: transitioning OR data loading OR data not ready OR adminMode is "user"
@@ -80,18 +75,16 @@ export default function AdminDashboardPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const title =
-    adminMode === "creator"
-      ? "Creator Dashboard"
-      : adminMode === "reviewer"
-        ? "Reviewer Dashboard"
-        : "Admin Dashboard";
-  const description =
-    adminMode === "creator"
-      ? "Question creation and content management."
-      : adminMode === "reviewer"
+  const writes = can("create_questions");
+  const reviews = can("review_questions");
+  const title = isAdmin ? "Admin Dashboard" : "Contributor Dashboard";
+  const description = isAdmin
+    ? "Administrative overview and system management."
+    : writes && reviews
+      ? "Your questions and your review queue."
+      : reviews
         ? "Review queue and question approval."
-        : "Administrative overview and system management.";
+        : "Question creation and content management.";
 
   const statsSkeleton = (
     <StatGrid>

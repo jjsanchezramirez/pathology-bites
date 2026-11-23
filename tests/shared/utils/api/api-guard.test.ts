@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { NextResponse } from "next/server";
 import {
   requireUser,
-  requireRole,
   requireAdmin,
-  requireContentRole,
+  requirePermission,
+  requireStaff,
   type GuardResult,
 } from "@/shared/utils/api/api-guard";
 
@@ -17,6 +17,11 @@ function expectFailure(result: GuardResult): NextResponse {
   return result as NextResponse;
 }
 
+function expectOk(result: GuardResult) {
+  expect(result).not.toBeInstanceOf(NextResponse);
+  return result as Exclude<GuardResult, NextResponse>;
+}
+
 describe("requireUser", () => {
   it("401s when x-user-id is missing", async () => {
     const response = expectFailure(requireUser(requestWith({})));
@@ -24,70 +29,122 @@ describe("requireUser", () => {
     expect(await response.json()).toEqual({ error: "Unauthorized" });
   });
 
-  it("passes through userId and validated role", () => {
-    const result = requireUser(requestWith({ "x-user-id": "u1", "x-user-role": "creator" }));
-    expect(result).toEqual({ userId: "u1", role: "creator" });
+  it("passes through userId, validated role and permissions", () => {
+    const auth = expectOk(
+      requireUser(
+        requestWith({
+          "x-user-id": "u1",
+          "x-user-role": "user",
+          "x-user-permissions": "create_questions",
+        })
+      )
+    );
+    expect(auth).toMatchObject({ userId: "u1", role: "user", permissions: ["create_questions"] });
+    expect(auth.can("create_questions")).toBe(true);
+    expect(auth.can("review_questions")).toBe(false);
   });
 
-  it("nulls out an unrecognized role instead of trusting it", () => {
-    const result = requireUser(requestWith({ "x-user-id": "u1", "x-user-role": "superadmin" }));
-    expect(result).toEqual({ userId: "u1", role: null });
+  it("nulls out an unrecognized role (including retired ones) instead of trusting it", () => {
+    for (const role of ["superadmin", "creator", "reviewer"]) {
+      const auth = expectOk(requireUser(requestWith({ "x-user-id": "u1", "x-user-role": role })));
+      expect(auth.role).toBeNull();
+    }
   });
 
-  it("nulls the role when the header is absent", () => {
-    const result = requireUser(requestWith({ "x-user-id": "u1" }));
-    expect(result).toEqual({ userId: "u1", role: null });
+  it("drops unknown permissions from the header", () => {
+    const auth = expectOk(
+      requireUser(
+        requestWith({
+          "x-user-id": "u1",
+          "x-user-permissions": "delete_everything,review_questions",
+        })
+      )
+    );
+    expect(auth.permissions).toEqual(["review_questions"]);
+  });
+
+  it("nulls the role and empties permissions when the headers are absent", () => {
+    const auth = expectOk(requireUser(requestWith({ "x-user-id": "u1" })));
+    expect(auth.role).toBeNull();
+    expect(auth.permissions).toEqual([]);
+  });
+
+  it("admins hold every permission", () => {
+    const auth = expectOk(requireUser(requestWith({ "x-user-id": "a", "x-user-role": "admin" })));
+    expect(auth.can("create_questions")).toBe(true);
+    expect(auth.can("review_questions")).toBe(true);
   });
 });
 
-describe("requireRole", () => {
+describe("requireAdmin", () => {
   it("401s before it 403s — unauthenticated wins", () => {
-    const response = expectFailure(requireRole(requestWith({ "x-user-role": "admin" }), ["admin"]));
+    const response = expectFailure(requireAdmin(requestWith({ "x-user-role": "admin" })));
     expect(response.status).toBe(401);
   });
 
-  it("403s an authenticated user with the wrong role", async () => {
+  it("403s a non-admin even with every permission", async () => {
     const response = expectFailure(
-      requireRole(requestWith({ "x-user-id": "u1", "x-user-role": "user" }), ["admin"])
+      requireAdmin(
+        requestWith({
+          "x-user-id": "u1",
+          "x-user-role": "user",
+          "x-user-permissions": "create_questions,review_questions",
+        })
+      )
     );
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ error: "Forbidden - Admin access required" });
   });
 
-  it("403s when the role header is missing entirely", () => {
-    const response = expectFailure(requireRole(requestWith({ "x-user-id": "u1" }), ["admin"]));
-    expect(response.status).toBe(403);
-  });
-
-  it("accepts any of the allowed roles", () => {
-    const result = requireRole(requestWith({ "x-user-id": "u1", "x-user-role": "reviewer" }), [
-      "creator",
-      "reviewer",
-    ]);
-    expect(result).toEqual({ userId: "u1", role: "reviewer" });
+  it("admits admins", () => {
+    expectOk(requireAdmin(requestWith({ "x-user-id": "a", "x-user-role": "admin" })));
   });
 });
 
-describe("convenience guards", () => {
-  const admin = requestWith({ "x-user-id": "u1", "x-user-role": "admin" });
-  const creator = requestWith({ "x-user-id": "u2", "x-user-role": "creator" });
-  const user = requestWith({ "x-user-id": "u3", "x-user-role": "user" });
-
-  it("requireAdmin admits only admins", () => {
-    expect(requireAdmin(admin)).toEqual({ userId: "u1", role: "admin" });
-    expect(requireAdmin(creator)).toBeInstanceOf(NextResponse);
+describe("requirePermission", () => {
+  const writer = requestWith({
+    "x-user-id": "w",
+    "x-user-role": "user",
+    "x-user-permissions": "create_questions",
   });
 
-  it("requireContentRole admits admin/creator/reviewer but not user", () => {
-    expect(requireContentRole(admin)).not.toBeInstanceOf(NextResponse);
-    expect(requireContentRole(creator)).not.toBeInstanceOf(NextResponse);
-    expect(requireContentRole(user)).toBeInstanceOf(NextResponse);
+  it("admits a holder, and admins", () => {
+    expectOk(requirePermission(writer, "create_questions"));
+    expectOk(
+      requirePermission(
+        requestWith({ "x-user-id": "a", "x-user-role": "admin" }),
+        "review_questions"
+      )
+    );
   });
 
-  it("multi-role 403 message lists the roles", async () => {
-    const response = expectFailure(requireContentRole(user));
+  it("403s without the permission and names it", async () => {
+    const response = expectFailure(requirePermission(writer, "review_questions"));
+    expect(response.status).toBe(403);
     expect(await response.json()).toEqual({
-      error: "Forbidden - Admin or Creator or Reviewer access required",
+      error: "Forbidden - requires review_questions permission",
     });
+  });
+
+  it("accepts any of several permissions", () => {
+    expectOk(requirePermission(writer, "review_questions", "create_questions"));
+  });
+});
+
+describe("requireStaff", () => {
+  it("admits admins and holders of any permission, not plain users", () => {
+    expectOk(requireStaff(requestWith({ "x-user-id": "a", "x-user-role": "admin" })));
+    expectOk(
+      requireStaff(
+        requestWith({
+          "x-user-id": "r",
+          "x-user-role": "user",
+          "x-user-permissions": "review_questions",
+        })
+      )
+    );
+    expect(requireStaff(requestWith({ "x-user-id": "u", "x-user-role": "user" }))).toBeInstanceOf(
+      NextResponse
+    );
   });
 });

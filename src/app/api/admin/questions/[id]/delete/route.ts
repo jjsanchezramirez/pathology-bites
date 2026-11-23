@@ -1,4 +1,5 @@
 import { createClient } from "@/shared/services/server";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
@@ -62,21 +63,11 @@ export async function DELETE(
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
 
-    // Get user profile to check role
-    const { data: userProfile, error: profileError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
-
-    if (profileError || !userProfile) {
-      return NextResponse.json({ error: "User profile not found" }, { status: 404 });
-    }
-
-    // Check if user has permission to delete questions
-    if (!["admin", "creator"].includes(userProfile.role)) {
+    // Admins, or holders of create_questions (own drafts only, checked below)
+    const isAdmin = auth.role === "admin";
+    if (!auth.can("create_questions")) {
       return NextResponse.json(
-        { error: "Insufficient permissions. Only admins and creators can delete questions." },
+        { error: "Insufficient permissions. Requires the create_questions permission." },
         { status: 403 }
       );
     }
@@ -107,7 +98,6 @@ export async function DELETE(
     }
 
     // Check ownership permissions
-    const isAdmin = userProfile.role === "admin";
     const isOwner = question.created_by === userId;
 
     if (!isAdmin && !isOwner) {
@@ -119,10 +109,15 @@ export async function DELETE(
 
     // Delete the question (cascade will handle related records)
     log.debug(`Attempting to delete question: ${questionId}`);
-    const { error: deleteError, data: deleteData } = await supabase
+    // Service role after the checks above: the questions DELETE policy is admin-only, so a
+    // caller-client delete by an author matched zero rows and still reported success. The
+    // status filter is the barrier against a draft that was submitted meanwhile.
+    const { error: deleteError, data: deleteData } = await createServiceRoleClient()
       .from("questions")
       .delete()
-      .eq("id", questionId);
+      .eq("id", questionId)
+      .eq("status", "draft")
+      .select("id");
 
     log.debug("Delete result:", { deleteError, deleteData });
 
@@ -132,6 +127,10 @@ export async function DELETE(
         { error: `Failed to delete question: ${deleteError.message}`, details: deleteError },
         { status: 500 }
       );
+    }
+
+    if (!deleteData || deleteData.length === 0) {
+      return NextResponse.json({ error: "Question is no longer a draft" }, { status: 409 });
     }
 
     return NextResponse.json({

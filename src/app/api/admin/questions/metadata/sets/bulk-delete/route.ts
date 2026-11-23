@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
 import { log } from "@/shared/utils/logging";
@@ -14,7 +14,7 @@ const bulkDeleteSetsSchema = z.object({
  * /api/admin/questions/metadata/sets/bulk-delete:
  *   post:
  *     summary: Bulk delete question sets
- *     description: Delete multiple question sets at once. Cannot delete sets with questions. Requires content role (admin, creator, or reviewer).
+ *     description: Delete multiple question sets at once. Cannot delete sets with questions. Requires admin role.
  *     tags:
  *       - Admin - Question Metadata
  *     security:
@@ -51,7 +51,7 @@ const bulkDeleteSetsSchema = z.object({
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - content role required
+ *         description: Forbidden - admin role required
  *       500:
  *         description: Internal server error
  */
@@ -59,8 +59,8 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require admin, creator, or reviewer role
-    const auth = requireContentRole(request);
+    // Auth check - see guard
+    const auth = requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
 
     const body = await parseBody(request, bulkDeleteSetsSchema);

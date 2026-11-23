@@ -447,7 +447,7 @@ export default function MyQuestionsPage() {
 
   // Access control
   if (!canAccess("questions.create")) {
-    return <AccessDenied {...AccessDeniedPresets.creatorOnly} />;
+    return <AccessDenied {...AccessDeniedPresets.createQuestions} />;
   }
 
   if (initialLoading) {

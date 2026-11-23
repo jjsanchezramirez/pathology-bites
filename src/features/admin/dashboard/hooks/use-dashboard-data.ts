@@ -3,6 +3,7 @@
 
 import useSWR from "swr";
 import { UserRole } from "@/shared/utils/auth/auth-helpers";
+import type { Permission } from "@/shared/utils/auth/permissions";
 import { clientDashboardService } from "@/features/admin/dashboard/services/client-service";
 import { DashboardStats, RecentActivity } from "@/features/admin/dashboard/services/service";
 import { log } from "@/shared/utils/logging";
@@ -59,11 +60,13 @@ export function useDashboardStats(enabled = true) {
  * - No stale closure issues - role and userId are part of the key
  *
  * @param role - User role for filtering activities
- * @param userId - User ID for creator/reviewer filtering
+ * @param permissions - Granted permissions (decide which activity feeds a non-admin sees)
+ * @param userId - User ID for author/reviewer filtering
  * @param enabled - Whether to enable the query
  */
 export function useDashboardActivities(
   role: UserRole | null | undefined,
+  permissions: Permission[],
   userId: string | undefined,
   enabled = true
 ) {
@@ -72,13 +75,15 @@ export function useDashboardActivities(
 
   // Cache key includes role and userId to properly handle changes
   // This prevents stale data when switching roles
-  const cacheKey = shouldFetch ? `dashboard-activities-${role}-${userId ?? "no-user"}` : null;
+  const cacheKey = shouldFetch
+    ? `dashboard-activities-${role}-${permissions.join("+")}-${userId ?? "no-user"}`
+    : null;
 
   const { data, error, isLoading, mutate } = useSWR<RecentActivity[]>(
     cacheKey,
     async () => {
       log.debug("[useDashboardActivities] Fetching activities for role:", role, "userId:", userId);
-      const activities = await clientDashboardService.getRecentActivity(role, userId);
+      const activities = await clientDashboardService.getRecentActivity(role, permissions, userId);
       log.debug("[useDashboardActivities] ✅ Activities loaded:", activities.length);
       return activities;
     },
@@ -110,11 +115,13 @@ export function useDashboardActivities(
  * - Eliminating race conditions through explicit enabled flags
  *
  * @param role - User role from useUserRole
+ * @param permissions - Granted permissions from useUserRole
  * @param userId - User ID from useAuthContext
  * @param roleLoading - Whether role is still loading
  */
 export function useDashboardData(
   role: UserRole | null | undefined,
+  permissions: Permission[],
   userId: string | undefined,
   roleLoading: boolean
 ) {
@@ -123,7 +130,7 @@ export function useDashboardData(
   const enabled = !roleLoading && role !== null && role !== undefined && !!userId;
 
   const statsQuery = useDashboardStats(enabled);
-  const activitiesQuery = useDashboardActivities(role, userId, enabled);
+  const activitiesQuery = useDashboardActivities(role, permissions, userId, enabled);
 
   // Combined loading: both must complete
   const isLoading = statsQuery.isLoading || activitiesQuery.isLoading;

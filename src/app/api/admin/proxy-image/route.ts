@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { requireStaff } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 import { R2_IMAGES_HOSTS } from "@/shared/config/r2-public-urls";
 
@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
   // The ALLOWED_HOSTS check below stops open-proxy abuse, but middleware only
   // guarantees a session on /api/admin/* — not a role. Gate it so any signed-in
   // user can't use this as a same-origin image proxy for the R2 bucket.
-  const auth = requireContentRole(req);
+  const auth = requireStaff(req);
   if (auth instanceof NextResponse) return auth;
 
   const rawUrl = req.nextUrl.searchParams.get("url");

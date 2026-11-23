@@ -3,14 +3,15 @@
  *
  * Characterization tests for GET/PATCH /api/admin/questions/[id]
  *
- * The PATCH permission matrix (derived from the handler):
+ * The PATCH permission matrix (derived from the handler). "writer" holds
+ * create_questions, "reviewer" holds review_questions (x-user-permissions):
  *
- * | Question status      | admin | creator (own)                | creator (other's)       | reviewer (assigned)   | reviewer (other)      | user |
+ * | Question status      | admin | writer (own)                 | writer (other's)        | reviewer (assigned)   | reviewer (other)      | user |
  * |----------------------|-------|------------------------------|-------------------------|-----------------------|-----------------------|------|
  * | draft / rejected     | allow | allow                        | 403                     | 403                   | 403                   | 403  |
  * | pending_review       | allow | allow                        | 403                     | allow                 | 403                   | 403  |
  * | published, patch     | allow | allow                        | 403                     | allow (any published) | allow (any published) | 403  |
- * | published, non-patch | allow | allow (minor/major req. rev) | allow (role-only check) | 403                   | 403                   | 403  |
+ * | published, non-patch | allow | allow (minor/major req. rev) | allow (permission-only) | 403                   | 403                   | 403  |
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -117,11 +118,13 @@ function makeRequest(options: {
   method?: string;
   userId?: string | null;
   role?: string | null;
+  permissions?: string;
   body?: any;
 }): NextRequest {
   const headers: Record<string, string> = {};
   if (options.userId) headers["x-user-id"] = options.userId;
   if (options.role) headers["x-user-role"] = options.role;
+  if (options.permissions) headers["x-user-permissions"] = options.permissions;
   return createMockRequest({
     method: options.method ?? "PATCH",
     url: `http://localhost:3000/api/admin/questions/${QUESTION_ID}`,
@@ -231,7 +234,12 @@ describe("PATCH /api/admin/questions/[id]", () => {
 
     it("allows creator to edit own draft question", async () => {
       enqueueMinimalHappyPath(makeQuestionRow({ status: "draft", created_by: CREATOR_ID }));
-      const request = makeRequest({ userId: CREATOR_ID, role: "creator", body: MINIMAL_BODY });
+      const request = makeRequest({
+        userId: CREATOR_ID,
+        role: "user",
+        permissions: "create_questions",
+        body: MINIMAL_BODY,
+      });
 
       const response = await PATCH(request, routeParams);
       const json = await getResponseJson(response);
@@ -242,7 +250,12 @@ describe("PATCH /api/admin/questions/[id]", () => {
 
     it("allows creator to edit own rejected question", async () => {
       enqueueMinimalHappyPath(makeQuestionRow({ status: "rejected", created_by: CREATOR_ID }));
-      const request = makeRequest({ userId: CREATOR_ID, role: "creator", body: MINIMAL_BODY });
+      const request = makeRequest({
+        userId: CREATOR_ID,
+        role: "user",
+        permissions: "create_questions",
+        body: MINIMAL_BODY,
+      });
 
       const response = await PATCH(request, routeParams);
 
@@ -254,7 +267,12 @@ describe("PATCH /api/admin/questions/[id]", () => {
         data: makeQuestionRow({ status: "draft", created_by: OTHER_CREATOR_ID }),
         error: null,
       });
-      const request = makeRequest({ userId: CREATOR_ID, role: "creator", body: MINIMAL_BODY });
+      const request = makeRequest({
+        userId: CREATOR_ID,
+        role: "user",
+        permissions: "create_questions",
+        body: MINIMAL_BODY,
+      });
 
       const response = await PATCH(request, routeParams);
       const json = await getResponseJson(response);
@@ -269,7 +287,12 @@ describe("PATCH /api/admin/questions/[id]", () => {
         data: makeQuestionRow({ status: "draft", created_by: REVIEWER_ID }),
         error: null,
       });
-      const request = makeRequest({ userId: REVIEWER_ID, role: "reviewer", body: MINIMAL_BODY });
+      const request = makeRequest({
+        userId: REVIEWER_ID,
+        role: "user",
+        permissions: "review_questions",
+        body: MINIMAL_BODY,
+      });
 
       const response = await PATCH(request, routeParams);
       const json = await getResponseJson(response);
@@ -301,7 +324,12 @@ describe("PATCH /api/admin/questions/[id]", () => {
         }),
         makeUpdatedRow({ status: "pending_review" })
       );
-      const request = makeRequest({ userId: REVIEWER_ID, role: "reviewer", body: MINIMAL_BODY });
+      const request = makeRequest({
+        userId: REVIEWER_ID,
+        role: "user",
+        permissions: "review_questions",
+        body: MINIMAL_BODY,
+      });
 
       const response = await PATCH(request, routeParams);
       const json = await getResponseJson(response);
@@ -319,7 +347,12 @@ describe("PATCH /api/admin/questions/[id]", () => {
         }),
         error: null,
       });
-      const request = makeRequest({ userId: REVIEWER_ID, role: "reviewer", body: MINIMAL_BODY });
+      const request = makeRequest({
+        userId: REVIEWER_ID,
+        role: "user",
+        permissions: "review_questions",
+        body: MINIMAL_BODY,
+      });
 
       const response = await PATCH(request, routeParams);
       const json = await getResponseJson(response);
@@ -340,7 +373,12 @@ describe("PATCH /api/admin/questions/[id]", () => {
         }),
         makeUpdatedRow({ status: "pending_review" })
       );
-      const request = makeRequest({ userId: CREATOR_ID, role: "creator", body: MINIMAL_BODY });
+      const request = makeRequest({
+        userId: CREATOR_ID,
+        role: "user",
+        permissions: "create_questions",
+        body: MINIMAL_BODY,
+      });
 
       const response = await PATCH(request, routeParams);
 
@@ -356,7 +394,12 @@ describe("PATCH /api/admin/questions/[id]", () => {
         }),
         error: null,
       });
-      const request = makeRequest({ userId: CREATOR_ID, role: "creator", body: MINIMAL_BODY });
+      const request = makeRequest({
+        userId: CREATOR_ID,
+        role: "user",
+        permissions: "create_questions",
+        body: MINIMAL_BODY,
+      });
 
       const response = await PATCH(request, routeParams);
 
@@ -411,7 +454,8 @@ describe("PATCH /api/admin/questions/[id]", () => {
       );
       const request = makeRequest({
         userId: CREATOR_ID,
-        role: "creator",
+        role: "user",
+        permissions: "create_questions",
         body: { ...MINIMAL_BODY, isPatchEdit: true, patchEditReason: "Fixed typo" },
       });
 
@@ -430,7 +474,8 @@ describe("PATCH /api/admin/questions/[id]", () => {
       });
       const request = makeRequest({
         userId: CREATOR_ID,
-        role: "creator",
+        role: "user",
+        permissions: "create_questions",
         body: { ...MINIMAL_BODY, isPatchEdit: true },
       });
 
@@ -447,7 +492,8 @@ describe("PATCH /api/admin/questions/[id]", () => {
       );
       const request = makeRequest({
         userId: REVIEWER_ID,
-        role: "reviewer",
+        role: "user",
+        permissions: "review_questions",
         body: { ...MINIMAL_BODY, isPatchEdit: true },
       });
 
@@ -477,7 +523,12 @@ describe("PATCH /api/admin/questions/[id]", () => {
         data: makeQuestionRow({ status: "published" }),
         error: null,
       });
-      const request = makeRequest({ userId: REVIEWER_ID, role: "reviewer", body: MINIMAL_BODY });
+      const request = makeRequest({
+        userId: REVIEWER_ID,
+        role: "user",
+        permissions: "review_questions",
+        body: MINIMAL_BODY,
+      });
 
       const response = await PATCH(request, routeParams);
       const json = await getResponseJson(response);
@@ -506,7 +557,12 @@ describe("PATCH /api/admin/questions/[id]", () => {
         makeQuestionRow({ status: "published", created_by: OTHER_CREATOR_ID }),
         makeUpdatedRow({ status: "published" })
       );
-      const request = makeRequest({ userId: CREATOR_ID, role: "creator", body: MINIMAL_BODY });
+      const request = makeRequest({
+        userId: CREATOR_ID,
+        role: "user",
+        permissions: "create_questions",
+        body: MINIMAL_BODY,
+      });
 
       const response = await PATCH(request, routeParams);
       const json = await getResponseJson(response);
@@ -522,7 +578,8 @@ describe("PATCH /api/admin/questions/[id]", () => {
       });
       const request = makeRequest({
         userId: CREATOR_ID,
-        role: "creator",
+        role: "user",
+        permissions: "create_questions",
         body: { ...MINIMAL_BODY, updateType: "minor" },
       });
 
@@ -542,7 +599,8 @@ describe("PATCH /api/admin/questions/[id]", () => {
       });
       const request = makeRequest({
         userId: CREATOR_ID,
-        role: "creator",
+        role: "user",
+        permissions: "create_questions",
         body: { questionData: { title: "Updated", status: "pending_review" } },
       });
 
@@ -587,7 +645,8 @@ describe("PATCH /api/admin/questions/[id]", () => {
 
       const request = makeRequest({
         userId: CREATOR_ID,
-        role: "creator",
+        role: "user",
+        permissions: "create_questions",
         body: { ...MINIMAL_BODY, updateType: "minor", reviewerId: REVIEWER_ID },
       });
 
@@ -665,7 +724,8 @@ describe("PATCH /api/admin/questions/[id]", () => {
 
       const request = makeRequest({
         userId: CREATOR_ID,
-        role: "creator",
+        role: "user",
+        permissions: "create_questions",
         body: {
           questionData: {
             title: "New title",
@@ -1163,7 +1223,12 @@ describe("GET /api/admin/questions/[id]", () => {
       { data: makeFullQuestion({ created_by: OTHER_CREATOR_ID }), error: null }, // simple fetch
       { data: makeFullQuestion({ created_by: OTHER_CREATOR_ID }), error: null } // full fetch
     );
-    const request = makeRequest({ method: "GET", userId: CREATOR_ID, role: "creator" });
+    const request = makeRequest({
+      method: "GET",
+      userId: CREATOR_ID,
+      role: "user",
+      permissions: "create_questions",
+    });
 
     const response = await GET(request, routeParams);
     const json = await getResponseJson(response);
@@ -1175,7 +1240,12 @@ describe("GET /api/admin/questions/[id]", () => {
   it("allows a reviewer to read a pending_review question", async () => {
     const question = makeFullQuestion({ status: "pending_review", created_by: OTHER_CREATOR_ID });
     supabase.enqueue("questions", { data: question, error: null }, { data: question, error: null });
-    const request = makeRequest({ method: "GET", userId: REVIEWER_ID, role: "reviewer" });
+    const request = makeRequest({
+      method: "GET",
+      userId: REVIEWER_ID,
+      role: "user",
+      permissions: "review_questions",
+    });
 
     const response = await GET(request, routeParams);
 

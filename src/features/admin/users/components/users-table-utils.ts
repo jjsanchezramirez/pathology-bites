@@ -8,6 +8,8 @@ export interface User {
   first_name: string | null;
   last_name: string | null;
   role: string;
+  /** Granted permissions (admins implicitly hold all). */
+  permissions: string[];
   user_type: string;
   status: string;
   created_at: string;

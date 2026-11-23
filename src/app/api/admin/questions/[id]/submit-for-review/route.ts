@@ -5,6 +5,7 @@ import { z } from "zod";
 import { NotificationTriggers } from "@/shared/services/notification-triggers";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import { hasPermission, parsePermissions } from "@/shared/utils/auth/permissions";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
 
@@ -43,7 +44,7 @@ const submitForReviewSchema = z.object({
  *               reviewer_id:
  *                 type: string
  *                 format: uuid
- *                 description: ID of reviewer to assign (must have admin or reviewer role)
+ *                 description: ID of reviewer to assign (must be an admin or hold review_questions)
  *               resubmission_notes:
  *                 type: string
  *                 description: Notes about changes made (optional, for rejected → pending transitions)
@@ -64,7 +65,7 @@ const submitForReviewSchema = z.object({
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - only creator or admin can submit
+ *         description: Forbidden - only the author (with create_questions) or an admin can submit
  *       404:
  *         description: Question or reviewer not found
  *       500:
@@ -86,11 +87,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { reviewer_id, resubmission_notes } = body;
 
     // Verify reviewer exists and has appropriate role. Service-role read: users RLS only
-    // lets a non-admin read their own row, so a creator submitting to a reviewer got
+    // lets a non-admin read their own row, so an author submitting to a reviewer got
     // nothing back here and the route answered 500.
     const { data: reviewer, error: reviewerError } = await createServiceRoleClient()
       .from("users")
-      .select("id, role")
+      .select("id, role, permissions")
       .eq("id", reviewer_id)
       .maybeSingle();
 
@@ -109,12 +110,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       );
     }
 
-    // Verify reviewer is admin or has reviewer role
-    if (reviewer.role !== "admin" && reviewer.role !== "reviewer") {
+    // The reviewer must be an admin or hold review_questions, and not be the submitter.
+    if (!hasPermission(reviewer.role, parsePermissions(reviewer.permissions), "review_questions")) {
       return NextResponse.json(
         { error: "Selected user is not a reviewer or admin" },
         { status: 400 }
       );
+    }
+    if (reviewer.id === userId) {
+      return NextResponse.json({ error: "You cannot review your own question" }, { status: 400 });
     }
 
     // Get the question to verify ownership and status
@@ -144,19 +148,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       );
     }
 
-    // Check if user is the creator or admin
-    const { data: userProfile } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
+    // Admins, or the author holding create_questions. RLS enforces the same rule.
+    const isAdmin = auth.role === "admin";
+    const isAuthor = question.created_by === userId && auth.can("create_questions");
 
-    const isAdmin = userProfile?.role === "admin";
-    const isCreator = question.created_by === userId;
-
-    if (!isAdmin && !isCreator) {
+    if (!isAdmin && !isAuthor) {
       return NextResponse.json(
-        { error: "Only the creator or admin can submit this question for review" },
+        { error: "Only the author or an admin can submit this question for review" },
         { status: 403 }
       );
     }
