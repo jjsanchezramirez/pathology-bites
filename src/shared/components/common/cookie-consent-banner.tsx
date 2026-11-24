@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
-import { X } from "lucide-react";
+import { X, Cookie } from "lucide-react";
 import {
   OPEN_COOKIE_SETTINGS_EVENT,
   openCookieSettings,
@@ -50,7 +50,7 @@ export function CookieConsentBanner() {
 
   return (
     <div
-      className="fixed bottom-4 left-4 right-4 sm:right-auto z-[100] pointer-events-none sm:max-w-xs"
+      className="fixed bottom-4 left-4 z-[100] pointer-events-none max-w-xs"
       data-testid="cookie-banner"
     >
       <Card
@@ -58,44 +58,66 @@ export function CookieConsentBanner() {
         aria-modal="false"
         aria-labelledby="cookie-banner-title"
         aria-describedby="cookie-banner-text"
-        className="pointer-events-auto animate-in slide-in-from-bottom-4 duration-300 shadow-lg border border-border bg-card"
+        className="pointer-events-auto animate-in slide-in-from-left duration-500 shadow-2xl border border-border bg-card"
       >
-        <div className="p-4 space-y-3">
-          <div className="flex items-start justify-between gap-2">
-            <h2 id="cookie-banner-title" className="text-base font-semibold">
-              Cookies
-            </h2>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => choose("denied")}
-              className="shrink-0 h-7 w-7 -mt-1 -mr-1"
-              aria-label="Close and decline analytics cookies"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+        <div className="p-4">
+          <div className="space-y-3">
+            {/* Header with close button */}
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-full bg-primary/10 shrink-0">
+                  <Cookie className="h-4 w-4 text-primary" />
+                </div>
+                <h3 id="cookie-banner-title" className="text-base font-bold">
+                  Take a bite of our cookies
+                </h3>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => choose("denied")}
+                className="shrink-0 h-6 w-6"
+                aria-label="Close and decline analytics cookies"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
 
-          <p id="cookie-banner-text" className="text-sm text-muted-foreground leading-relaxed">
-            We use essential cookies to keep you signed in. With your OK, we also use Google
-            Analytics to see which pages help most.{" "}
-            <a href="/privacy#cookies" className="text-primary hover:underline">
-              Privacy Policy
-            </a>
-          </p>
+            {/* Description */}
+            <p id="cookie-banner-text" className="text-xs text-muted-foreground leading-relaxed">
+              We use cookies to keep you logged in. With your OK, we also use Google Analytics to
+              improve your learning experience.
+            </p>
 
-          <div className="flex gap-2">
-            <Button onClick={() => choose("granted")} className="flex-1 h-9" size="sm">
-              Accept
-            </Button>
-            <Button
-              onClick={() => choose("denied")}
-              variant="outline"
-              className="flex-1 h-9"
-              size="sm"
-            >
-              Decline
-            </Button>
+            {/* Actions */}
+            <div className="flex flex-col gap-1.5">
+              <Button
+                onClick={() => choose("granted")}
+                className="w-full bg-primary hover:bg-primary/90 text-xs h-8"
+                size="sm"
+              >
+                Accept
+              </Button>
+              <Button
+                onClick={() => choose("denied")}
+                variant="outline"
+                className="w-full text-xs h-7"
+                size="sm"
+              >
+                Decline
+              </Button>
+            </div>
+
+            {/* Privacy Policy and Terms links */}
+            <p className="text-[10px] text-muted-foreground">
+              <a href="/privacy#cookies" className="text-primary hover:underline font-medium">
+                Privacy Policy
+              </a>
+              {" • "}
+              <a href="/terms" className="text-primary hover:underline font-medium">
+                Terms
+              </a>
+            </p>
           </div>
         </div>
       </Card>
