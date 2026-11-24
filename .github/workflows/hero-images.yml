@@ -1,0 +1,25 @@
+# Temporary: builds the hero gallery images from the R2 originals and commits
+# them to this branch. Removed again once the images are in.
+name: build hero images
+on:
+  push:
+    branches: [fix/home-image-hero]
+    paths: [".github/workflows/hero-images.yml", "scripts/build-hero-images.mjs"]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --no-audit --no-fund
+      - run: node scripts/build-hero-images.mjs
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/images/hero src/shared/components/common/hero-gallery-images.ts
+          git commit -m "Build the hero gallery images from the R2 originals"
+          git push
