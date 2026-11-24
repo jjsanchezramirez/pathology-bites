@@ -39,7 +39,6 @@
 
 import { ReactNode } from "react";
 import FloatingCharacter from "./dr-albright";
-import { getR2PublicUrl } from "@/shared/services/r2-storage";
 
 interface PublicHeroProps {
   /** Main heading text */
@@ -165,7 +164,7 @@ export function PublicHero({
           {showCharacter && (
             <div className="hidden md:block w-[350px]">
               <FloatingCharacter
-                imagePath={getR2PublicUrl("assets/dr-albright.png")}
+                imagePath="/images/dr-albright.svg"
                 imageAlt="Dr. Albright Character"
                 size={350}
                 wrapperClassName="w-full flex justify-center"
