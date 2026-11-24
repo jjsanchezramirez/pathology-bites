@@ -75,6 +75,22 @@ function limited(resetTime: number, message: string): NextResponse {
  *                       n: { type: integer }
  *                       title: { type: string }
  *                       href: { type: string }
+ *                 tables:
+ *                   type: array
+ *                   description: Symbol tables (e.g. IHC panels) rebuilt from the cited passages
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       n: { type: integer, description: citation number }
+ *                       headers: { type: array, items: { type: string } }
+ *                       focusRows: { type: array, items: { type: string } }
+ *                       rows:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             name: { type: string }
+ *                             cells: { type: array, items: { type: string } }
  *       400: { description: Invalid question }
  *       401: { description: Not signed in }
  *       404: { description: No passages found for the question }

@@ -132,6 +132,31 @@ describe("POST /api/user/ask-albright", () => {
     });
   });
 
+  it("rebuilds a flattened panel, sends it as rows, and returns it once", async () => {
+    const panel =
+      "IHC panels Hale KIT CK7 Chromophobe RCC +++ +++ +++ Oncocytoma - +++ rare Clear cell RCC - - - Papillary RCC - - +++ References";
+    search.mockResolvedValue([
+      { title: "chromophobe", href: "https://po/chromo", body: panel },
+      { title: "rcc overview", href: "https://po/rcc", body: panel },
+    ]);
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(
+      await POST(ask("Chromophobe RCC versus oncocytoma stains?"))
+    );
+
+    const prompt = ai.mock.calls.find((c) => c[1] === ANSWER_MODEL)![3] as string;
+    expect(prompt).toContain(
+      "Table: Chromophobe RCC: Hale +++, KIT +++, CK7 +++; Oncocytoma: Hale -, KIT +++, CK7 rare"
+    );
+    expect(prompt.match(/Table:/g)).toHaveLength(1);
+    expect(body.tables).toHaveLength(1);
+    expect(body.tables[0]).toMatchObject({
+      n: 1,
+      headers: ["Hale", "KIT", "CK7"],
+      focusRows: ["Chromophobe RCC", "Oncocytoma"],
+    });
+  });
+
   it("drops duplicate hrefs so each source is cited once", async () => {
     search.mockResolvedValue([HITS[0], { ...HITS[0], body: "second chunk" }, HITS[1]]);
     const { POST } = await loadRoute();

@@ -18,8 +18,15 @@ import {
   heuristicSource,
   normalizeQuestion,
   parseRouterReply,
+  questionTerms,
   relevantExcerpt,
 } from "./router";
+import {
+  type SymbolTable,
+  extractSymbolTables,
+  relevantTables,
+  tableToPromptLines,
+} from "./tables";
 
 export interface AskCitation {
   n: number;
@@ -27,11 +34,23 @@ export interface AskCitation {
   href: string;
 }
 
+export interface AskTable extends SymbolTable {
+  /** Citation number of the passage the table came from. */
+  n: number;
+  /** Rows the question names, highlighted in the UI (may be empty). */
+  focusRows: string[];
+}
+
+/** At most this many tables per answer — they cost no tokens to show, but space in the card. */
+const MAX_TABLES = 2;
+
 export interface AskResult {
   answer: string;
   source: AskSource;
   sourceLabel: string;
   citations: AskCitation[];
+  /** Symbol tables rebuilt from the passages (see tables.ts), for display. */
+  tables: AskTable[];
   /** Workers AI tokens this answer cost (0 when served from cache). */
   tokens: number;
   cached: boolean;
@@ -113,7 +132,24 @@ export async function askAlbright(question: string): Promise<AskResult> {
     .slice(0, PASSAGES);
   if (hits.length === 0) throw new NoPassagesError(`No ${SOURCE_LABEL[source]} passages found`);
 
-  const passages = hits.map((h) => ({ title: h.title, text: relevantExcerpt(h.body, question) }));
+  // Tables come out of the prose before excerpting, then go back in as one
+  // line per row: the flattened form is what made the model misread them. The
+  // same panel often sits on two pages (entity + overview): show and send it once.
+  const terms = questionTerms(question);
+  const tables: AskTable[] = [];
+  const tableKeys = new Set<string>();
+  const passages = hits.map((h, i) => {
+    const { tables: found, prose } = extractSymbolTables(h.body);
+    let text = relevantExcerpt(prose, question);
+    for (const t of relevantTables(found, terms)) {
+      const key = JSON.stringify([t.headers, t.rows]);
+      if (tableKeys.has(key)) continue;
+      tableKeys.add(key);
+      text += ` Table: ${tableToPromptLines(t, t.focusRows)}`;
+      if (tables.length < MAX_TABLES) tables.push({ ...t, n: i + 1 });
+    }
+    return { title: h.title, text };
+  });
   const res = await callOpenAICompatText(
     "cloudflare",
     ANSWER_MODEL,
@@ -128,6 +164,7 @@ export async function askAlbright(question: string): Promise<AskResult> {
     sourceLabel: SOURCE_LABEL[source],
     // Links come from retrieval, never from the model, so they cannot be invented.
     citations: hits.map((h, i) => ({ n: i + 1, title: h.title, href: h.href })),
+    tables,
     tokens: routerTokens + (res.tokenUsage?.total_tokens ?? 0),
     cached: false,
   };
