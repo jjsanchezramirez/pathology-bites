@@ -101,15 +101,11 @@ function GridTable({
                           isFocus ? "bg-muted font-semibold" : "bg-background"
                         )}
                       >
-                        <Inline text={cell} citations={citations} inline />
+                        <Inline text={cell} citations={citations} />
                       </th>
                     ) : (
                       <td key={k} className={cn("px-2 py-1.5 text-center", cellTone(cell))}>
-                        <Inline
-                          text={cell.replace(/^-(?=\s|\[|$)/, "–")}
-                          citations={citations}
-                          inline
-                        />
+                        <Inline text={cell.replace(/^-(?=\s|\[|$)/, "–")} citations={citations} />
                       </td>
                     )
                   )}
@@ -123,57 +119,59 @@ function GridTable({
   );
 }
 
-function CiteLink({
-  cite,
-  inline = false,
-}: {
-  cite: AskResponse["citations"][number];
-  inline?: boolean;
-}) {
+/**
+ * A run of citation markers — "[1]", "[1,3]", "[1], [3]" — with the space
+ * before it. Rendered as one superscript ¹·³ instead of bulky bracketed links.
+ */
+const CITE_RUN = /(\s*\[\d(?:,\s*\d)*\](?:\s*,?\s*\[\d(?:,\s*\d)*\])*)/g;
+
+/**
+ * Superscript citation numbers, each linking to its source. `relative` +
+ * `top` raises them without `vertical-align: super`, which grew the line box
+ * and pushed table-cell text down ("–" read as "_").
+ */
+function CiteSup({ cites }: { cites: AskResponse["citations"] }) {
   return (
-    <a
-      href={cite.href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={cn(
-        "text-[10px] font-medium text-primary hover:underline",
-        // In table cells a superscript lifts the line box and drops the cell's
-        // text to the bottom ("–" read as "_"); keep them on the baseline there.
-        inline ? "ml-0.5" : "align-super"
-      )}
-    >
-      [{cite.n}]
-    </a>
+    <sup className="relative -top-[0.45em] ml-px align-baseline text-[0.7em] leading-none">
+      {cites.map((c, k) => (
+        <span key={c.n}>
+          {k > 0 && ","}
+          <a
+            href={c.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={`${c.sourceLabel ? `${c.sourceLabel} · ` : ""}${c.title}`}
+            className="font-medium text-primary hover:underline"
+          >
+            {c.n}
+          </a>
+        </span>
+      ))}
+    </sup>
   );
 }
 
-/** `**bold**` and citation markers — `[1]`, or grouped like `[1,3]` / `[1, 3]`. */
-function Inline({
-  text,
-  citations,
-  inline = false,
-}: {
-  text: string;
-  citations: AskResponse["citations"];
-  inline?: boolean;
-}) {
+/** `**bold**` and citation markers; everything else is plain text. */
+function Inline({ text, citations }: { text: string; citations: AskResponse["citations"] }) {
   return (
     <>
-      {text.split(/(\*\*[^*]+\*\*|\[\d(?:,\s*\d)*\])/g).map((part, i) => {
-        const bold = part.match(/^\*\*([^*]+)\*\*$/);
-        if (bold) return <strong key={i}>{bold[1]}</strong>;
-        const group = part.match(/^\[(\d(?:,\s*\d)*)\]$/);
-        const cites = group
-          ? group[1].split(/,\s*/).map((n) => citations.find((c) => c.n === Number(n)))
-          : [];
-        if (!group || cites.some((c) => !c)) return <span key={i}>{part}</span>;
-        return (
-          <span key={i}>
-            {cites.map((c) => (
-              <CiteLink key={c!.n} cite={c!} inline={inline} />
-            ))}
-          </span>
-        );
+      {text.split(CITE_RUN).flatMap((part, i) => {
+        if (i % 2 === 1) {
+          const nums = [...new Set(part.match(/\d+/g)!.map(Number))];
+          const cites = nums.map((n) => citations.find((c) => c.n === n));
+          if (cites.every(Boolean)) {
+            return [<CiteSup key={i} cites={cites as AskResponse["citations"]} />];
+          }
+          return [<span key={i}>{part}</span>];
+        }
+        return part.split(/(\*\*[^*]+\*\*)/g).map((seg, k) => {
+          const bold = seg.match(/^\*\*([^*]+)\*\*$/);
+          return bold ? (
+            <strong key={`${i}-${k}`}>{bold[1]}</strong>
+          ) : (
+            <span key={`${i}-${k}`}>{seg}</span>
+          );
+        });
       })}
     </>
   );
@@ -423,8 +421,8 @@ export function AskAlbrightLauncher() {
                               rel="noopener noreferrer"
                               className="hover:underline"
                             >
-                              [{t.n}] {src?.sourceLabel ?? "source"}
-                              {src ? ` · ${src.title}` : ""}
+                              source {t.n} ({src?.sourceLabel ?? "source"}
+                              {src ? ` · ${src.title}` : ""})
                             </a>{" "}
                             — rebuilt from the page text; check against the original
                           </>
@@ -445,7 +443,7 @@ export function AskAlbrightLauncher() {
                           rel="noopener noreferrer"
                           className="inline-flex items-start gap-1 text-muted-foreground hover:text-primary hover:underline"
                         >
-                          <span className="font-medium">[{c.n}]</span>
+                          <span className="font-medium tabular-nums">{c.n}.</span>
                           <span className="line-clamp-1">
                             {c.sourceLabel && (
                               <span className="text-foreground/70">{c.sourceLabel} · </span>
