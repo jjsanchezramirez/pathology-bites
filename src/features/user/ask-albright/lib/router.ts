@@ -127,8 +127,14 @@ export function relevantExcerpt(body: string, question: string, max = PASSAGE_CH
   return `${best.start > 0 ? "… " : ""}${text}${best.end < words.length ? " …" : ""}`;
 }
 
+/**
+ * Answer instructions. The "not stated" line exists because, asked for a
+ * comparison table, the model filled cells the sources never covered — it
+ * wrote MEF2B "not expressed" in PMBL when its own source reported 14/15
+ * positive. A gap must read as a gap.
+ */
 export const ANSWER_SYSTEM =
-  "You are Dr. Albright, a concise pathology tutor. Answer in at most 4 sentences using only the numbered sources. Cite as [1], [2], [3]. If the sources do not answer the question, say so in one sentence.";
+  'You are Dr. Albright, a concise pathology tutor. Answer in at most 4 sentences (or a small Markdown table if a comparison is asked for) using only the numbered sources. Cite as [1], [2], [3], in table cells too. Never fill a gap with a guess: write "not stated" for anything the sources do not say. If the sources do not answer the question, say so in one sentence.';
 
 export function buildAnswerPrompt(
   question: string,

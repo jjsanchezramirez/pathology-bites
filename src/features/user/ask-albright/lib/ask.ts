@@ -174,6 +174,12 @@ export async function askAlbright(question: string): Promise<AskResult> {
     { system: ANSWER_SYSTEM, maxTokens: ANSWER_MAX_TOKENS, temperature: 0.2, timeoutMs: 15_000 }
   );
 
+  const counts = sources.map((src, i) => {
+    const r = settled[i];
+    return `${src}=${r.status === "fulfilled" ? r.value.length : "err"}`;
+  });
+  log.info(`[ask-albright] hits ${counts.join(" ")}`);
+
   const result: AskResult = {
     answer: res.content.trim(),
     // The corpus the top-ranked passage came from (the router's pick only
@@ -191,6 +197,7 @@ export async function askAlbright(question: string): Promise<AskResult> {
     tokens: routerTokens + (res.tokenUsage?.total_tokens ?? 0),
     cached: false,
   };
-  cacheSet(key, result);
+  // A degraded answer (a corpus errored) must not be served for 24h: next ask retries.
+  if (settled.every((r) => r.status === "fulfilled")) cacheSet(key, result);
   return result;
 }

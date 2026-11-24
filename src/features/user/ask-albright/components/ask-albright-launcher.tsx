@@ -6,6 +6,7 @@ import { ExternalLink, LoaderCircle, SendHorizontal, X } from "lucide-react";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { cn } from "@/shared/utils";
+import { parseAnswerBlocks } from "../lib/answer-blocks";
 import { MAX_QUESTION_CHARS } from "../lib/router";
 
 interface AskResponse {
@@ -95,11 +96,13 @@ function PanelTable({ table, href }: { table: AskTable; href?: string }) {
   );
 }
 
-/** `[1]`-style markers become superscript links to the matching citation. */
-function WithCitations({ text, citations }: { text: string; citations: AskResponse["citations"] }) {
+/** `**bold**` and `[1]`-style citation markers; everything else is plain text. */
+function Inline({ text, citations }: { text: string; citations: AskResponse["citations"] }) {
   return (
     <>
-      {text.split(/(\[\d\])/g).map((part, i) => {
+      {text.split(/(\*\*[^*]+\*\*|\[\d\])/g).map((part, i) => {
+        const bold = part.match(/^\*\*([^*]+)\*\*$/);
+        if (bold) return <strong key={i}>{bold[1]}</strong>;
         const m = part.match(/^\[(\d)\]$/);
         const cite = m && citations.find((c) => c.n === Number(m[1]));
         if (!cite) return <span key={i}>{part}</span>;
@@ -119,33 +122,56 @@ function WithCitations({ text, citations }: { text: string; citations: AskRespon
   );
 }
 
-/**
- * The model sometimes answers in "- " bullets despite the prompt; render those
- * as a list (they may also arrive run together on one line).
- */
+/** Paragraphs, bullet lists and Markdown tables, in the order the model wrote them. */
 function AnswerText({ text, citations }: { text: string; citations: AskResponse["citations"] }) {
-  const lines = text
-    .split(/\n+|\s+(?=- [A-Z])/)
-    .map((l) => l.trim())
-    .filter(Boolean);
-  const intro = lines.filter((l) => !l.startsWith("- "));
-  const bullets = lines.filter((l) => l.startsWith("- ")).map((l) => l.slice(2));
   return (
     <div className="space-y-1.5 text-sm leading-relaxed">
-      {intro.map((l, i) => (
-        <p key={i}>
-          <WithCitations text={l} citations={citations} />
-        </p>
-      ))}
-      {bullets.length > 0 && (
-        <ul className="list-disc space-y-1 pl-4">
-          {bullets.map((l, i) => (
-            <li key={i}>
-              <WithCitations text={l} citations={citations} />
-            </li>
-          ))}
-        </ul>
-      )}
+      {parseAnswerBlocks(text).map((b, i) => {
+        if (b.kind === "ul") {
+          return (
+            <ul key={i} className="list-disc space-y-1 pl-4">
+              {b.items.map((item, k) => (
+                <li key={k}>
+                  <Inline text={item} citations={citations} />
+                </li>
+              ))}
+            </ul>
+          );
+        }
+        if (b.kind === "table") {
+          return (
+            <div key={i} className="overflow-x-auto rounded-lg border">
+              <table className="w-full border-collapse text-xs">
+                <thead className="bg-muted/60">
+                  <tr>
+                    {b.header.map((h, k) => (
+                      <th key={k} className="px-2 py-1 text-left font-medium">
+                        <Inline text={h} citations={citations} />
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {b.rows.map((row, r) => (
+                    <tr key={r} className="border-t align-top">
+                      {row.map((cell, k) => (
+                        <td key={k} className={cn("px-2 py-1", k === 0 && "font-medium")}>
+                          <Inline text={cell} citations={citations} />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        }
+        return (
+          <p key={i}>
+            <Inline text={b.text} citations={citations} />
+          </p>
+        );
+      })}
     </div>
   );
 }

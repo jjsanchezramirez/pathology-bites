@@ -289,6 +289,14 @@ describe("POST /api/user/ask-albright", () => {
     expect(ai.mock.calls.length).toBe(callsAfterFirst);
   });
 
+  it("does not cache an answer built while a corpus was down", async () => {
+    searchBy({ search_who: new Error("HTTP 500"), search_pathology_outlines: HITS });
+    const { POST } = await loadRoute();
+    await POST(ask("What stains for oncocytoma?"));
+    const body = await getResponseJson(await POST(ask("What stains for oncocytoma?")));
+    expect(body.cached).toBe(false);
+  });
+
   it("404s when no corpus returns passages, without an answer call", async () => {
     searchBy({});
     const { POST } = await loadRoute();

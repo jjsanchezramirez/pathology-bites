@@ -55,7 +55,9 @@ export function hitsFromFrames(frames: Array<Record<string, unknown>>): PathTalk
         error?: { message?: string };
       }
     | undefined;
-  if (!frame) return [];
+  // No result frame is a truncated or dropped reply, not "nothing found" —
+  // treating it as [] silently lost PubMed from an answer. Throw so it retries.
+  if (!frame) throw new Error("pathtalk: no result frame");
   if (frame.error) throw new Error(`pathtalk: ${frame.error.message ?? "tool error"}`);
   const out: PathTalkHit[] = [];
   for (const c of frame.result?.content ?? []) {
@@ -138,19 +140,18 @@ async function callTool(
 }
 
 /**
- * Search one PathTalk corpus. Reuses the instance's session and reconnects once
- * if it has aged out (the server answers 4xx for a stale session).
+ * Search one PathTalk corpus. Reuses the instance's session; on any failure
+ * (stale session 4xx, dropped reply, timeout) reconnects and tries once more.
  */
 export async function searchPathTalk(
   tool: PathTalkTool,
   query: string,
   { limit = 3, timeoutMs = 8_000 }: { limit?: number; timeoutMs?: number } = {}
 ): Promise<PathTalkHit[]> {
-  if (!cachedSession) cachedSession = await connect(timeoutMs);
   try {
+    if (!cachedSession) cachedSession = await connect(timeoutMs);
     return await callTool(cachedSession, tool, query, limit, timeoutMs);
-  } catch (err) {
-    if (!(err instanceof Error) || !/HTTP 4\d\d/.test(err.message)) throw err;
+  } catch {
     cachedSession = await connect(timeoutMs);
     return callTool(cachedSession, tool, query, limit, timeoutMs);
   }

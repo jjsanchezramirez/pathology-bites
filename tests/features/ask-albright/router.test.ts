@@ -114,7 +114,11 @@ describe("PathTalk frame parsing", () => {
   it("throws on a tool error frame", () => {
     expect(() => hitsFromFrames([{ error: { message: "bad" } }])).toThrow(/bad/);
   });
-  it("returns [] when no result frame arrived", () => {
-    expect(hitsFromFrames(parseSse(": keep-alive\n"))).toEqual([]);
+  it("throws when no result frame arrived, so a dropped reply is retried, not read as 'no hits'", () => {
+    expect(() => hitsFromFrames(parseSse(": keep-alive\n"))).toThrow(/no result frame/);
+  });
+  it("returns [] for a real empty result", () => {
+    const sse = `data: ${JSON.stringify({ result: { content: [] } })}\n`;
+    expect(hitsFromFrames(parseSse(sse))).toEqual([]);
   });
 });
