@@ -29,80 +29,118 @@ const AVATAR = "/images/dr-albright-seated.svg";
 // An active quiz must not get an answer button, and Anki owns its full screen.
 const HIDDEN = [/^\/dashboard\/quiz\/(?!new$)[^/]+$/, /^\/dashboard\/anki$/];
 
-const CELL_TONE: Record<string, string> = {
-  "+++": "font-semibold text-emerald-700",
-  "++": "text-emerald-700",
-  "+": "text-emerald-700",
-  "-": "text-muted-foreground",
-};
+/**
+ * Colour a cell by what it says, ignoring citations and bold: positive green,
+ * negative grey, partial (rare/focal/weak/variable/±) amber, "not stated" muted.
+ * Shared by both tables so they read the same.
+ */
+function cellTone(cell: string): string {
+  const t = cell
+    .replace(/\[\d(?:,\s*\d)*\]|\*\*/g, "")
+    .trim()
+    .toLowerCase();
+  if (/^not stated/.test(t)) return "italic text-muted-foreground";
+  if (/^\+{3}/.test(t)) return "font-semibold text-emerald-700";
+  if (/^(\+{1,2}(?!\/)|positive)/.test(t)) return "text-emerald-700";
+  if (/^(-|–|negative)/.test(t)) return "text-muted-foreground";
+  if (/^(±|\+\/-|rare|focal|weak|variable|patchy)/.test(t)) return "text-amber-700";
+  return "";
+}
 
 /**
- * A rebuilt symbol table (see lib/tables.ts). Rows the question names are
- * highlighted; the rest stay for context. Scrolls sideways in the narrow card.
+ * The one table style in the card, used for the model's own tables and for
+ * panels rebuilt from the sources. First column is the row label (sticky when
+ * the table scrolls sideways); `focus` rows are highlighted.
  */
-function PanelTable({ table, href }: { table: AskTable; href?: string }) {
-  const focus = new Set(table.focusRows);
+function GridTable({
+  caption,
+  header,
+  rows,
+  focus = [],
+  citations,
+}: {
+  caption: React.ReactNode;
+  header: string[];
+  rows: string[][];
+  focus?: string[];
+  citations: AskResponse["citations"];
+}) {
+  const focused = new Set(focus);
   return (
     <figure className="space-y-1">
+      <figcaption className="text-[11px] font-medium text-muted-foreground">{caption}</figcaption>
       <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full border-collapse text-[11px]">
+        <table className="w-full border-collapse text-xs">
           <thead className="bg-muted/60">
             <tr>
-              <th className="sticky left-0 bg-muted px-2 py-1 text-left font-medium" />
-              {table.headers.map((h) => (
-                <th key={h} className="px-1.5 py-1 text-center font-medium">
-                  {h}
+              {header.map((h, k) => (
+                <th
+                  key={k}
+                  className={cn(
+                    "whitespace-nowrap px-2 py-1.5 font-medium",
+                    k === 0 ? "sticky left-0 bg-muted text-left" : "text-center"
+                  )}
+                >
+                  <Inline text={h} citations={citations} />
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {table.rows.map((r) => (
-              <tr key={r.name} className={cn("border-t", focus.has(r.name) && "bg-primary/5")}>
-                <th
-                  scope="row"
-                  className={cn(
-                    "sticky left-0 whitespace-nowrap bg-background px-2 py-1 text-left font-normal",
-                    focus.has(r.name) && "bg-muted font-semibold"
+            {rows.map((row, r) => {
+              const isFocus = focused.has(row[0]);
+              return (
+                <tr key={r} className={cn("border-t align-top", isFocus && "bg-primary/5")}>
+                  {row.map((cell, k) =>
+                    k === 0 ? (
+                      <th
+                        key={k}
+                        scope="row"
+                        className={cn(
+                          "sticky left-0 whitespace-nowrap px-2 py-1.5 text-left font-medium",
+                          isFocus ? "bg-muted font-semibold" : "bg-background"
+                        )}
+                      >
+                        <Inline text={cell} citations={citations} inline />
+                      </th>
+                    ) : (
+                      <td key={k} className={cn("px-2 py-1.5 text-center", cellTone(cell))}>
+                        <Inline
+                          text={cell.replace(/^-(?=\s|\[|$)/, "–")}
+                          citations={citations}
+                          inline
+                        />
+                      </td>
+                    )
                   )}
-                >
-                  {r.name}
-                </th>
-                {r.cells.map((c, i) => (
-                  <td
-                    key={i}
-                    className={cn("px-1.5 py-1 text-center", CELL_TONE[c] ?? "text-amber-700")}
-                  >
-                    {c === "-" ? "–" : c}
-                  </td>
-                ))}
-              </tr>
-            ))}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
-      <figcaption className="text-[10px] text-muted-foreground">
-        Rebuilt from{" "}
-        {href ? (
-          <a href={href} target="_blank" rel="noopener noreferrer" className="hover:underline">
-            source [{table.n}]
-          </a>
-        ) : (
-          `source [${table.n}]`
-        )}
-        ; check against the original.
-      </figcaption>
     </figure>
   );
 }
 
-function CiteLink({ cite }: { cite: AskResponse["citations"][number] }) {
+function CiteLink({
+  cite,
+  inline = false,
+}: {
+  cite: AskResponse["citations"][number];
+  inline?: boolean;
+}) {
   return (
     <a
       href={cite.href}
       target="_blank"
       rel="noopener noreferrer"
-      className="align-super text-[10px] font-medium text-primary hover:underline"
+      className={cn(
+        "text-[10px] font-medium text-primary hover:underline",
+        // In table cells a superscript lifts the line box and drops the cell's
+        // text to the bottom ("–" read as "_"); keep them on the baseline there.
+        inline ? "ml-0.5" : "align-super"
+      )}
     >
       [{cite.n}]
     </a>
@@ -110,7 +148,15 @@ function CiteLink({ cite }: { cite: AskResponse["citations"][number] }) {
 }
 
 /** `**bold**` and citation markers — `[1]`, or grouped like `[1,3]` / `[1, 3]`. */
-function Inline({ text, citations }: { text: string; citations: AskResponse["citations"] }) {
+function Inline({
+  text,
+  citations,
+  inline = false,
+}: {
+  text: string;
+  citations: AskResponse["citations"];
+  inline?: boolean;
+}) {
   return (
     <>
       {text.split(/(\*\*[^*]+\*\*|\[\d(?:,\s*\d)*\])/g).map((part, i) => {
@@ -124,7 +170,7 @@ function Inline({ text, citations }: { text: string; citations: AskResponse["cit
         return (
           <span key={i}>
             {cites.map((c) => (
-              <CiteLink key={c!.n} cite={c!} />
+              <CiteLink key={c!.n} cite={c!} inline={inline} />
             ))}
           </span>
         );
@@ -151,30 +197,13 @@ function AnswerText({ text, citations }: { text: string; citations: AskResponse[
         }
         if (b.kind === "table") {
           return (
-            <div key={i} className="overflow-x-auto rounded-lg border">
-              <table className="w-full border-collapse text-xs">
-                <thead className="bg-muted/60">
-                  <tr>
-                    {b.header.map((h, k) => (
-                      <th key={k} className="px-2 py-1 text-left font-medium">
-                        <Inline text={h} citations={citations} />
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {b.rows.map((row, r) => (
-                    <tr key={r} className="border-t align-top">
-                      {row.map((cell, k) => (
-                        <td key={k} className={cn("px-2 py-1", k === 0 && "font-medium")}>
-                          <Inline text={cell} citations={citations} />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <GridTable
+              key={i}
+              caption="Summary table — from the cited sources"
+              header={b.header}
+              rows={b.rows}
+              citations={citations}
+            />
           );
         }
         return (
@@ -248,6 +277,12 @@ export function AskAlbrightLauncher() {
     inputRef.current?.focus();
   }
 
+  // Tables need room: widen the card for them, up to ~600px.
+  const hasTable =
+    !!result &&
+    ((result.tables?.length ?? 0) > 0 ||
+      parseAnswerBlocks(result.answer).some((b) => b.kind === "table"));
+
   const barButton =
     "flex h-full w-full items-center justify-center text-foreground/80 transition-colors hover:text-primary focus-visible:outline-none focus-visible:text-primary";
 
@@ -281,7 +316,11 @@ export function AskAlbrightLauncher() {
         aria-label="Ask Dr. Albright"
         className={cn(
           "relative z-10 overflow-hidden rounded-[28px] border bg-background shadow-xl transition-[width] duration-300 ease-out",
-          open ? "w-[min(380px,calc(100vw-2rem))]" : "w-[160px]"
+          !open
+            ? "w-[160px]"
+            : hasTable
+              ? "w-[min(600px,calc(100vw-2rem))]"
+              : "w-[min(400px,calc(100vw-2rem))]"
         )}
       >
         {/* Body: grid-rows 0fr→1fr animates height without measuring it. */}
@@ -294,7 +333,7 @@ export function AskAlbrightLauncher() {
           inert={!open}
         >
           <div className="min-h-0 overflow-hidden">
-            <div className="flex max-h-[min(60vh,520px)] flex-col gap-3 overflow-y-auto px-4 pb-2 pt-6">
+            <div className="flex max-h-[min(70vh,640px)] flex-col gap-3 overflow-y-auto px-4 pb-2 pt-6">
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="text-sm font-semibold">Ask Dr. Albright</p>
@@ -370,13 +409,33 @@ export function AskAlbrightLauncher() {
                     {result.cached && <span className="text-xs text-muted-foreground">cached</span>}
                   </div>
                   <AnswerText text={result.answer} citations={result.citations} />
-                  {result.tables?.map((t) => (
-                    <PanelTable
-                      key={`${t.n}-${t.headers.join()}`}
-                      table={t}
-                      href={result.citations.find((c) => c.n === t.n)?.href}
-                    />
-                  ))}
+                  {result.tables?.map((t) => {
+                    const src = result.citations.find((c) => c.n === t.n);
+                    return (
+                      <GridTable
+                        key={`${t.n}-${t.headers.join()}`}
+                        caption={
+                          <>
+                            Full IHC panel from{" "}
+                            <a
+                              href={src?.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline"
+                            >
+                              [{t.n}] {src?.sourceLabel ?? "source"}
+                              {src ? ` · ${src.title}` : ""}
+                            </a>{" "}
+                            — rebuilt from the page text; check against the original
+                          </>
+                        }
+                        header={["", ...t.headers]}
+                        rows={t.rows.map((r) => [r.name, ...r.cells])}
+                        focus={t.focusRows}
+                        citations={result.citations}
+                      />
+                    );
+                  })}
                   <ol className="space-y-1">
                     {result.citations.map((c) => (
                       <li key={c.n} className="text-xs">
