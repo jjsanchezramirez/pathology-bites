@@ -26,7 +26,7 @@ interface RateLimitEntry {
   failedRequests: number;
 }
 
-class APIRateLimiter {
+export class APIRateLimiter {
   private attempts = new Map<string, RateLimitEntry>();
   private config: RateLimitConfig;
 

@@ -1,5 +1,6 @@
 // src/app/api/user/data-export/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { HISTORY_KEEP, listHistory } from "@/features/user/ask-albright/lib/history";
 import { createClient } from "@/shared/services/server";
 import { requireUser } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
@@ -9,7 +10,7 @@ import { log } from "@/shared/utils/logging";
  * /api/user/data-export:
  *   post:
  *     summary: Export complete user data
- *     description: Export all user data including profile, settings, quiz sessions, quiz attempts, favorites, question flags, and question reports. Creates an audit log entry for GDPR compliance. Requires authentication.
+ *     description: Export all user data including profile, settings, quiz sessions, quiz attempts, favorites, question flags, question reports, and Ask Dr. Albright question history. Creates an audit log entry for GDPR compliance. Requires authentication.
  *     tags:
  *       - User - Account
  *     security:
@@ -68,6 +69,11 @@ import { log } from "@/shared/utils/logging";
  *                       type: array
  *                       items:
  *                         type: object
+ *                     ask_albright_history:
+ *                       type: array
+ *                       description: Questions asked to Dr. Albright, newest first, with the answers shown
+ *                       items:
+ *                         type: object
  *                     statistics:
  *                       type: object
  *                       properties:
@@ -78,6 +84,8 @@ import { log } from "@/shared/utils/logging";
  *                         total_favorites:
  *                           type: integer
  *                         total_flags_created:
+ *                           type: integer
+ *                         total_ask_albright_questions:
  *                           type: integer
  *                         total_reports_created:
  *                           type: integer
@@ -188,6 +196,16 @@ export async function POST(request: NextRequest) {
       log.error("Error fetching question flags:", flagsError);
     }
 
+    // Ask Dr. Albright history. Its table denies client access (RLS), so it is
+    // read through the same service-role helper the Ask route uses, scoped to
+    // this user. A failure leaves it out rather than failing the export.
+    let askAlbrightHistory: Awaited<ReturnType<typeof listHistory>> = [];
+    try {
+      askAlbrightHistory = await listHistory(userId, HISTORY_KEEP);
+    } catch (historyError) {
+      log.error("Error fetching Ask Dr. Albright history:", historyError);
+    }
+
     // Compile all user data
     const userData = {
       export_info: {
@@ -205,11 +223,13 @@ export async function POST(request: NextRequest) {
       },
       favorites: favorites || [],
       question_flags: questionFlags || [],
+      ask_albright_history: askAlbrightHistory,
       statistics: {
         total_quiz_sessions: quizSessions?.length || 0,
         total_quiz_attempts: quizAttempts?.length || 0,
         total_favorites: favorites?.length || 0,
         total_flags_created: questionFlags?.length || 0,
+        total_ask_albright_questions: askAlbrightHistory.length,
         account_created: userProfile?.created_at,
         last_updated: userProfile?.updated_at,
       },
