@@ -1,0 +1,120 @@
+import { describe, it, expect } from "vitest";
+import {
+  buildAnswerPrompt,
+  buildRouterPrompt,
+  heuristicSource,
+  normalizeQuestion,
+  parseRouterReply,
+  questionTerms,
+  relevantExcerpt,
+} from "@/features/user/ask-albright/lib/router";
+import { hitsFromFrames, parseSse } from "@/shared/services/pathtalk";
+
+describe("parseRouterReply", () => {
+  it.each([
+    ["A", "outlines"],
+    ["B", "pubmed"],
+    ["C", "who"],
+    ["c", "who"],
+    [" B.", "pubmed"],
+    ["(A)", "outlines"],
+    ["**C**", "who"],
+    ["A: textbook", "outlines"],
+  ])("maps %j to %s", (reply, expected) => {
+    expect(parseRouterReply(reply)).toBe(expected);
+  });
+
+  it.each(["", "D", "The WHO", "Answer", "about"])("rejects off-format reply %j", (reply) => {
+    expect(parseRouterReply(reply)).toBeNull();
+  });
+});
+
+describe("buildRouterPrompt", () => {
+  it("stays tiny and ends with the one-letter instruction", () => {
+    const p = buildRouterPrompt("What is the WHO grade of meningioma?");
+    expect(p).toContain("Q: What is the WHO grade of meningioma?");
+    expect(p.endsWith("Reply with one letter.")).toBe(true);
+    // ~94 tokens measured; guard against the prompt quietly growing.
+    expect(p.length).toBeLessThan(300);
+  });
+});
+
+describe("heuristicSource", () => {
+  it("routes classification and grading to WHO", () => {
+    expect(heuristicSource("WHO grade of meningioma")).toBe("who");
+    expect(heuristicSource("Classification of high-grade B-cell lymphoma")).toBe("who");
+  });
+  it("routes outcomes and studies to PubMed", () => {
+    expect(heuristicSource("5-year survival in MSI-high colon cancer")).toBe("pubmed");
+    expect(heuristicSource("recent studies on TRPS1")).toBe("pubmed");
+  });
+  it("defaults to the textbook", () => {
+    expect(heuristicSource("Histologic features of Warthin tumor")).toBe("outlines");
+  });
+  it("does not match 'who' inside other words", () => {
+    expect(heuristicSource("Patients whose tumors express CK7")).toBe("outlines");
+  });
+});
+
+describe("normalizeQuestion", () => {
+  it("ignores case, spacing and trailing punctuation", () => {
+    expect(normalizeQuestion("  What is  CK7? ")).toBe(normalizeQuestion("what is ck7"));
+  });
+});
+
+describe("questionTerms", () => {
+  it("drops stopwords and duplicates", () => {
+    expect(questionTerms("What is the WHO grading of the meningioma grading?")).toEqual([
+      "grading",
+      "meningioma",
+    ]);
+  });
+});
+
+describe("relevantExcerpt", () => {
+  it("leaves short text alone but collapses whitespace", () => {
+    expect(relevantExcerpt("a\n\n b   c", "anything", 50)).toBe("a b c");
+  });
+  it("picks the window about the question, not the head", () => {
+    const filler = "Authors and affiliations listed here. ".repeat(20);
+    const body = `${filler}Grading: meningiomas are WHO grade 1, 2 or 3 by mitotic count. ${filler}`;
+    const out = relevantExcerpt(body, "What is the WHO grading of meningioma?", 120);
+    expect(out).toContain("Grading: meningiomas are WHO grade 1, 2 or 3");
+    expect(out.startsWith("… ")).toBe(true);
+    expect(out.endsWith(" …")).toBe(true);
+  });
+  it("matches word prefixes, so 'stain' finds 'staining'", () => {
+    const body = "x ".repeat(300) + "CK7 staining is diffuse in chromophobe. " + "y ".repeat(300);
+    expect(relevantExcerpt(body, "CK7 stain chromophobe", 80)).toContain("CK7 staining is diffuse");
+  });
+  it("respects the length budget", () => {
+    const out = relevantExcerpt("word ".repeat(1000), "word", 100);
+    expect(out.length).toBeLessThanOrEqual(104);
+  });
+});
+
+describe("buildAnswerPrompt", () => {
+  it("numbers the sources in order", () => {
+    const p = buildAnswerPrompt("Q?", [
+      { title: "One", text: "alpha" },
+      { title: "Two", text: "beta" },
+    ]);
+    expect(p).toBe("Sources:\n[1] One: alpha\n[2] Two: beta\n\nQuestion: Q?");
+  });
+});
+
+describe("PathTalk frame parsing", () => {
+  it("unwraps SSE frames and double-encoded hits", () => {
+    const hit = { title: "oncocytoma", source: "po", href: "https://x/onco", body: "CK7 patchy" };
+    const sse =
+      "event: message\n" +
+      `data: ${JSON.stringify({ result: { content: [{ type: "text", text: JSON.stringify(hit) }] } })}\n\n`;
+    expect(hitsFromFrames(parseSse(sse))).toEqual([hit]);
+  });
+  it("throws on a tool error frame", () => {
+    expect(() => hitsFromFrames([{ error: { message: "bad" } }])).toThrow(/bad/);
+  });
+  it("returns [] when no result frame arrived", () => {
+    expect(hitsFromFrames(parseSse(": keep-alive\n"))).toEqual([]);
+  });
+});
