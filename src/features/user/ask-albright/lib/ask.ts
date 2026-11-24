@@ -19,6 +19,8 @@ import {
   buildAnswerPrompt,
   normalizeQuestion,
   splitFollowUps,
+  hitTokenCap,
+  tidyAnswer,
   questionTerms,
   relevantExcerpt,
 } from "./router";
@@ -326,25 +328,34 @@ export async function askAlbright(
   });
 
   // 4. Answer in the planned format, told what to look for.
-  const res = await callOpenAICompatText(
-    "cloudflare",
-    ANSWER_MODEL,
-    apiKey,
-    buildAnswerPrompt(question, passages, sameMarkerNote(aliasGroups), plan.focus),
-    {
-      system: answerSystem(plan.format),
+  const prompt = buildAnswerPrompt(question, passages, sameMarkerNote(aliasGroups), plan.focus);
+  const answerOnce = (format: AnswerFormat) =>
+    callOpenAICompatText("cloudflare", ANSWER_MODEL, apiKey, prompt, {
+      system: answerSystem(format),
       maxTokens: ANSWER_MAX_TOKENS,
       temperature: 0.2,
       timeoutMs: 20_000,
-    }
-  );
+    });
+  let res = await answerOnce(plan.format);
+  let answerTokens = res.tokenUsage?.total_tokens ?? 0;
+  let format = plan.format;
+  // An answer that used its whole budget was cut off. Seen with tables: the
+  // model padded the header with spaces until the cap and never wrote a row
+  // ("Endometrial carcinoma vs endocervical adenocarcinoma"). Retry once as a
+  // paragraph rather than show a fragment; this costs only on the rare miss.
+  if (hitTokenCap(res.tokenUsage?.completion_tokens) && format !== "paragraph") {
+    log.warn(`[ask-albright] ${format} answer hit the token cap; retrying as a paragraph`);
+    res = await answerOnce("paragraph");
+    answerTokens += res.tokenUsage?.total_tokens ?? 0;
+    format = "paragraph";
+  }
 
   log.info(
     `[ask-albright] plan ${plan.source}/${plan.format} q="${plan.query}" searched=${searched.join("+")} top=${chosen[0]?.score.toFixed(2)} markers=${aliasGroups.map((g) => g.name).join(",") || "none"}`
   );
 
   const result: AskResult = {
-    ...splitFollowUps(res.content),
+    ...splitFollowUps(tidyAnswer(res.content)),
     source: hits[0].source,
     sourceLabel: SOURCE_LABEL[hits[0].source],
     // Links come from retrieval, never from the model, so they cannot be invented.
@@ -355,9 +366,9 @@ export async function askAlbright(
       sourceLabel: SOURCE_LABEL[h.source],
     })),
     tables,
-    tokens: planTokens + (res.tokenUsage?.total_tokens ?? 0),
+    tokens: planTokens + answerTokens,
     cached: false,
-    format: plan.format,
+    format,
   };
   // A degraded answer (a search errored) must not be served for 24h: next ask retries.
   if (!noCache && !anyFailed) cacheSet(key, result);

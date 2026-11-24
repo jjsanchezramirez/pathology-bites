@@ -103,7 +103,7 @@ export const FORMAT_INSTRUCTION: Record<AnswerFormat, string> = {
     'Answer as short bullets ("- "). Group them under bold labels on their own line (e.g. "**Positive:**", "**Negative:**"), one label per group; keep each bullet to the item and its key detail. Never list an item in more than one group, and leave out items the sources do not mention (no "not stated" group).',
   paragraph: "Answer in a short paragraph of at most 4 sentences.",
   table:
-    "Answer as a small Markdown table (rows = items, columns = features), then one sentence that answers the question directly.",
+    "Answer as a compact Markdown table: at most 4 columns and 6 rows, cells under 10 words, no padding or alignment spaces (rows = items, columns = features). Then one sentence that answers the question directly.",
 };
 
 /** The answer model's system prompt: shared rules plus the planned format. */

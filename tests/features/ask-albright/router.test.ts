@@ -6,6 +6,8 @@ import {
   questionTerms,
   relevantExcerpt,
   splitFollowUps,
+  hitTokenCap,
+  tidyAnswer,
 } from "@/features/user/ask-albright/lib/router";
 import { hitsFromFrames, parseSse } from "@/shared/services/pathtalk";
 
@@ -115,5 +117,19 @@ describe("splitFollowUps", () => {
   });
   it("returns no follow-ups when the line is missing", () => {
     expect(splitFollowUps("Just an answer.")).toEqual({ answer: "Just an answer.", followUps: [] });
+  });
+});
+
+describe("tidyAnswer / hitTokenCap", () => {
+  it("collapses alignment padding but keeps lines", () => {
+    expect(tidyAnswer("| A          | B    |\n| x   | y |   \n\nText.")).toBe(
+      "| A | B |\n| x | y |\n\nText."
+    );
+  });
+  it("flags an answer that used its whole budget", () => {
+    expect(hitTokenCap(360)).toBe(true);
+    expect(hitTokenCap(357)).toBe(true);
+    expect(hitTokenCap(200)).toBe(false);
+    expect(hitTokenCap(undefined)).toBe(false);
   });
 });

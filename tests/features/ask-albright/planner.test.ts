@@ -74,4 +74,8 @@ describe("planner prompt and answer system", () => {
   it("adds the planned format to the shared answer rules", () => {
     expect(answerSystem("bullets")).toBe(`${ANSWER_RULES} ${FORMAT_INSTRUCTION.bullets}`);
   });
+  it("puts no concrete findings or numbers in the answer rules (they leak into answers)", () => {
+    // "positive in 9 of 10 cases", meant as an example, came back as an HPV table cell.
+    expect(ANSWER_RULES.replace(/\[\d\]/g, "")).not.toMatch(/\d/);
+  });
 });

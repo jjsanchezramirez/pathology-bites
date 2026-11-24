@@ -13,6 +13,11 @@ type MarkerRow = {
 
 const SELECT = "id, name, gene_symbols, marker_synonyms(term)";
 const MAX_GROUPS = 6;
+/**
+ * Synonyms are a nicety: never let them hold a question. Without a limit, a
+ * stalled connection kept one request waiting 616 s during a network drop.
+ */
+const LOOKUP_TIMEOUT_MS = 2500;
 
 // Per instance; marker vocabulary changes rarely and a stale entry is harmless.
 const cache = new Map<string, AliasGroup[]>();
@@ -42,8 +47,14 @@ export async function lookupMarkerAliases(question: string): Promise<AliasGroup[
         .select(SELECT)
         .eq("kind", "protein")
         .or(words.map((w) => `name.ilike.${w}`).join(","))
-        .limit(20),
-      sb.from("marker_synonyms").select("marker_id").in("term_normalized", candidates).limit(100),
+        .limit(20)
+        .abortSignal(AbortSignal.timeout(LOOKUP_TIMEOUT_MS)),
+      sb
+        .from("marker_synonyms")
+        .select("marker_id")
+        .in("term_normalized", candidates)
+        .limit(100)
+        .abortSignal(AbortSignal.timeout(LOOKUP_TIMEOUT_MS)),
     ]);
     if (byName.error) throw byName.error;
     if (bySynonym.error) throw bySynonym.error;
@@ -60,7 +71,8 @@ export async function lookupMarkerAliases(question: string): Promise<AliasGroup[
         .select(SELECT)
         .eq("kind", "protein")
         .in("id", extraIds.slice(0, 50))
-        .order("id");
+        .order("id")
+        .abortSignal(AbortSignal.timeout(LOOKUP_TIMEOUT_MS));
       if (more.error) throw more.error;
       for (const r of (more.data ?? []) as MarkerRow[]) rows.set(r.id, r);
     }

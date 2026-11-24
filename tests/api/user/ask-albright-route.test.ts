@@ -427,6 +427,36 @@ describe("POST /api/user/ask-albright", () => {
     expect(saveHistory).not.toHaveBeenCalled();
   });
 
+  it("retries a cut-off table once as a paragraph (padding-loop case)", async () => {
+    let answers = 0;
+    ai.mockImplementation(async (_p, _m, _k, _prompt, opts) => {
+      if (opts?.jsonMode) return { content: JSON.stringify({ ...PLAN, format: "table" }) };
+      answers++;
+      return answers === 1
+        ? {
+            content: "| Feature / Diagnosis" + " ".repeat(300) + "| Morphology",
+            tokenUsage: { prompt_tokens: 1500, completion_tokens: 360, total_tokens: 1860 },
+          }
+        : {
+            content: "Endometrial carcinoma is ER-positive [1].",
+            tokenUsage: { prompt_tokens: 1500, completion_tokens: 30, total_tokens: 1530 },
+          };
+    });
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(
+      await POST(ask("Endometrial vs endocervical adenocarcinoma"))
+    );
+    expect(answers).toBe(2);
+    expect(ai.mock.calls.filter((c) => !c[4]?.jsonMode)[1][4]?.system).toContain(
+      FORMAT_INSTRUCTION.paragraph
+    );
+    expect(body).toMatchObject({
+      answer: "Endometrial carcinoma is ER-positive [1].",
+      format: "paragraph",
+      tokens: 1860 + 1530,
+    });
+  });
+
   it("returns follow-up questions split off the answer", async () => {
     mockAi(
       PLAN,
