@@ -594,28 +594,32 @@ export function AskAlbrightLauncher() {
                       ))}
                     </div>
                   )}
-                  <p className="pt-1 text-[11px] font-medium text-muted-foreground">Sources</p>
-                  <ol className="-mt-1.5 space-y-1">
-                    {result.citations.map((c) => (
-                      <li key={c.n} className="text-xs">
-                        <a
-                          href={c.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-start gap-1 text-muted-foreground hover:text-primary hover:underline"
-                        >
-                          <span className="font-medium tabular-nums">{c.n}.</span>
-                          <span className="line-clamp-1">
-                            {c.sourceLabel && (
-                              <span className="text-foreground/70">{c.sourceLabel} · </span>
-                            )}
-                            {c.title}
-                          </span>
-                          <ExternalLink className="mt-0.5 h-3 w-3 shrink-0" />
-                        </a>
-                      </li>
-                    ))}
-                  </ol>
+                  {result.citations.length > 0 && (
+                    <>
+                      <p className="pt-1 text-[11px] font-medium text-muted-foreground">Sources</p>
+                      <ol className="-mt-1.5 space-y-1">
+                        {result.citations.map((c) => (
+                          <li key={c.n} className="text-xs">
+                            <a
+                              href={c.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-start gap-1 text-muted-foreground hover:text-primary hover:underline"
+                            >
+                              <span className="font-medium tabular-nums">{c.n}.</span>
+                              <span className="line-clamp-1">
+                                {c.sourceLabel && (
+                                  <span className="text-foreground/70">{c.sourceLabel} · </span>
+                                )}
+                                {c.title}
+                              </span>
+                              <ExternalLink className="mt-0.5 h-3 w-3 shrink-0" />
+                            </a>
+                          </li>
+                        ))}
+                      </ol>
+                    </>
+                  )}
                   <p className="mt-3 border-t pt-2.5 text-center text-[11px] text-muted-foreground">
                     Dr. Albright can make mistakes. Check the sources; not for diagnostic use.
                   </p>

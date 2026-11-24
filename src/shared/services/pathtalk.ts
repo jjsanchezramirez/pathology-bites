@@ -25,7 +25,11 @@ const HEADERS = {
   Accept: "application/json, text/event-stream",
 };
 
-export type PathTalkTool = "search_pathology_outlines" | "search_path_pubmed" | "search_who";
+export type PathTalkTool =
+  | "search_pathology_outlines"
+  | "search_path_pubmed"
+  | "search_who"
+  | "search_path_literature";
 
 export interface PathTalkHit {
   title: string;
@@ -90,8 +94,19 @@ async function post(body: unknown, session: string | null, timeoutMs: number): P
   });
 }
 
-// Fluid Compute reuses instances, so one session serves many requests.
-let cachedSession: string | null = null;
+// Fluid Compute reuses instances, so one session serves many requests. It is
+// held as a promise so concurrent searches share ONE in-flight initialize:
+// letting each parallel search connect on its own (and reconnect on any error)
+// stampeded PathTalk with ~24 initializes per burst and timed them all out.
+let sessionPromise: Promise<string> | null = null;
+
+function getSession(timeoutMs: number): Promise<string> {
+  sessionPromise ??= connect(timeoutMs).catch((err) => {
+    sessionPromise = null;
+    throw err;
+  });
+  return sessionPromise;
+}
 
 async function connect(timeoutMs: number): Promise<string> {
   const res = await post(
@@ -148,11 +163,13 @@ export async function searchPathTalk(
   query: string,
   { limit = 3, timeoutMs = 8_000 }: { limit?: number; timeoutMs?: number } = {}
 ): Promise<PathTalkHit[]> {
+  const current = getSession(timeoutMs);
   try {
-    if (!cachedSession) cachedSession = await connect(timeoutMs);
-    return await callTool(cachedSession, tool, query, limit, timeoutMs);
+    return await callTool(await current, tool, query, limit, timeoutMs);
   } catch {
-    cachedSession = await connect(timeoutMs);
-    return callTool(cachedSession, tool, query, limit, timeoutMs);
+    // Drop the session only if nobody has replaced it yet, so a burst of
+    // failures triggers one reconnect, not one each.
+    if (sessionPromise === current) sessionPromise = null;
+    return callTool(await getSession(timeoutMs), tool, query, limit, timeoutMs);
   }
 }

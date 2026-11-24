@@ -113,6 +113,19 @@ export async function POST(request: NextRequest) {
   const body = await parseBody(request, bodySchema);
   if (body instanceof NextResponse) return body;
 
+  // Dev-only eval mode (tests/eval/ask-albright.eval.mjs): a fresh answer every
+  // time — no history, no cache, no rate limit. Ignored in production.
+  const evalMode =
+    process.env.NODE_ENV !== "production" && request.headers.get("x-ask-albright-eval") === "1";
+  if (evalMode) {
+    try {
+      return NextResponse.json(await askAlbright(body.question, { noCache: true }));
+    } catch (err) {
+      if (err instanceof NoPassagesError) return apiError(err.message, 404);
+      return apiError(err instanceof Error ? err.message : "failed", 502);
+    }
+  }
+
   // Asked before? Return the saved answer: no AI call, no rate-limit charge.
   try {
     const prior = await findInHistory(auth.userId, body.question);

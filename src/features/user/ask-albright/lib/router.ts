@@ -1,34 +1,31 @@
 /**
- * Ask Dr. Albright — source routing and prompt building. Pure functions only,
- * so the cheap parts are unit-testable without a model or the network.
+ * Ask Dr. Albright — sources, excerpting and answer prompts. Pure functions
+ * only, so they are unit-testable without a model or the network. The
+ * planning step (scope / source / query / focus / format) is in planner.ts.
  *
  * Token budget, measured on Workers AI (Nov 2026):
- *   router  ≈ 94 prompt tokens + 1 output token  (llama-3.2-3b, 8/8 on a probe set)
- *   answer  ≈ 450–600 prompt tokens, capped at ANSWER_MAX_TOKENS output
+ *   planner ≈ 320 tokens (mistral-small, JSON)
+ *   answer  ≈ 2–3k prompt tokens (3 whole passages), capped at ANSWER_MAX_TOKENS output
  */
 
 import type { PathTalkTool } from "@/shared/services/pathtalk";
 
-export type AskSource = "outlines" | "pubmed" | "who";
+export type AskSource = "outlines" | "pubmed" | "who" | "literature";
 
 export const SOURCE_TOOL: Record<AskSource, PathTalkTool> = {
   outlines: "search_pathology_outlines",
   pubmed: "search_path_pubmed",
   who: "search_who",
+  literature: "search_path_literature",
 };
 
 export const SOURCE_LABEL: Record<AskSource, string> = {
   outlines: "PathologyOutlines",
   pubmed: "PubMed",
   who: "WHO Classification",
+  literature: "Literature",
 };
 
-/**
- * Router model. llama-3.2-1b was the first choice but Cloudflare retired it on
- * 2026-11-20 (now answers 410/5028). The 3b scored 8/8 on the probe set where
- * llama-3.1-8b-fast scored 5/8 with the same prompt.
- */
-export const ROUTER_MODEL = "@cf/meta/llama-3.2-3b-instruct";
 /**
  * Answer model, chosen on the same ~700-token prompt (Nov 2026): llama-3.1-8b
  * and llama-3.3-70b both inverted the chromophobe/oncocytoma KIT-CK7 pattern
@@ -38,34 +35,28 @@ export const ROUTER_MODEL = "@cf/meta/llama-3.2-3b-instruct";
 export const ANSWER_MODEL = "@cf/mistralai/mistral-small-3.1-24b-instruct";
 
 export const MAX_QUESTION_CHARS = 300;
+/** Passages the answer model sees, and the size of each (measured by the eval). */
 export const PASSAGES = 3;
-export const PASSAGE_CHARS = 600;
-/** Room for a short answer or small table plus the one-line follow-ups (~40 tokens). */
-export const ANSWER_MAX_TOKENS = 280;
-
-const LETTER_TO_SOURCE: Record<string, AskSource> = { A: "outlines", B: "pubmed", C: "who" };
-
-/** One-letter multiple choice: the shortest prompt the small model labels reliably. */
-export function buildRouterPrompt(question: string): string {
-  return [
-    "Pick a source for this pathology question.",
-    "A: textbook (morphology, stains, differentials)",
-    "B: PubMed (studies, outcomes, statistics)",
-    "C: WHO (classification, grading, definitions)",
-    `Q: ${question}`,
-    "Reply with one letter.",
-  ].join("\n");
-}
-
-/** Map the model's reply to a source, or null when it said something else. */
-export function parseRouterReply(reply: string): AskSource | null {
-  const m = reply.trim().match(/^[("'*\s]*([ABC])\b/i);
-  return m ? LETTER_TO_SOURCE[m[1].toUpperCase()] : null;
-}
+/**
+ * Each passage is read whole up to this length. PathTalk chunks run ~1,800
+ * chars and a page is often 2 chunks (~3,600): at 3,000 the secretory
+ * carcinoma page was cut and the answer named ETV6-RET, not ETV6-NTRK3.
+ */
+export const PASSAGE_CHARS = 4500;
+/** Searches per question at most: the planned corpus, then others only on a miss. */
+export const MAX_SEARCHES = 3;
+/** Excerpt length the reranker scores (it reads ~512 tokens per pair). */
+export const RERANK_CHARS = 900;
+/** Best reranker score below which a corpus "missed" and the fallback corpus is searched. */
+export const RELEVANCE_MIN = 0.1;
+/** PathTalk returns at most 3 hits per search, whatever the limit. */
+export const SEARCH_LIMIT = 3;
+/** Room for a short answer, list or small table plus the one-line follow-ups (~40 tokens). */
+export const ANSWER_MAX_TOKENS = 360;
 
 /**
- * Zero-token fallback when the router call fails or answers off-format. Only
- * strong signals move it off the textbook default.
+ * Zero-token source guess for when the planner call fails. Only strong
+ * signals move it off the textbook default.
  */
 export function heuristicSource(question: string): AskSource {
   const q = question.toLowerCase();
@@ -110,22 +101,50 @@ export function relevantExcerpt(body: string, question: string, max = PASSAGE_CH
   const flat = body.replace(/\s+/g, " ").trim();
   if (flat.length <= max) return flat;
   const words = flat.split(" ");
+  const lowerAll = words.map((w) => w.toLowerCase());
   const terms = questionTerms(question);
+  // Rarer terms weigh more: "trps1" (3 mentions) must beat "carcinoma" (30),
+  // or the window lands on whichever paragraph says "carcinoma" most.
+  const weight = new Map(
+    terms.map((t) => [t, 1 / Math.max(1, lowerAll.filter((w) => w.startsWith(t)).length)])
+  );
 
-  let best = { start: 0, end: 0, score: -1 };
-  for (let start = 0; start < words.length; start += 8) {
-    let end = start;
-    let len = 0;
-    while (end < words.length && len + words[end].length + 1 <= max) len += words[end++].length + 1;
-    const lower = words.slice(start, end).map((w) => w.toLowerCase());
-    const score = terms.filter((t) => lower.some((w) => w.startsWith(t))).length;
-    // `>=`: of equally good windows keep the last, which starts at the matches
-    // instead of ending on them (answers follow the keyword, not precede it).
-    if (score >= best.score) best = { start, end, score };
-    if (end >= words.length) break;
-  }
-  const text = words.slice(best.start, best.end).join(" ");
-  return `${best.start > 0 ? "… " : ""}${text}${best.end < words.length ? " …" : ""}`;
+  const windows = (size: number) => {
+    const out: Array<{ start: number; end: number; covers: Set<string> }> = [];
+    for (let start = 0; start < words.length; start += 8) {
+      let end = start;
+      let len = 0;
+      while (end < words.length && len + words[end].length + 1 <= size)
+        len += words[end++].length + 1;
+      const seg = lowerAll.slice(start, end);
+      out.push({
+        start,
+        end,
+        covers: new Set(terms.filter((t) => seg.some((w) => w.startsWith(t)))),
+      });
+      if (end >= words.length) break;
+    }
+    return out;
+  };
+  const score = (covers: Set<string>, skip = new Set<string>()) =>
+    [...covers].reduce((s, t) => (skip.has(t) ? s : s + (weight.get(t) ?? 0)), 0);
+  // `>=`: of equally good windows keep the last, which starts at the matches
+  // instead of ending on them (answers follow the keyword, not precede it).
+  const best = <T extends { covers: Set<string> }>(ws: T[], skip?: Set<string>) =>
+    ws.reduce((a, w) => (score(w.covers, skip) >= score(a.covers, skip) ? w : a), ws[0]);
+  const render = (w: { start: number; end: number }) =>
+    `${w.start > 0 ? "… " : ""}${words.slice(w.start, w.end).join(" ")}${w.end < words.length ? " …" : ""}`;
+
+  const one = best(windows(max));
+  // Two half-size windows when the second one adds question terms the first
+  // missed (a page that names TRPS1 in two places sends both).
+  const halves = windows(Math.floor(max / 2));
+  const first = best(halves);
+  const rest = halves.filter((w) => w.end <= first.start || w.start >= first.end);
+  const second = rest.length ? best(rest, first.covers) : null;
+  if (!second || score(second.covers, first.covers) === 0) return render(one);
+  const [a, b] = first.start < second.start ? [first, second] : [second, first];
+  return `${render(a)} ${render(b)}`.replace(/… …/g, "…");
 }
 
 /**
@@ -134,8 +153,8 @@ export function relevantExcerpt(body: string, question: string, max = PASSAGE_CH
  * wrote MEF2B "not expressed" in PMBL when its own source reported 14/15
  * positive. A gap must read as a gap.
  */
-export const ANSWER_SYSTEM =
-  'You are Dr. Albright, a concise pathology tutor. Answer in at most 4 sentences (or a small Markdown table if a comparison is asked for) using only the numbered sources. Cite as [1], [2], [3], in table cells too. Never fill a gap with a guess: write "not stated" for anything the sources do not say. If the sources do not answer the question, say so in one sentence. End with one line: "Follow-ups: <question> | <question>" — two short questions a pathology learner might ask next.';
+export const ANSWER_RULES =
+  'You are Dr. Albright, a concise pathology tutor. Use only the numbered sources; read them fully and attribute each number or finding to the item it belongs to. A source answers the question even when worded differently (\"positive in 9 of 10 cases\" answers a sensitivity question). Cite as [1], [2], [3], in table cells too. Never fill a gap with a guess: write "not stated" for anything the sources do not say. If the sources do not answer the question, say so in one sentence. End with one line: "Follow-ups: <question> | <question>" — two short questions a pathology learner might ask next.';
 
 /**
  * Split the model's trailing "Follow-ups: a | b" line off the answer. The
@@ -162,8 +181,10 @@ export function buildAnswerPrompt(
   question: string,
   passages: Array<{ title: string; text: string }>,
   /** e.g. "Same marker: CD117 = KIT." — so a column named KIT answers a question about CD117. */
-  note = ""
+  note = "",
+  /** From the planner: what to look for in the sources. */
+  focus = ""
 ): string {
   const sources = passages.map((p, i) => `[${i + 1}] ${p.title}: ${p.text}`).join("\n");
-  return `Sources:\n${sources}\n\n${note ? `${note}\n` : ""}Question: ${question}`;
+  return `Sources:\n${sources}\n\n${note ? `${note}\n` : ""}${focus ? `Look for: ${focus}\n` : ""}Question: ${question}`;
 }
