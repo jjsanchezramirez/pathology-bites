@@ -7,9 +7,11 @@
  * so every original is cropped to that box once, here, instead of shipping a
  * full-size picture and letting the browser shrink it:
  *
- *   <slug>-<hash>-280.avif / -560.avif   AVIF, 1x and 2x (most browsers)
- *   <slug>-<hash>-280.webp / -560.webp   WebP, 1x and 2x (Safari before 16.1)
- *   <slug>-<hash>-560.jpg                JPEG, for anything older
+ *   <slug>-<hash>-280.avif / -560.avif   AVIF, 1x and 2x (every current browser)
+ *   <slug>-<hash>-280.jpg  / -560.jpg    mozjpeg JPEG, 1x and 2x (Safari before 16.4)
+ *
+ * No WebP: at these sizes and settings it came out larger than mozjpeg JPEG
+ * (2x set: 501 KB WebP against 449 KB JPEG), so it bought older Safari nothing.
  *
  * The hash is of the output bytes, so a rebuild gets new names and the files
  * can keep the one-year immutable cache that next.config.ts gives /images/*.
@@ -76,14 +78,12 @@ const SOURCES = [
 
 const ENCODERS = {
   avif: (img) => img.avif({ quality: 45, effort: 9, chromaSubsampling: "4:2:0" }),
-  webp: (img) => img.webp({ quality: 70, effort: 6, smartSubsample: true }),
   jpg: (img) => img.jpeg({ quality: 72, mozjpeg: true, progressive: true }),
 };
 const VARIANTS = [
   ["avif", 1],
   ["avif", 2],
-  ["webp", 1],
-  ["webp", 2],
+  ["jpg", 1],
   ["jpg", 2],
 ];
 
@@ -142,8 +142,7 @@ export interface HeroGalleryImage {
   alt: string;
   avif1x: string;
   avif2x: string;
-  webp1x: string;
-  webp2x: string;
+  jpg1x: string;
   jpg2x: string;
 }
 

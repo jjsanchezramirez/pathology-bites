@@ -26,7 +26,7 @@ const CYCLE_INTERVAL = 12000;
 const FADE_DURATION = 2000;
 
 // Each picture is pre-cropped to the 280x220 box it is drawn in, at 1x and 2x,
-// as AVIF, WebP and a JPEG fallback, and served from /images/hero (same origin,
+// as AVIF with a JPEG fallback, and served from /images/hero (same origin,
 // one-year immutable cache from next.config.ts). Rebuild with
 // `node scripts/build-hero-images.mjs`.
 const HERO_IMAGES: GalleryImage[] = HERO_GALLERY_IMAGES;
@@ -215,9 +215,9 @@ export function OrganicImageGallery({ className = "" }: OrganicImageGalleryProps
             >
               <picture>
                 <source srcSet={`${img.avif1x} 1x, ${img.avif2x} 2x`} type="image/avif" />
-                <source srcSet={`${img.webp1x} 1x, ${img.webp2x} 2x`} type="image/webp" />
                 <img
-                  src={img.jpg2x}
+                  src={img.jpg1x}
+                  srcSet={`${img.jpg1x} 1x, ${img.jpg2x} 2x`}
                   alt={img.alt}
                   width={280}
                   height={220}
