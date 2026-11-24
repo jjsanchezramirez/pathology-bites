@@ -102,20 +102,28 @@ export function AskAlbrightLauncher() {
           marginRight: "env(safe-area-inset-right)",
         }}
       >
-        <Image src={AVATAR} alt="" width={56} height={56} className="object-cover" />
+        <Image
+          src={AVATAR}
+          alt=""
+          width={56}
+          height={56}
+          className="h-full w-full object-contain p-1"
+        />
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <div className="flex items-center gap-3">
-              <Image
-                src={AVATAR}
-                alt=""
-                width={40}
-                height={40}
-                className="rounded-full border object-cover"
-              />
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-background">
+                <Image
+                  src={AVATAR}
+                  alt=""
+                  width={44}
+                  height={44}
+                  className="h-full w-full object-contain p-0.5"
+                />
+              </span>
               <div>
                 <DialogTitle>Ask Dr. Albright</DialogTitle>
                 <DialogDescription>
