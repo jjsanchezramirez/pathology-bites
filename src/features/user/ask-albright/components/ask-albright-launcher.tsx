@@ -12,7 +12,7 @@ interface AskResponse {
   answer: string;
   sourceLabel: string;
   cached: boolean;
-  citations: Array<{ n: number; title: string; href: string }>;
+  citations: Array<{ n: number; title: string; href: string; sourceLabel?: string }>;
   tables?: AskTable[];
 }
 
@@ -316,10 +316,20 @@ export function AskAlbrightLauncher() {
 
               {result && (
                 <div className="space-y-2.5">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="border-sky-300 bg-sky-50 text-sky-700">
-                      {result.sourceLabel}
-                    </Badge>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {/* One badge per corpus the answer drew on (cached answers from
+                        before per-citation sources fall back to the top-level label). */}
+                    {[
+                      ...new Set(result.citations.map((c) => c.sourceLabel ?? result.sourceLabel)),
+                    ].map((label) => (
+                      <Badge
+                        key={label}
+                        variant="outline"
+                        className="border-sky-300 bg-sky-50 text-sky-700"
+                      >
+                        {label}
+                      </Badge>
+                    ))}
                     {result.cached && <span className="text-xs text-muted-foreground">cached</span>}
                   </div>
                   <AnswerText text={result.answer} citations={result.citations} />
@@ -340,7 +350,12 @@ export function AskAlbrightLauncher() {
                           className="inline-flex items-start gap-1 text-muted-foreground hover:text-primary hover:underline"
                         >
                           <span className="font-medium">[{c.n}]</span>
-                          <span className="line-clamp-1">{c.title}</span>
+                          <span className="line-clamp-1">
+                            {c.sourceLabel && (
+                              <span className="text-foreground/70">{c.sourceLabel} · </span>
+                            )}
+                            {c.title}
+                          </span>
                           <ExternalLink className="mt-0.5 h-3 w-3 shrink-0" />
                         </a>
                       </li>

@@ -2,7 +2,7 @@ import "server-only";
 
 import { getApiKey } from "@/shared/config/ai-keys";
 import { callOpenAICompatText } from "@/shared/services/openai-compat";
-import { searchPathTalk } from "@/shared/services/pathtalk";
+import { type PathTalkHit, searchPathTalk } from "@/shared/services/pathtalk";
 import { log } from "@/shared/utils/logging";
 import {
   ANSWER_MAX_TOKENS,
@@ -27,11 +27,14 @@ import {
   relevantTables,
   tableToPromptLines,
 } from "./tables";
+import { mergeByHref, rankPages, type SourcedHit } from "./rank";
 
 export interface AskCitation {
   n: number;
   title: string;
   href: string;
+  /** Which corpus this passage came from; answers can mix them. */
+  sourceLabel: string;
 }
 
 export interface AskTable extends SymbolTable {
@@ -125,12 +128,25 @@ export async function askAlbright(question: string): Promise<AskResult> {
   const apiKey = getApiKey("cloudflare");
   const { source, tokens: routerTokens } = await routeQuestion(question, apiKey);
 
-  // WHO often returns the same chapter twice (two chunks, one href): one citation each.
-  const seen = new Set<string>();
-  const hits = (await searchPathTalk(SOURCE_TOOL[source], question, { limit: PASSAGES }))
-    .filter((h) => !seen.has(h.href) && seen.add(h.href))
-    .slice(0, PASSAGES);
-  if (hits.length === 0) throw new NoPassagesError(`No ${SOURCE_LABEL[source]} passages found`);
+  // Search all three corpora in parallel (free, ~1.5s total) and let term
+  // coverage pick the pages; the router's choice only breaks ties. A corpus
+  // that errors is skipped rather than failing the question.
+  const sources = Object.keys(SOURCE_TOOL) as AskSource[];
+  const settled = await Promise.allSettled(
+    sources.map((src) => searchPathTalk(SOURCE_TOOL[src], question, { limit: PASSAGES }))
+  );
+  const found: SourcedHit[] = [];
+  settled.forEach((r, i) => {
+    if (r.status === "fulfilled") {
+      found.push(...r.value.map((h: PathTalkHit) => ({ ...h, source: sources[i] })));
+    } else {
+      log.warn(`[ask-albright] ${SOURCE_TOOL[sources[i]]} failed`, r.reason);
+    }
+  });
+  if (settled.every((r) => r.status === "rejected"))
+    throw new Error("All PathTalk searches failed");
+  const hits = rankPages(mergeByHref(found), question, source).slice(0, PASSAGES);
+  if (hits.length === 0) throw new NoPassagesError("No passages found for that question");
 
   // Tables come out of the prose before excerpting, then go back in as one
   // line per row: the flattened form is what made the model misread them. The
@@ -160,10 +176,17 @@ export async function askAlbright(question: string): Promise<AskResult> {
 
   const result: AskResult = {
     answer: res.content.trim(),
-    source,
-    sourceLabel: SOURCE_LABEL[source],
+    // The corpus the top-ranked passage came from (the router's pick only
+    // breaks ties, so this can differ from it).
+    source: hits[0].source,
+    sourceLabel: SOURCE_LABEL[hits[0].source],
     // Links come from retrieval, never from the model, so they cannot be invented.
-    citations: hits.map((h, i) => ({ n: i + 1, title: h.title, href: h.href })),
+    citations: hits.map((h, i) => ({
+      n: i + 1,
+      title: h.title,
+      href: h.href,
+      sourceLabel: SOURCE_LABEL[h.source],
+    })),
     tables,
     tokens: routerTokens + (res.tokenUsage?.total_tokens ?? 0),
     cached: false,
