@@ -116,11 +116,11 @@ export function AlbrightAvatar({ mood, hovered }: { mood: AlbrightMood; hovered:
       {/* Pipe smoke from the bowl (≈ 5px, 124px at this size): a slow drift
           always, faster while thinking. Negative delays stagger the puffs from
           the first frame instead of starting them together. */}
-      <span aria-hidden className="pointer-events-none absolute left-[1px] top-[118px]">
+      <span aria-hidden className="pointer-events-none absolute left-[2px] top-[120px]">
         {[0, 1, 2, 3].map((i) => (
           <span
             key={i}
-            className="alb-puff absolute block h-3 w-3 rounded-full bg-slate-500/50 dark:bg-slate-300/50"
+            className="alb-puff absolute block h-2 w-2 rounded-full bg-slate-500/50 dark:bg-slate-300/50"
             style={{ "--i": i } as React.CSSProperties}
           />
         ))}
@@ -224,11 +224,11 @@ export function AlbrightAvatar({ mood, hovered }: { mood: AlbrightMood; hovered:
             opacity: 0.9;
           }
           50% {
-            transform: translate(-8px, -30px) scale(1.4);
+            transform: translate(-6px, -22px) scale(1.15);
             opacity: 0.55;
           }
           100% {
-            transform: translate(-3px, -62px) scale(2.3);
+            transform: translate(-2px, -46px) scale(1.6);
             opacity: 0;
           }
         }
