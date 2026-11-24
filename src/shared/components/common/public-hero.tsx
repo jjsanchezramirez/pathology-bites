@@ -164,7 +164,6 @@ export function PublicHero({
           {showCharacter && (
             <div className="hidden md:block w-[350px]">
               <FloatingCharacter
-                imagePath="/images/dr-albright.svg"
                 imageAlt="Dr. Albright Character"
                 size={350}
                 wrapperClassName="w-full flex justify-center"

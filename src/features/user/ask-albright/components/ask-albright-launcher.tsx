@@ -433,9 +433,9 @@ export function AskAlbrightLauncher() {
         marginRight: "env(safe-area-inset-right)",
       }}
     >
-      {/* Seated on the card's top edge (AlbrightAvatar: inline SVG from
-          public/images/dr-albright-seated.svg); the last few px tuck behind
-          the card so the cut reads as him sitting on it. */}
+      {/* Seated on the card's top edge (AlbrightAvatar, inline seated figure);
+          the last few px tuck behind the card so the cut reads as him sitting
+          on it. */}
       <button
         type="button"
         onClick={() => (open ? close() : void newQuestion())}

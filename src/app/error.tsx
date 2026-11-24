@@ -107,7 +107,6 @@ export default function ErrorPage({ error }: { error: Error & { digest?: string 
       <div className="relative z-10 flex flex-col items-center">
         <div className="flex justify-center w-full">
           <FloatingCharacter
-            imagePath="/images/dr-albright.svg"
             imageAlt="Dr. Albright Character"
             size={320}
             wrapperClassName="w-full md:w-auto"
