@@ -1,21 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ExternalLink, Loader2, Send } from "lucide-react";
+import { AudioLines, ExternalLink, LoaderCircle, SendHorizontal, SquarePen, X } from "lucide-react";
 
 import { Badge } from "@/shared/components/ui/badge";
-import { Button } from "@/shared/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/components/ui/dialog";
-import { Textarea } from "@/shared/components/ui/textarea";
 import { R2_IMAGES_PUBLIC_URL } from "@/shared/config/r2-public-urls";
+import { cn } from "@/shared/utils";
 import { MAX_QUESTION_CHARS } from "../lib/router";
 
 interface AskResponse {
@@ -29,6 +21,29 @@ const AVATAR = `${R2_IMAGES_PUBLIC_URL}/assets/dr-albright.png`;
 
 // An active quiz must not get an answer button, and Anki owns its full screen.
 const HIDDEN = [/^\/dashboard\/quiz\/(?!new$)[^/]+$/, /^\/dashboard\/anki$/];
+
+// Minimal Web Speech API surface (not in TS's DOM lib). Chrome/Edge/Safari
+// expose it as webkitSpeechRecognition; Firefox has none, so the mic hides.
+interface SpeechRecognitionLike {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+  onend: (() => void) | null;
+  onerror: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+type SpeechRecognitionCtor = new () => SpeechRecognitionLike;
+
+function getSpeechRecognition(): SpeechRecognitionCtor | null {
+  if (typeof window === "undefined") return null;
+  const w = window as unknown as {
+    SpeechRecognition?: SpeechRecognitionCtor;
+    webkitSpeechRecognition?: SpeechRecognitionCtor;
+  };
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
+}
 
 /** Render `[1]`-style markers as superscript links to the matching citation. */
 function AnswerText({ text, citations }: { text: string; citations: AskResponse["citations"] }) {
@@ -55,6 +70,11 @@ function AnswerText({ text, citations }: { text: string; citations: AskResponse[
   );
 }
 
+/**
+ * Bottom-right pill with Dr. Albright perched on it. The pill is the card's
+ * footer: opening grows the card up and out from the corner (no overlay, no
+ * blur — the page stays usable), closing shrinks it back to the pill.
+ */
 export function AskAlbrightLauncher() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -62,12 +82,41 @@ export function AskAlbrightLauncher() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AskResponse | null>(null);
+  const [listening, setListening] = useState(false);
+  const [canDictate, setCanDictate] = useState(false);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+
+  useEffect(() => setCanDictate(getSpeechRecognition() !== null), []);
+
+  const stopDictation = useCallback(() => {
+    recognitionRef.current?.stop();
+    recognitionRef.current = null;
+    setListening(false);
+  }, []);
+
+  const close = useCallback(() => {
+    stopDictation();
+    setOpen(false);
+  }, [stopDictation]);
+
+  useEffect(() => {
+    if (!open) return;
+    const t = setTimeout(() => inputRef.current?.focus(), 150);
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
+    window.addEventListener("keydown", onKey);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open, close]);
 
   if (pathname && HIDDEN.some((re) => re.test(pathname))) return null;
 
   async function ask() {
     const q = question.trim();
     if (q.length < 5 || loading) return;
+    stopDictation();
     setLoading(true);
     setError(null);
     setResult(null);
@@ -90,119 +139,203 @@ export function AskAlbrightLauncher() {
     }
   }
 
+  function newQuestion() {
+    setOpen(true);
+    setQuestion("");
+    setResult(null);
+    setError(null);
+    inputRef.current?.focus();
+  }
+
+  function toggleDictation() {
+    setOpen(true);
+    if (listening) return stopDictation();
+    const Ctor = getSpeechRecognition();
+    if (!Ctor) return;
+    const rec = new Ctor();
+    rec.lang = "en-US";
+    rec.interimResults = true;
+    rec.continuous = false;
+    const base = question ? `${question.trimEnd()} ` : "";
+    rec.onresult = (e) => {
+      const said = Array.from(e.results)
+        .map((r) => r[0].transcript)
+        .join("");
+      setQuestion((base + said).slice(0, MAX_QUESTION_CHARS));
+    };
+    rec.onend = () => {
+      recognitionRef.current = null;
+      setListening(false);
+    };
+    rec.onerror = rec.onend;
+    recognitionRef.current = rec;
+    setListening(true);
+    rec.start();
+  }
+
+  const barButton =
+    "flex h-full flex-1 items-center justify-center text-foreground/80 transition-colors hover:text-primary focus-visible:outline-none focus-visible:text-primary";
+
   return (
-    <>
+    <div
+      className="fixed bottom-4 right-4 z-40 flex flex-col items-end"
+      style={{
+        marginBottom: "env(safe-area-inset-bottom)",
+        marginRight: "env(safe-area-inset-right)",
+      }}
+    >
+      {/* Perched on the card's top edge; clicking him toggles the card. */}
       <button
         type="button"
-        onClick={() => setOpen(true)}
-        aria-label="Ask Dr. Albright"
-        className="fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border bg-background shadow-lg transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        style={{
-          marginBottom: "env(safe-area-inset-bottom)",
-          marginRight: "env(safe-area-inset-right)",
-        }}
+        onClick={() => (open ? close() : newQuestion())}
+        aria-label={open ? "Close Ask Dr. Albright" : "Ask Dr. Albright"}
+        className={cn(
+          "relative z-10 -mb-5 transition-[margin,transform] duration-300 ease-out hover:-translate-y-0.5 focus-visible:outline-none",
+          open ? "mr-6" : "mr-[calc(50%-36px)]"
+        )}
       >
-        <Image
-          src={AVATAR}
-          alt=""
-          width={56}
-          height={56}
-          className="h-full w-full object-contain p-1"
-        />
+        <Image src={AVATAR} alt="" width={72} height={110} className="h-[110px] w-[72px]" />
       </button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-background">
-                <Image
-                  src={AVATAR}
-                  alt=""
-                  width={44}
-                  height={44}
-                  className="h-full w-full object-contain p-0.5"
-                />
-              </span>
-              <div>
-                <DialogTitle>Ask Dr. Albright</DialogTitle>
-                <DialogDescription>
-                  Short answers from PathologyOutlines, PubMed or WHO, with sources.
-                </DialogDescription>
+      <div
+        role="dialog"
+        aria-label="Ask Dr. Albright"
+        className={cn(
+          "overflow-hidden rounded-[28px] border bg-background shadow-xl transition-[width] duration-300 ease-out",
+          open ? "w-[min(380px,calc(100vw-2rem))]" : "w-[168px]"
+        )}
+      >
+        {/* Body: grid-rows 0fr→1fr animates height without measuring it. */}
+        <div
+          className={cn(
+            "grid transition-[grid-template-rows,opacity] duration-300 ease-out",
+            open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          )}
+          aria-hidden={!open}
+          inert={!open}
+        >
+          <div className="min-h-0 overflow-hidden">
+            <div className="flex max-h-[min(60vh,520px)] flex-col gap-3 overflow-y-auto px-4 pb-2 pt-6">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold">Ask Dr. Albright</p>
+                  <p className="text-xs text-muted-foreground">
+                    Short, cited answers from PathologyOutlines, PubMed or WHO.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={close}
+                  aria-label="Close"
+                  className="rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
-            </div>
-          </DialogHeader>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void ask();
-            }}
-            className="space-y-2"
-          >
-            <Textarea
-              value={question}
-              onChange={(e) => setQuestion(e.target.value.slice(0, MAX_QUESTION_CHARS))}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
+              <form
+                onSubmit={(e) => {
                   e.preventDefault();
                   void ask();
-                }
-              }}
-              placeholder="e.g. Which stains separate chromophobe RCC from oncocytoma?"
-              rows={3}
-              maxLength={MAX_QUESTION_CHARS}
-              aria-label="Your question"
-            />
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">
-                {question.length}/{MAX_QUESTION_CHARS}
-              </span>
-              <Button type="submit" size="sm" disabled={loading || question.trim().length < 5}>
-                {loading ? (
-                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="mr-1.5 h-4 w-4" />
-                )}
-                Ask
-              </Button>
-            </div>
-          </form>
+                }}
+                className="relative"
+              >
+                <textarea
+                  ref={inputRef}
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value.slice(0, MAX_QUESTION_CHARS))}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      void ask();
+                    }
+                  }}
+                  placeholder={
+                    listening
+                      ? "Listening…"
+                      : "Which stains separate chromophobe RCC from oncocytoma?"
+                  }
+                  rows={2}
+                  maxLength={MAX_QUESTION_CHARS}
+                  aria-label="Your question"
+                  className="w-full resize-none rounded-2xl border bg-muted/40 py-2.5 pl-3 pr-11 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+                <button
+                  type="submit"
+                  disabled={loading || question.trim().length < 5}
+                  aria-label="Ask"
+                  className="absolute bottom-3 right-2 rounded-full bg-primary p-1.5 text-primary-foreground transition-opacity disabled:opacity-40"
+                >
+                  {loading ? (
+                    <LoaderCircle className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <SendHorizontal className="h-4 w-4" />
+                  )}
+                </button>
+              </form>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+              {error && <p className="text-sm text-destructive">{error}</p>}
 
-          {result && (
-            <div className="space-y-3 rounded-md border bg-muted/30 p-3">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="border-sky-300 bg-sky-50 text-sky-700">
-                  {result.sourceLabel}
-                </Badge>
-                {result.cached && <span className="text-xs text-muted-foreground">cached</span>}
-              </div>
-              <AnswerText text={result.answer} citations={result.citations} />
-              <ol className="space-y-1">
-                {result.citations.map((c) => (
-                  <li key={c.n} className="text-xs">
-                    <a
-                      href={c.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-start gap-1 text-muted-foreground hover:text-primary hover:underline"
-                    >
-                      <span className="font-medium">[{c.n}]</span>
-                      <span className="line-clamp-1">{c.title}</span>
-                      <ExternalLink className="mt-0.5 h-3 w-3 shrink-0" />
-                    </a>
-                  </li>
-                ))}
-              </ol>
-              <p className="text-[11px] text-muted-foreground">
-                AI-generated from the sources above. Educational use only — not for diagnosis.
-              </p>
+              {result && (
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="border-sky-300 bg-sky-50 text-sky-700">
+                      {result.sourceLabel}
+                    </Badge>
+                    {result.cached && <span className="text-xs text-muted-foreground">cached</span>}
+                  </div>
+                  <AnswerText text={result.answer} citations={result.citations} />
+                  <ol className="space-y-1">
+                    {result.citations.map((c) => (
+                      <li key={c.n} className="text-xs">
+                        <a
+                          href={c.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-start gap-1 text-muted-foreground hover:text-primary hover:underline"
+                        >
+                          <span className="font-medium">[{c.n}]</span>
+                          <span className="line-clamp-1">{c.title}</span>
+                          <ExternalLink className="mt-0.5 h-3 w-3 shrink-0" />
+                        </a>
+                      </li>
+                    ))}
+                  </ol>
+                  <p className="text-[11px] text-muted-foreground">
+                    AI-generated from the sources above. Educational use only — not for diagnosis.
+                  </p>
+                </div>
+              )}
             </div>
+          </div>
+        </div>
+
+        {/* The pill: always visible, becomes the card's footer when open. */}
+        <div className={cn("flex h-14 items-center", open && "border-t")}>
+          <button
+            type="button"
+            onClick={newQuestion}
+            aria-label="New question"
+            className={barButton}
+          >
+            <SquarePen className="h-5 w-5" />
+          </button>
+          {canDictate && (
+            <>
+              <span className="h-7 w-px bg-border" aria-hidden />
+              <button
+                type="button"
+                onClick={toggleDictation}
+                aria-label={listening ? "Stop dictation" : "Dictate a question"}
+                aria-pressed={listening}
+                className={cn(barButton, listening && "animate-pulse text-primary")}
+              >
+                <AudioLines className="h-5 w-5" />
+              </button>
+            </>
           )}
-        </DialogContent>
-      </Dialog>
-    </>
+        </div>
+      </div>
+    </div>
   );
 }
