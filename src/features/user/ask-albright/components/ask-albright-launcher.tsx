@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { AudioLines, ExternalLink, LoaderCircle, SendHorizontal, X } from "lucide-react";
+import { ExternalLink, LoaderCircle, SendHorizontal, X } from "lucide-react";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { R2_IMAGES_PUBLIC_URL } from "@/shared/config/r2-public-urls";
@@ -29,29 +29,6 @@ const AVATAR = `${R2_IMAGES_PUBLIC_URL}/assets/dr-albright.png`;
 
 // An active quiz must not get an answer button, and Anki owns its full screen.
 const HIDDEN = [/^\/dashboard\/quiz\/(?!new$)[^/]+$/, /^\/dashboard\/anki$/];
-
-// Minimal Web Speech API surface (not in TS's DOM lib). Chrome/Edge/Safari
-// expose it as webkitSpeechRecognition; Firefox has none, so the mic hides.
-interface SpeechRecognitionLike {
-  lang: string;
-  interimResults: boolean;
-  continuous: boolean;
-  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
-  onend: (() => void) | null;
-  onerror: (() => void) | null;
-  start: () => void;
-  stop: () => void;
-}
-type SpeechRecognitionCtor = new () => SpeechRecognitionLike;
-
-function getSpeechRecognition(): SpeechRecognitionCtor | null {
-  if (typeof window === "undefined") return null;
-  const w = window as unknown as {
-    SpeechRecognition?: SpeechRecognitionCtor;
-    webkitSpeechRecognition?: SpeechRecognitionCtor;
-  };
-  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
-}
 
 const CELL_TONE: Record<string, string> = {
   "+++": "font-semibold text-emerald-700",
@@ -176,7 +153,7 @@ function AnswerText({ text, citations }: { text: string; citations: AskResponse[
 }
 
 /**
- * Bottom-right pill with Dr. Albright perched on it. The pill is the card's
+ * Bottom-right "Ask a question" pill with Dr. Albright peeking over it. The pill is the card's
  * footer: opening grows the card up and out from the corner (no overlay, no
  * blur — the page stays usable), closing shrinks it back to the pill.
  */
@@ -187,23 +164,8 @@ export function AskAlbrightLauncher() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AskResponse | null>(null);
-  const [listening, setListening] = useState(false);
-  const [canDictate, setCanDictate] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
-
-  useEffect(() => setCanDictate(getSpeechRecognition() !== null), []);
-
-  const stopDictation = useCallback(() => {
-    recognitionRef.current?.stop();
-    recognitionRef.current = null;
-    setListening(false);
-  }, []);
-
-  const close = useCallback(() => {
-    stopDictation();
-    setOpen(false);
-  }, [stopDictation]);
+  const close = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
     if (!open) return;
@@ -221,7 +183,6 @@ export function AskAlbrightLauncher() {
   async function ask() {
     const q = question.trim();
     if (q.length < 5 || loading) return;
-    stopDictation();
     setLoading(true);
     setError(null);
     setResult(null);
@@ -252,34 +213,8 @@ export function AskAlbrightLauncher() {
     inputRef.current?.focus();
   }
 
-  function toggleDictation() {
-    setOpen(true);
-    if (listening) return stopDictation();
-    const Ctor = getSpeechRecognition();
-    if (!Ctor) return;
-    const rec = new Ctor();
-    rec.lang = "en-US";
-    rec.interimResults = true;
-    rec.continuous = false;
-    const base = question ? `${question.trimEnd()} ` : "";
-    rec.onresult = (e) => {
-      const said = Array.from(e.results)
-        .map((r) => r[0].transcript)
-        .join("");
-      setQuestion((base + said).slice(0, MAX_QUESTION_CHARS));
-    };
-    rec.onend = () => {
-      recognitionRef.current = null;
-      setListening(false);
-    };
-    rec.onerror = rec.onend;
-    recognitionRef.current = rec;
-    setListening(true);
-    rec.start();
-  }
-
   const barButton =
-    "flex h-full flex-1 items-center justify-center text-foreground/80 transition-colors hover:text-primary focus-visible:outline-none focus-visible:text-primary";
+    "flex h-full w-full items-center justify-center text-foreground/80 transition-colors hover:text-primary focus-visible:outline-none focus-visible:text-primary";
 
   return (
     <div
@@ -298,7 +233,7 @@ export function AskAlbrightLauncher() {
         aria-label={open ? "Close Ask Dr. Albright" : "Ask Dr. Albright"}
         className={cn(
           "relative z-0 -mb-[46px] transition-[margin,transform] duration-300 ease-out hover:-translate-y-1 focus-visible:outline-none",
-          open ? "mr-8" : "mr-[calc(50%-29px)]"
+          open ? "mr-8" : "mr-[51px]" // (160 pill - 58 avatar) / 2: centred
         )}
       >
         <Image
@@ -319,7 +254,7 @@ export function AskAlbrightLauncher() {
         aria-label="Ask Dr. Albright"
         className={cn(
           "relative z-10 overflow-hidden rounded-[28px] border bg-background shadow-xl transition-[width] duration-300 ease-out",
-          open ? "w-[min(380px,calc(100vw-2rem))]" : "w-[196px]"
+          open ? "w-[min(380px,calc(100vw-2rem))]" : "w-[160px]"
         )}
       >
         {/* Body: grid-rows 0fr→1fr animates height without measuring it. */}
@@ -367,11 +302,7 @@ export function AskAlbrightLauncher() {
                       void ask();
                     }
                   }}
-                  placeholder={
-                    listening
-                      ? "Listening…"
-                      : "Which stains separate chromophobe RCC from oncocytoma?"
-                  }
+                  placeholder="Which stains separate chromophobe RCC from oncocytoma?"
                   rows={2}
                   maxLength={MAX_QUESTION_CHARS}
                   aria-label="Your question"
@@ -443,24 +374,6 @@ export function AskAlbrightLauncher() {
           >
             {open && (result || error) ? "New question" : "Ask a question"}
           </button>
-          {canDictate && (
-            <>
-              <span className="h-7 w-px bg-border" aria-hidden />
-              <button
-                type="button"
-                onClick={toggleDictation}
-                aria-label={listening ? "Stop dictation" : "Dictate a question"}
-                aria-pressed={listening}
-                className={cn(
-                  barButton,
-                  "flex-none px-5",
-                  listening && "animate-pulse text-primary"
-                )}
-              >
-                <AudioLines className="h-5 w-5" />
-              </button>
-            </>
-          )}
         </div>
       </div>
     </div>
