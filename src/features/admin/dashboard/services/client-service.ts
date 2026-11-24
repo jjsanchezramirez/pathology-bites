@@ -7,7 +7,21 @@ import { hasPermission, type Permission } from "@/shared/utils/auth/permissions"
 class ClientDashboardService {
   private supabase = createClient();
 
+  /**
+   * Refuse to query without a session. Signed out, RLS filters every count to 0 and every
+   * activity list to empty without an error, and the result would be shown (and persisted
+   * by the SWR cache) as if it were real data. Throwing lets SWR show its error and retry.
+   */
+  private async requireSession(): Promise<void> {
+    const {
+      data: { session },
+    } = await this.supabase.auth.getSession();
+    if (!session) throw new Error("Not signed in yet; dashboard data will load once you are.");
+  }
+
   async getDashboardStats(): Promise<DashboardStats> {
+    await this.requireSession();
+
     // Try to use the optimized view first, fallback to individual queries
     const { data: viewData, error: viewError } = await this.supabase
       .from("v_dashboard_stats")
@@ -79,26 +93,34 @@ class ClientDashboardService {
     ]);
 
     // Check if ALL queries failed - this indicates a serious problem
-    const allFailed = results.every((result) => result.status === "rejected");
-    if (allFailed) {
-      const firstError = results[0].status === "rejected" ? results[0].reason : "Unknown error";
-      log.error("[getDashboardStats] All stats queries failed:", firstError);
+    // supabase-js resolves (not rejects) on a query error, so check `error` too: a failed
+    // count is a failure, not a zero.
+    const failureOf = (result: (typeof results)[number]) =>
+      result.status === "rejected"
+        ? result.reason
+        : result.value.error || result.value.count === null
+          ? (result.value.error ?? "no count returned")
+          : null;
+
+    const failures = results.map(failureOf);
+    if (failures.every((f) => f !== null)) {
+      log.error("[getDashboardStats] All stats queries failed:", failures[0]);
       throw new Error(
         "Failed to load dashboard statistics. Please check your connection and try again."
       );
     }
+    if (failures.some((f) => f !== null)) {
+      // Partial results would show some real numbers next to fake zeros: fail the whole load
+      // so SWR retries instead of rendering (and caching) a misleading dashboard.
+      failures.forEach((f, index) => {
+        if (f !== null) log.warn(`[getDashboardStats] Query ${index} failed:`, f);
+      });
+      throw new Error("Some dashboard statistics failed to load. Retrying…");
+    }
 
-    // Log individual failures for debugging
-    results.forEach((result, index) => {
-      if (result.status === "rejected") {
-        log.warn(`[getDashboardStats] Query ${index} failed:`, result.reason);
-      }
-    });
-
-    // Extract counts, defaulting to 0 if query failed
     const getCounts = (index: number) => {
       const result = results[index];
-      return result.status === "fulfilled" && result.value.count !== null ? result.value.count : 0;
+      return result.status === "fulfilled" ? (result.value.count ?? 0) : 0;
     };
 
     return {
@@ -122,6 +144,7 @@ class ClientDashboardService {
     permissions: readonly Permission[] = [],
     userId?: string
   ): Promise<RecentActivity[]> {
+    await this.requireSession();
     try {
       const activities: RecentActivity[] = [];
 
@@ -162,8 +185,9 @@ class ClientDashboardService {
 
       return sortedActivities;
     } catch (error) {
+      // Rethrow: an empty list would render (and be cached) as "No recent activity".
       log.error("Error fetching recent activity:", error);
-      return [];
+      throw error;
     }
   }
 

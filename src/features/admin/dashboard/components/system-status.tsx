@@ -7,14 +7,15 @@ import {
   PageSection,
   SectionCard,
   StatCard,
+  StatCardSkeleton,
   StatGrid,
   StatTone,
 } from "@/shared/components/ui/page-layout";
-import { createClient } from "@/shared/services/client";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 import { log } from "@/shared/utils/logging";
 
 interface SystemMetrics {
-  vercelStatus: "operational" | "error";
+  vercelStatus: "operational" | "error" | "unknown";
   supabaseStatus: "operational" | "error";
   cloudflareR2Status: "operational" | "error";
   responseTime: number;
@@ -30,114 +31,45 @@ interface SystemMetrics {
 }
 
 export function SystemStatus() {
-  const [metrics, setMetrics] = useState<SystemMetrics>({
-    vercelStatus: "operational",
-    supabaseStatus: "operational",
-    cloudflareR2Status: "operational",
-    responseTime: 0,
-    dbQueryTime: 0,
-    dbConnections: 0,
-    activeUsers: 0,
-    activeUsersWeekly: 0,
-    activeUsersMonthly: 0,
-    storageUsage: 0,
-    r2StorageUsage: 0,
-    r2StorageFormatted: "0 MB",
-    lastUpdated: new Date(),
-  });
-
-  const supabase = createClient();
+  // null until the first successful check: the panel shows a skeleton, never placeholder
+  // zeros or an unchecked "Operational".
+  const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
+  // Set when the latest check failed; earlier metrics (if any) stay on screen, marked stale.
+  const [failedAt, setFailedAt] = useState<Date | null>(null);
 
   const checkSystemHealth = useCallback(async () => {
     try {
-      // Use the API endpoint for consistency
       const response = await fetch("/api/admin/system-status");
+      if (!response.ok) throw new Error(`System status API returned ${response.status}`);
+      const data = await response.json();
 
-      if (response.ok) {
-        const data = await response.json();
-
-        setMetrics({
-          vercelStatus: data.vercelStatus,
-          supabaseStatus: data.supabaseStatus,
-          cloudflareR2Status: data.cloudflareR2Status || "operational",
-          responseTime: data.responseTime,
-          dbQueryTime: data.dbQueryTime || 0,
-          dbConnections: data.dbConnections || 0,
-          activeUsers: data.activeUsers || 0,
-          activeUsersWeekly: data.activeUsersWeekly || 0,
-          activeUsersMonthly: data.activeUsersMonthly || 0,
-          storageUsage: data.storageUsage || 0,
-          r2StorageUsage: data.r2StorageUsage || 0,
-          r2StorageFormatted: data.r2StorageFormatted || "0 MB",
-          lastUpdated: new Date(data.lastUpdated),
-        });
-      } else {
-        log.warn(`System status API returned ${response.status}, falling back to direct check`);
-
-        // If API fails, fall back to direct check
-        const startTime = performance.now();
-        const { error } = await supabase
-          .from("users")
-          .select("id", { count: "exact", head: true })
-          .limit(1);
-
-        const endTime = performance.now();
-        const responseTime = Math.round(endTime - startTime);
-
-        setMetrics({
-          vercelStatus: "operational",
-          supabaseStatus: error ? "error" : "operational",
-          cloudflareR2Status: "operational", // Default when API fails
-          responseTime,
-          dbQueryTime: 0,
-          dbConnections: 0,
-          activeUsers: 0,
-          activeUsersWeekly: 0,
-          activeUsersMonthly: 0,
-          storageUsage: 0,
-          r2StorageUsage: 0,
-          r2StorageFormatted: "0 MB",
-          lastUpdated: new Date(),
-        });
-      }
-    } catch (error) {
-      log.error("System health check failed:", error);
-
-      // Detect network errors (laptop sleep/wake, offline, etc.)
-      const isNetworkError =
-        error instanceof TypeError &&
-        (error.message?.includes("fetch") || error.message?.includes("network"));
-
-      if (isNetworkError) {
-        log.warn("Network connection interrupted during system health check");
-      }
-
-      // Set error state but don't show toast (this is background polling)
       setMetrics({
-        vercelStatus: "operational",
-        supabaseStatus: "error",
-        cloudflareR2Status: "error",
-        responseTime: 0,
-        dbQueryTime: 0,
-        dbConnections: 0,
-        activeUsers: 0,
-        activeUsersWeekly: 0,
-        activeUsersMonthly: 0,
-        storageUsage: 0,
-        r2StorageUsage: 0,
-        r2StorageFormatted: "0 MB",
-        lastUpdated: new Date(),
+        vercelStatus: data.vercelStatus,
+        supabaseStatus: data.supabaseStatus,
+        cloudflareR2Status: data.cloudflareR2Status || "operational",
+        responseTime: data.responseTime,
+        dbQueryTime: data.dbQueryTime ?? 0,
+        dbConnections: data.dbConnections ?? 0,
+        activeUsers: data.activeUsers ?? 0,
+        activeUsersWeekly: data.activeUsersWeekly ?? 0,
+        activeUsersMonthly: data.activeUsersMonthly ?? 0,
+        storageUsage: data.storageUsage ?? 0,
+        r2StorageUsage: data.r2StorageUsage ?? 0,
+        r2StorageFormatted: data.r2StorageFormatted || "0 MB",
+        lastUpdated: new Date(data.lastUpdated),
       });
+      setFailedAt(null);
+    } catch (error) {
+      // Background polling: log, keep whatever we last showed, and say it's stale.
+      log.warn("System health check failed:", error);
+      setFailedAt(new Date());
     }
-  }, [supabase]);
+  }, []);
 
   useEffect(() => {
     checkSystemHealth();
-
-    // Optimized: Check every 2 minutes instead of 30 seconds
-    // This reduces database load significantly
+    // Every 2 minutes; the route runs several queries plus an external status fetch.
     const interval = setInterval(checkSystemHealth, 120000);
-
     return () => clearInterval(interval);
   }, [checkSystemHealth]);
 
@@ -155,18 +87,63 @@ export function SystemStatus() {
   const getLatencyTone = (ms: number, warnAt: number, errorAt: number): StatTone =>
     ms > errorAt ? "danger" : ms > warnAt ? "warning" : "success";
 
+  const description = metrics ? (
+    <span className="text-xs">
+      Last updated: {metrics.lastUpdated.toLocaleTimeString()}
+      {failedAt && (
+        <span className="text-destructive">
+          {" "}
+          · latest check failed at {failedAt.toLocaleTimeString()}, showing older data
+        </span>
+      )}
+    </span>
+  ) : failedAt ? (
+    <span className="text-xs text-destructive">
+      Couldn&apos;t load system status ({failedAt.toLocaleTimeString()}). Retrying every 2 minutes.
+    </span>
+  ) : (
+    <span className="text-xs">Checking services…</span>
+  );
+
+  if (!metrics) {
+    return (
+      <PageSection title="System Health & Monitoring" description={description}>
+        {!failedAt && (
+          <>
+            <StatGrid>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <StatCardSkeleton key={i} />
+              ))}
+            </StatGrid>
+            <SectionCard title="System Metrics">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="flex flex-col items-center gap-2">
+                    <Skeleton className="h-7 w-16" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+          </>
+        )}
+      </PageSection>
+    );
+  }
+
   return (
-    <PageSection
-      title="System Health & Monitoring"
-      description={
-        <span className="text-xs">Last updated: {metrics.lastUpdated.toLocaleTimeString()}</span>
-      }
-    >
+    <PageSection title="System Health & Monitoring" description={description}>
       {/* Service Status Grid */}
       <StatGrid>
         <StatCard
           label="Vercel"
-          value={metrics.vercelStatus === "operational" ? "Operational" : "Error"}
+          value={
+            metrics.vercelStatus === "operational"
+              ? "Operational"
+              : metrics.vercelStatus === "unknown"
+                ? "Unknown"
+                : "Error"
+          }
           hint="Hosting"
           icon={Server}
           tone={getStatusTone(metrics.vercelStatus)}
@@ -198,7 +175,7 @@ export function SystemStatus() {
       <SectionCard title="System Metrics">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {[
-            { label: "DB Connections", value: 1 },
+            { label: "DB Connections", value: metrics.dbConnections },
             { label: "Daily Active", value: metrics.activeUsers },
             { label: "Weekly Active", value: metrics.activeUsersWeekly },
             { label: "Monthly Active", value: metrics.activeUsersMonthly },

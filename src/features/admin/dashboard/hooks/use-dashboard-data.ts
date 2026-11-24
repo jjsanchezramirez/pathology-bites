@@ -39,6 +39,9 @@ export function useDashboardStats(enabled = true) {
       errorRetryInterval: 1000,
       // Keep previous data while revalidating
       keepPreviousData: true,
+      // The global config skips revalidation when localStorage has a copy; the dashboard
+      // should still refresh on every visit (the cached copy shows meanwhile).
+      revalidateOnMount: true,
     }
   );
 
@@ -94,6 +97,9 @@ export function useDashboardActivities(
       errorRetryCount: 3,
       errorRetryInterval: 1000,
       keepPreviousData: true,
+      // The global config skips revalidation when localStorage has a copy; the dashboard
+      // should still refresh on every visit (the cached copy shows meanwhile).
+      revalidateOnMount: true,
     }
   );
 

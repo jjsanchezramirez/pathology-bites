@@ -9,7 +9,7 @@ import { devLog } from "@/shared/utils/logging/dev-logger";
 import { log } from "@/shared/utils/logging";
 
 interface SystemHealth {
-  vercelStatus: "operational" | "error";
+  vercelStatus: "operational" | "error" | "unknown";
   supabaseStatus: "operational" | "error";
   cloudflareR2Status: "operational" | "error";
   responseTime: number;
@@ -44,7 +44,7 @@ interface SystemHealth {
  *               properties:
  *                 vercelStatus:
  *                   type: string
- *                   enum: [operational, error]
+ *                   enum: [operational, error, unknown]
  *                   description: Vercel platform status
  *                 supabaseStatus:
  *                   type: string
@@ -142,7 +142,10 @@ export async function GET(request: Request) {
       monthlyActiveUsers,
     ] = await Promise.allSettled([
       supabase.from("v_storage_stats").select("*").single(),
-      fetch("https://www.vercel-status.com/api/v2/status.json"),
+      // Third-party status page: cap it so a slow response can't hold up the whole panel.
+      fetch("https://www.vercel-status.com/api/v2/status.json", {
+        signal: AbortSignal.timeout(2000),
+      }),
       getCachedStorageMetrics(undefined, supabaseAdmin), // Use service role to bypass RLS
       // Count active users based on registration date (users who joined recently).
       // count_active_users_since is SECURITY DEFINER with no `authenticated` EXECUTE
@@ -167,7 +170,8 @@ export async function GET(request: Request) {
     const responseTime = Math.round(endTime - startTime);
 
     // Check Vercel status
-    let vercelStatus: "operational" | "error" = "operational";
+    // "unknown" when the status page timed out or was unreachable: that says nothing about Vercel.
+    let vercelStatus: "operational" | "error" | "unknown" = "operational";
     if (vercelStatusResponse.status === "fulfilled") {
       try {
         const vercelResponse = vercelStatusResponse.value as Response;
@@ -181,10 +185,10 @@ export async function GET(request: Request) {
         }
       } catch (error) {
         log.error("Failed to check Vercel status:", error);
-        vercelStatus = "error";
+        vercelStatus = "unknown";
       }
     } else {
-      vercelStatus = "error";
+      vercelStatus = "unknown";
     }
 
     // Check Supabase storage (RPC reports bytes; total_size_mb never existed,
