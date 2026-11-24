@@ -1,12 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ExternalLink, LoaderCircle, SendHorizontal, X } from "lucide-react";
 
 import { Badge } from "@/shared/components/ui/badge";
-import { R2_IMAGES_PUBLIC_URL } from "@/shared/config/r2-public-urls";
 import { cn } from "@/shared/utils";
 import { MAX_QUESTION_CHARS } from "../lib/router";
 
@@ -25,7 +23,7 @@ interface AskTable {
   focusRows: string[];
 }
 
-const AVATAR = `${R2_IMAGES_PUBLIC_URL}/assets/dr-albright.png`;
+const AVATAR = "/images/dr-albright-seated.svg";
 
 // An active quiz must not get an answer button, and Anki owns its full screen.
 const HIDDEN = [/^\/dashboard\/quiz\/(?!new$)[^/]+$/, /^\/dashboard\/anki$/];
@@ -224,29 +222,21 @@ export function AskAlbrightLauncher() {
         marginRight: "env(safe-area-inset-right)",
       }}
     >
-      {/* Peeks over the card's top edge: the source is 408x1280, so he keeps
-          that ratio; the smoke trail below the pipe (lower ~35%) fades out and
-          slides behind the card. */}
+      {/* Seated on the card's top edge. public/images/dr-albright-seated.svg is
+          dev/resources/design/svgs/dr_albright.svg with the smoke pod removed
+          and the canvas cut at the bottom of his body (473x975); the last few
+          px tuck behind the card so the cut reads as him sitting on it. */}
       <button
         type="button"
         onClick={() => (open ? close() : newQuestion())}
         aria-label={open ? "Close Ask Dr. Albright" : "Ask Dr. Albright"}
         className={cn(
-          "relative z-0 -mb-[46px] transition-[margin,transform] duration-300 ease-out hover:-translate-y-1 focus-visible:outline-none",
-          open ? "mr-8" : "mr-[51px]" // (160 pill - 58 avatar) / 2: centred
+          "relative z-0 -mb-[10px] transition-[margin,transform] duration-300 ease-out hover:-translate-y-0.5 focus-visible:outline-none",
+          open ? "mr-8" : "mr-[44px]" // (160 pill - 72 avatar) / 2: centred
         )}
       >
-        <Image
-          src={AVATAR}
-          alt=""
-          width={58}
-          height={182}
-          className="h-[182px] w-[58px]"
-          style={{
-            maskImage: "linear-gradient(to bottom, #000 60%, transparent 80%)",
-            WebkitMaskImage: "linear-gradient(to bottom, #000 60%, transparent 80%)",
-          }}
-        />
+        {/* eslint-disable-next-line @next/next/no-img-element -- static SVG */}
+        <img src={AVATAR} alt="" width={72} height={148} className="h-[148px] w-[72px]" />
       </button>
 
       <div
