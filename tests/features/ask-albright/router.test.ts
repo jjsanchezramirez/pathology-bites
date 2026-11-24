@@ -1,44 +1,13 @@
 import { describe, it, expect } from "vitest";
 import {
   buildAnswerPrompt,
-  buildRouterPrompt,
   heuristicSource,
   normalizeQuestion,
-  parseRouterReply,
   questionTerms,
   relevantExcerpt,
   splitFollowUps,
 } from "@/features/user/ask-albright/lib/router";
 import { hitsFromFrames, parseSse } from "@/shared/services/pathtalk";
-
-describe("parseRouterReply", () => {
-  it.each([
-    ["A", "outlines"],
-    ["B", "pubmed"],
-    ["C", "who"],
-    ["c", "who"],
-    [" B.", "pubmed"],
-    ["(A)", "outlines"],
-    ["**C**", "who"],
-    ["A: textbook", "outlines"],
-  ])("maps %j to %s", (reply, expected) => {
-    expect(parseRouterReply(reply)).toBe(expected);
-  });
-
-  it.each(["", "D", "The WHO", "Answer", "about"])("rejects off-format reply %j", (reply) => {
-    expect(parseRouterReply(reply)).toBeNull();
-  });
-});
-
-describe("buildRouterPrompt", () => {
-  it("stays tiny and ends with the one-letter instruction", () => {
-    const p = buildRouterPrompt("What is the WHO grade of meningioma?");
-    expect(p).toContain("Q: What is the WHO grade of meningioma?");
-    expect(p.endsWith("Reply with one letter.")).toBe(true);
-    // ~94 tokens measured; guard against the prompt quietly growing.
-    expect(p.length).toBeLessThan(300);
-  });
-});
 
 describe("heuristicSource", () => {
   it("routes classification and grading to WHO", () => {

@@ -7,30 +7,42 @@ import { log } from "@/shared/utils/logging";
 import {
   ANSWER_MAX_TOKENS,
   ANSWER_MODEL,
-  ANSWER_SYSTEM,
   type AskSource,
   PASSAGES,
-  ROUTER_MODEL,
+  PASSAGE_CHARS,
+  MAX_SEARCHES,
+  RELEVANCE_MIN,
+  RERANK_CHARS,
+  SEARCH_LIMIT,
   SOURCE_LABEL,
   SOURCE_TOOL,
   buildAnswerPrompt,
-  buildRouterPrompt,
-  heuristicSource,
   normalizeQuestion,
-  parseRouterReply,
   splitFollowUps,
   questionTerms,
   relevantExcerpt,
 } from "./router";
+import {
+  type AnswerFormat,
+  answerSystem,
+  PLANNER_MODEL,
+  PLANNER_SYSTEM,
+  type Plan,
+  type PlanScope,
+  SCOPE_REPLY,
+  fallbackPlan,
+  parsePlan,
+} from "./planner";
 import {
   type SymbolTable,
   extractSymbolTables,
   relevantTables,
   tableToPromptLines,
 } from "./tables";
-import { mergeByHref, rankPages, keyTerms, type SourcedHit } from "./rank";
+import { type Page, mergeByHref, rankPages, keyTerms, type SourcedHit } from "./rank";
+import { rerankScores } from "./rerank";
 import { lookupMarkerAliases } from "./marker-aliases";
-import { sameMarkerNote, termAlternatives } from "./synonyms";
+import { aliasPattern, sameMarkerNote, termAlternatives } from "./synonyms";
 
 export interface AskCitation {
   n: number;
@@ -62,6 +74,10 @@ export interface AskResult {
   /** Workers AI tokens this answer cost (0 when served from cache). */
   tokens: number;
   cached: boolean;
+  /** Set when the question was declined without searching. */
+  scope?: Exclude<PlanScope, "ok">;
+  /** The answer shape the planner chose. */
+  format?: AnswerFormat;
 }
 
 /** Whether the feature can run: kill switch on and Workers AI configured. */
@@ -98,110 +114,237 @@ export function clearAskCache(): void {
   cache.clear();
 }
 
-/** Step 1: pick a source with one tiny model call; fall back to keywords on any failure. */
-export async function routeQuestion(
+/** Step 1: plan the answer (scope, source, query, focus, format) in one small JSON call. */
+export async function planQuestion(
   question: string,
   apiKey: string
-): Promise<{ source: AskSource; tokens: number }> {
+): Promise<{ plan: Plan; tokens: number }> {
   try {
-    const res = await callOpenAICompatText(
-      "cloudflare",
-      ROUTER_MODEL,
-      apiKey,
-      buildRouterPrompt(question),
-      { maxTokens: 2, temperature: 0, timeoutMs: 5_000 }
-    );
-    const source = parseRouterReply(res.content);
-    const tokens = res.tokenUsage?.total_tokens ?? 0;
-    if (source) return { source, tokens };
-    log.warn(`[ask-albright] router replied off-format: ${JSON.stringify(res.content)}`);
-    return { source: heuristicSource(question), tokens };
+    const res = await callOpenAICompatText("cloudflare", PLANNER_MODEL, apiKey, question, {
+      system: PLANNER_SYSTEM,
+      maxTokens: 140,
+      temperature: 0,
+      timeoutMs: 8_000,
+      jsonMode: true,
+    });
+    return { plan: parsePlan(res.content, question), tokens: res.tokenUsage?.total_tokens ?? 0 };
   } catch (err) {
-    log.warn("[ask-albright] router call failed; using keyword fallback", err);
-    return { source: heuristicSource(question), tokens: 0 };
+    log.warn("[ask-albright] planner failed; searching as asked", err);
+    return { plan: fallbackPlan(question), tokens: 0 };
   }
 }
 
 export class NoPassagesError extends Error {}
 
-/** The whole pipeline: cache → route → retrieve → answer. */
-export async function askAlbright(question: string): Promise<AskResult> {
+interface Candidate {
+  page: Page;
+  pageTables: SymbolTable[];
+  prose: string;
+  score: number;
+}
+
+/** Search one corpus and turn its hits into scored candidates (best first). */
+async function searchCorpus(
+  source: AskSource,
+  query: string,
+  question: string,
+  expanded: string,
+  alternatives: Map<string, string[]>
+): Promise<{ candidates: Candidate[]; failed: boolean }> {
+  let hits: PathTalkHit[] = [];
+  let failed = false;
+  try {
+    hits = await searchPathTalk(SOURCE_TOOL[source], query, {
+      limit: SEARCH_LIMIT,
+      timeoutMs: 12_000,
+    });
+  } catch (err) {
+    failed = true;
+    log.warn(
+      `[ask-albright] ${SOURCE_TOOL[source]} failed: ${err instanceof Error ? err.message : err}`
+    );
+  }
+  const pages = rankPages(
+    mergeByHref(hits.map((h): SourcedHit => ({ ...h, source }))),
+    question,
+    source,
+    alternatives
+  );
+  const candidates = pages.map((page) => {
+    const { tables: pageTables, prose } = extractSymbolTables(page.body);
+    return { page, pageTables, prose, score: 0 };
+  });
+  // A cross-encoder reads each excerpt against the question: the score both
+  // orders the pages and says whether this corpus answered at all.
+  try {
+    const scores = await rerankScores(
+      query,
+      candidates.map((c) => `${c.page.title}. ${relevantExcerpt(c.prose, expanded, RERANK_CHARS)}`)
+    );
+    candidates.forEach((c, i) => (c.score = scores[i]));
+    candidates.sort((a, b) => b.score - a.score);
+  } catch (err) {
+    log.warn("[ask-albright] rerank failed; using term-coverage order", err);
+    candidates.forEach((c) => (c.score = RELEVANCE_MIN)); // unknown: don't trigger a fallback search
+  }
+  return { candidates, failed };
+}
+
+/**
+ * The specific names a question is about: ones with a digit (TRPS1, CD117,
+ * MEF2B, BCL2) or a known marker name from the knowledge base (KIT), each with
+ * all its synonyms. Plain acronyms like RCC or NLPHL are often written out in
+ * full, so they are left out.
+ */
+function subjectsOf(question: string, aliasGroups: Array<{ aliases: string[] }>): string[][] {
+  const known = new Set(aliasGroups.flatMap((g) => g.aliases.map((a) => a.toLowerCase())));
+  return (question.match(/[A-Za-z0-9][A-Za-z0-9-]*/g) ?? [])
+    .filter(
+      (w) => (/[a-z]/i.test(w) && /\d/.test(w) && w.length >= 3) || known.has(w.toLowerCase())
+    )
+    .map(
+      (w) =>
+        aliasGroups.find((g) => g.aliases.some((a) => a.toLowerCase() === w.toLowerCase()))
+          ?.aliases ?? [w]
+    );
+}
+
+function names(text: string, subject: string[]): boolean {
+  return subject.some((n) =>
+    new RegExp(`(^|[^a-z0-9])${aliasPattern(n)}($|[^a-z0-9])`, "i").test(text)
+  );
+}
+
+/**
+ * True when no candidate names one of the question's subjects. The reranker
+ * alone can't see this: for "Is TRPS1 sensitive for TNBC?" it scored a
+ * GATA3-in-TNBC paper 0.85, so the corpus that had "TRPS1 … 86%" was skipped.
+ */
+function missesSubject(candidates: Candidate[], subjects: string[][]): boolean {
+  if (subjects.length === 0 || candidates.length === 0) return false;
+  const text = candidates.map((c) => `${c.page.title} ${c.page.body}`).join(" ");
+  return subjects.some((sub) => !names(text, sub));
+}
+
+/**
+ * The pipeline: cache → plan → one search (a second only if the first missed)
+ * → read whole passages → answer in the planned format.
+ */
+export async function askAlbright(
+  question: string,
+  /** noCache: always answer fresh and don't store it (the dev eval uses this). */
+  { noCache = false }: { noCache?: boolean } = {}
+): Promise<AskResult> {
   const key = normalizeQuestion(question);
-  const hit = cacheGet(key);
+  const hit = noCache ? null : cacheGet(key);
   if (hit) return { ...hit, tokens: 0, cached: true };
 
   const apiKey = getApiKey("cloudflare");
-  const [{ source, tokens: routerTokens }, aliasGroups] = await Promise.all([
-    routeQuestion(question, apiKey),
+  const [{ plan, tokens: planTokens }, aliasGroups] = await Promise.all([
+    planQuestion(question, apiKey),
     lookupMarkerAliases(question),
   ]);
-  // Marker synonyms from the knowledge base (CD117 = KIT…): searched for,
-  // matched when ranking and excerpting, and stated to the model.
+
+  // 1. Scope: decline off-topic or sprawling questions without searching.
+  if (plan.scope !== "ok") {
+    const declined: AskResult = {
+      answer: SCOPE_REPLY[plan.scope],
+      source: plan.source,
+      sourceLabel: SOURCE_LABEL[plan.source],
+      citations: [],
+      tables: [],
+      followUps: [],
+      tokens: planTokens,
+      cached: false,
+      scope: plan.scope,
+    };
+    if (!noCache) cacheSet(key, declined);
+    return declined;
+  }
+
+  // Marker synonyms from the knowledge base (CD117 = KIT…): added to the
+  // search, matched when ranking and excerpting, and stated to the model.
   const aliasWords = [...new Set(aliasGroups.flatMap((g) => g.aliases))];
   const searchQuery = aliasGroups.length
-    ? `${question} (${aliasGroups.map((g) => g.aliases.join(" / ")).join("; ")})`
-    : question;
-  const expanded = `${question} ${aliasWords.join(" ")}`;
-
-  // Search all three corpora in parallel (free, ~1.5s total) and let term
-  // coverage pick the pages; the router's choice only breaks ties. A corpus
-  // that errors is skipped rather than failing the question.
-  const sources = Object.keys(SOURCE_TOOL) as AskSource[];
-  const settled = await Promise.allSettled(
-    sources.map((src) => searchPathTalk(SOURCE_TOOL[src], searchQuery, { limit: PASSAGES }))
-  );
-  const found: SourcedHit[] = [];
-  settled.forEach((r, i) => {
-    if (r.status === "fulfilled") {
-      found.push(...r.value.map((h: PathTalkHit) => ({ ...h, source: sources[i] })));
-    } else {
-      log.warn(`[ask-albright] ${SOURCE_TOOL[sources[i]]} failed`, r.reason);
-    }
-  });
-  if (settled.every((r) => r.status === "rejected"))
-    throw new Error("All PathTalk searches failed");
+    ? `${plan.query} (${aliasGroups.map((g) => g.aliases.join(" / ")).join("; ")})`
+    : plan.query;
+  const expanded = `${question} ${plan.focus} ${aliasWords.join(" ")}`;
   const alternatives = termAlternatives(keyTerms(question), aliasGroups);
-  const hits = rankPages(mergeByHref(found), question, source, alternatives).slice(0, PASSAGES);
-  if (hits.length === 0) throw new NoPassagesError("No passages found for that question");
 
-  // Tables come out of the prose before excerpting, then go back in as one
-  // line per row: the flattened form is what made the model misread them. The
-  // same panel often sits on two pages (entity + overview): show and send it once.
+  // 2. One search in the planned corpus; the fallback corpus only when nothing
+  // there reads as relevant (each search costs the user ~1 s).
+  // Planned corpus first, then the planner's fallback, then the rest — but a
+  // further search only while the results still miss (low relevance, or the
+  // question's marker named nowhere), and never more than MAX_SEARCHES.
+  const order = [
+    ...new Set<AskSource>([plan.source, plan.fallback, "outlines", "pubmed", "who", "literature"]),
+  ];
+  const subjects = subjectsOf(question, aliasGroups);
+  const searched: AskSource[] = [];
+  let candidates: Candidate[] = [];
+  let anyFailed = false;
+  for (const src of order) {
+    if (searched.length >= MAX_SEARCHES) break;
+    if (
+      searched.length > 0 &&
+      (candidates[0]?.score ?? -Infinity) >= RELEVANCE_MIN &&
+      !missesSubject(candidates, subjects)
+    )
+      break;
+    searched.push(src);
+    const found = await searchCorpus(src, searchQuery, question, expanded, alternatives);
+    anyFailed ||= found.failed;
+    candidates = [...candidates, ...found.candidates].sort((a, b) => b.score - a.score);
+  }
+  if (candidates.length === 0) {
+    if (anyFailed) throw new Error("PathTalk search failed");
+    throw new NoPassagesError("No passages found for that question");
+  }
+  // Passages that name every subject go first: the TRPS1 page (third, behind
+  // a better-scored GATA3 paper) was read past and answered "not stated".
+  const namesAll = (c: Candidate) =>
+    subjects.every((sub) => names(`${c.page.title} ${c.page.body}`, sub)) ? 1 : 0;
+  candidates.sort((a, b) => namesAll(b) - namesAll(a) || b.score - a.score);
+  const chosen = candidates.slice(0, PASSAGES);
+  const hits = chosen.map((c) => c.page);
+
+  // 3. Read: whole passages (up to PASSAGE_CHARS each, centred on the question
+  // when longer), with rebuilt tables sent as one line per row.
   const terms = questionTerms(expanded);
   const tables: AskTable[] = [];
   const tableKeys = new Set<string>();
-  const passages = hits.map((h, i) => {
-    const { tables: found, prose } = extractSymbolTables(h.body);
-    let text = relevantExcerpt(prose, expanded);
-    for (const t of relevantTables(found, terms)) {
-      const key = JSON.stringify([t.headers, t.rows]);
-      if (tableKeys.has(key)) continue;
-      tableKeys.add(key);
+  const passages = chosen.map((c, i) => {
+    let text = relevantExcerpt(c.prose, expanded, PASSAGE_CHARS);
+    for (const t of relevantTables(c.pageTables, terms)) {
+      const tkey = JSON.stringify([t.headers, t.rows]);
+      if (tableKeys.has(tkey)) continue;
+      tableKeys.add(tkey);
       text += ` Table: ${tableToPromptLines(t, t.focusRows)}`;
       if (tables.length < MAX_TABLES) tables.push({ ...t, n: i + 1 });
     }
-    return { title: h.title, text };
+    return { title: c.page.title, text };
   });
+
+  // 4. Answer in the planned format, told what to look for.
   const res = await callOpenAICompatText(
     "cloudflare",
     ANSWER_MODEL,
     apiKey,
-    buildAnswerPrompt(question, passages, sameMarkerNote(aliasGroups)),
-    { system: ANSWER_SYSTEM, maxTokens: ANSWER_MAX_TOKENS, temperature: 0.2, timeoutMs: 15_000 }
+    buildAnswerPrompt(question, passages, sameMarkerNote(aliasGroups), plan.focus),
+    {
+      system: answerSystem(plan.format),
+      maxTokens: ANSWER_MAX_TOKENS,
+      temperature: 0.2,
+      timeoutMs: 20_000,
+    }
   );
 
-  const counts = sources.map((src, i) => {
-    const r = settled[i];
-    return `${src}=${r.status === "fulfilled" ? r.value.length : "err"}`;
-  });
   log.info(
-    `[ask-albright] hits ${counts.join(" ")}; markers ${aliasGroups.map((g) => g.aliases.join("=")).join(", ") || "none"}`
+    `[ask-albright] plan ${plan.source}/${plan.format} q="${plan.query}" searched=${searched.join("+")} top=${chosen[0]?.score.toFixed(2)} markers=${aliasGroups.map((g) => g.name).join(",") || "none"}`
   );
 
   const result: AskResult = {
     ...splitFollowUps(res.content),
-    // The corpus the top-ranked passage came from (the router's pick only
-    // breaks ties, so this can differ from it).
     source: hits[0].source,
     sourceLabel: SOURCE_LABEL[hits[0].source],
     // Links come from retrieval, never from the model, so they cannot be invented.
@@ -212,10 +355,11 @@ export async function askAlbright(question: string): Promise<AskResult> {
       sourceLabel: SOURCE_LABEL[h.source],
     })),
     tables,
-    tokens: routerTokens + (res.tokenUsage?.total_tokens ?? 0),
+    tokens: planTokens + (res.tokenUsage?.total_tokens ?? 0),
     cached: false,
+    format: plan.format,
   };
-  // A degraded answer (a corpus errored) must not be served for 24h: next ask retries.
-  if (settled.every((r) => r.status === "fulfilled")) cacheSet(key, result);
+  // A degraded answer (a search errored) must not be served for 24h: next ask retries.
+  if (!noCache && !anyFailed) cacheSet(key, result);
   return result;
 }

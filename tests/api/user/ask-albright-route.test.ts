@@ -7,6 +7,7 @@ vi.mock("@/shared/utils/logging", () => ({
 vi.mock("@/shared/config/ai-keys", () => ({ getApiKey: vi.fn(() => "test-token") }));
 vi.mock("@/shared/services/openai-compat", () => ({ callOpenAICompatText: vi.fn() }));
 vi.mock("@/shared/services/pathtalk", () => ({ searchPathTalk: vi.fn() }));
+vi.mock("@/features/user/ask-albright/lib/rerank", () => ({ rerankScores: vi.fn() }));
 vi.mock("@/features/user/ask-albright/lib/history", () => ({
   saveHistory: vi.fn(async () => "hist-1"),
   findInHistory: vi.fn(async () => null),
@@ -18,27 +19,34 @@ vi.mock("@/features/user/ask-albright/lib/marker-aliases", () => ({
 import { getApiKey } from "@/shared/config/ai-keys";
 import { callOpenAICompatText } from "@/shared/services/openai-compat";
 import { searchPathTalk } from "@/shared/services/pathtalk";
+import { rerankScores } from "@/features/user/ask-albright/lib/rerank";
 import { lookupMarkerAliases } from "@/features/user/ask-albright/lib/marker-aliases";
 import { findInHistory, saveHistory } from "@/features/user/ask-albright/lib/history";
 import { clearAskCache } from "@/features/user/ask-albright/lib/ask";
-import { ROUTER_MODEL, ANSWER_MODEL } from "@/features/user/ask-albright/lib/router";
+import { FORMAT_INSTRUCTION, SCOPE_REPLY } from "@/features/user/ask-albright/lib/planner";
+import { ANSWER_MAX_TOKENS } from "@/features/user/ask-albright/lib/router";
 
 const ai = vi.mocked(callOpenAICompatText);
 const search = vi.mocked(searchPathTalk);
+const rerank = vi.mocked(rerankScores);
 
-const HITS = [
+type Hit = { title: string; href: string; body: string };
+type Corpus =
+  | "search_pathology_outlines"
+  | "search_path_pubmed"
+  | "search_who"
+  | "search_path_literature";
+
+const HITS: Hit[] = [
   {
     title: "Oncocytoma",
     href: "https://po/onco",
     body: "CK7 is patchy in oncocytoma. ".repeat(40),
   },
   { title: "Chromophobe", href: "https://po/chromo", body: "CK7 is diffuse in chromophobe." },
-  { title: "Extra", href: "https://po/extra", body: "Third." },
+  { title: "Extra", href: "https://po/extra", body: "Third passage." },
   { title: "Fourth", href: "https://po/4", body: "Should be dropped." },
 ];
-
-type Corpus = "search_pathology_outlines" | "search_path_pubmed" | "search_who";
-type Hit = { title: string; href: string; body: string };
 
 /** Each corpus returns its own hits; a value that is an Error rejects. */
 function searchBy(by: Partial<Record<Corpus, Hit[] | Error>>) {
@@ -49,6 +57,45 @@ function searchBy(by: Partial<Record<Corpus, Hit[] | Error>>) {
   });
 }
 
+/** Reranker stub: score each excerpt with `fn` (default: everything relevant, in order). */
+function scoreBy(fn: (text: string, i: number) => number = (_t, i) => 0.9 - i * 0.1) {
+  rerank.mockImplementation(async (_q, texts) => texts.map(fn));
+}
+
+interface PlanShape {
+  scope?: string;
+  source?: string;
+  fallback?: string;
+  query?: string;
+  focus?: string;
+  format?: string;
+}
+const PLAN: PlanShape = {
+  scope: "ok",
+  source: "outlines",
+  fallback: "pubmed",
+  query: "chromophobe oncocytoma CK7",
+  focus: "CK7 pattern in each tumour",
+  format: "paragraph",
+};
+
+/** The planner call is the one in JSON mode; everything else is the answer. */
+function mockAi(plan: PlanShape | string = PLAN, answer = "CK7 is diffuse in chromophobe [2].") {
+  ai.mockImplementation(async (_p, _m, _k, _prompt, opts) =>
+    opts?.jsonMode
+      ? {
+          content: typeof plan === "string" ? plan : JSON.stringify({ ...PLAN, ...plan }),
+          tokenUsage: { prompt_tokens: 300, completion_tokens: 40, total_tokens: 340 },
+        }
+      : {
+          content: answer,
+          tokenUsage: { prompt_tokens: 2000, completion_tokens: 60, total_tokens: 2060 },
+        }
+  );
+}
+const plannerCalls = () => ai.mock.calls.filter((c) => c[4]?.jsonMode);
+const answerCall = () => ai.mock.calls.find((c) => !c[4]?.jsonMode);
+
 let n = 0;
 function ask(question: unknown, userId: string | null = `user-${n}`) {
   return createMockRequest({
@@ -57,20 +104,6 @@ function ask(question: unknown, userId: string | null = `user-${n}`) {
     headers: userId ? { "x-user-id": userId } : {},
     body: { question },
   });
-}
-
-function mockAi(routerReply: string, answer = "CK7 is diffuse in chromophobe [2].") {
-  ai.mockImplementation(async (_p, model) =>
-    model === ROUTER_MODEL
-      ? {
-          content: routerReply,
-          tokenUsage: { prompt_tokens: 94, completion_tokens: 1, total_tokens: 95 },
-        }
-      : {
-          content: answer,
-          tokenUsage: { prompt_tokens: 900, completion_tokens: 40, total_tokens: 940 },
-        }
-  );
 }
 
 // Re-import per test so the module-level rate limiters start empty.
@@ -84,10 +117,13 @@ describe("POST /api/user/ask-albright", () => {
     n++;
     vi.clearAllMocks();
     vi.mocked(getApiKey).mockReturnValue("test-token");
+    vi.mocked(findInHistory).mockResolvedValue(null);
+    vi.mocked(lookupMarkerAliases).mockResolvedValue([]);
     delete process.env.ASK_ALBRIGHT_ENABLED;
     clearAskCache();
     searchBy({ search_pathology_outlines: HITS });
-    mockAi("A");
+    scoreBy();
+    mockAi();
   });
 
   it("401s without a signed-in user", async () => {
@@ -117,83 +153,155 @@ describe("POST /api/user/ask-albright", () => {
     expect((await POST(ask("What stains for oncocytoma?"))).status).toBe(503);
   });
 
-  it("searches all three corpora, keeps 3 trimmed passages, cites from retrieval", async () => {
-    mockAi("B");
+  it("plans, searches one corpus, reads 3 whole passages, answers in the planned format", async () => {
+    mockAi({ format: "table" });
     const { POST } = await loadRoute();
-    const res = await POST(ask("Survival in chromophobe RCC?"));
+    const res = await POST(ask("Compare CK7 in chromophobe RCC and oncocytoma"));
     const body = await getResponseJson(res);
 
     expect(res.status).toBe(200);
-    for (const tool of ["search_pathology_outlines", "search_path_pubmed", "search_who"]) {
-      expect(search).toHaveBeenCalledWith(tool, "Survival in chromophobe RCC?", { limit: 3 });
-    }
+    // Plan: one JSON call. Search: once, in the planned corpus, with the planned query.
+    expect(plannerCalls()).toHaveLength(1);
+    expect(search).toHaveBeenCalledTimes(1);
+    expect(search).toHaveBeenCalledWith(
+      "search_pathology_outlines",
+      "chromophobe oncocytoma CK7",
+      expect.objectContaining({ limit: 3 })
+    );
 
-    // Router: tiny budget, deterministic.
-    const routerCall = ai.mock.calls.find((c) => c[1] === ROUTER_MODEL)!;
-    expect(routerCall[4]).toMatchObject({ maxTokens: 2, temperature: 0 });
-
-    // Answer: capped output, only 3 passages, each trimmed.
-    const answerCall = ai.mock.calls.find((c) => c[1] === ANSWER_MODEL)!;
-    expect(answerCall[4]).toMatchObject({ maxTokens: 280 });
-    const prompt = answerCall[3] as string;
+    const call = answerCall()!;
+    expect(call[4]).toMatchObject({ maxTokens: ANSWER_MAX_TOKENS });
+    expect(call[4]?.system).toContain(FORMAT_INSTRUCTION.table);
+    const prompt = call[3] as string;
+    expect(prompt).toContain("Look for: CK7 pattern in each tumour");
     expect(prompt.match(/^\[\d\]/gm)).toHaveLength(3);
     expect(prompt).not.toContain("Should be dropped");
-    expect(prompt.length).toBeLessThan(2000);
+    // Whole passages: the 1,160-char oncocytoma page is sent complete.
+    expect(prompt).toContain("CK7 is patchy in oncocytoma. ".repeat(40).trim());
 
-    // Only PathologyOutlines had hits, so it is the source despite routing to PubMed.
     expect(body).toMatchObject({
       source: "outlines",
       sourceLabel: "PathologyOutlines",
+      format: "table",
       cached: false,
-      tokens: 95 + 940,
+      tokens: 340 + 2060,
     });
     expect(body.citations).toHaveLength(3);
     expect(body.citations[0]).toMatchObject({ sourceLabel: "PathologyOutlines" });
-    expect(body.citations.map((c: Hit) => c.href)).toContain("https://po/chromo");
   });
 
-  it("answers from the corpus that mentions the question's subject (NLPHL / MEF2B case)", async () => {
-    // Regression: routed to PathologyOutlines, whose chunks never mention MEF2B or
-    // J chain, and answered "the sources do not contain information" — while WHO
-    // and PubMed both did.
-    mockAi("A");
+  it("searches the fallback corpus only when the first one misses (NLPHL / J chain case)", async () => {
+    // Regression: the planned corpus had nothing on J chain; PubMed did.
+    mockAi({ source: "outlines", fallback: "pubmed", query: "J chain Hodgkin Reed-Sternberg" });
     searchBy({
       search_pathology_outlines: [
-        {
-          title: "NLPHL",
-          href: "https://po/nlphl",
-          body: "NLPHL LP cells are CD20+, OCT2+, PAX5+.",
-        },
-        {
-          title: "NLPHL",
-          href: "https://po/nlphl",
-          body: "IgD+ NLPHL: young males, cervical nodes.",
-        },
-      ],
-      search_who: [
-        {
-          title: "NLPHL (WHO)",
-          href: "https://who/nlphl",
-          body: "In contrast to CHL, MEF2B is typically expressed in LP cells of NLPHL.",
-        },
+        { title: "CHL", href: "https://po/chl", body: "HRS cells are CD30+ and CD15+." },
       ],
       search_path_pubmed: [
         {
           title: "J chain and MEF2B in CHL vs NLPHL",
           href: "https://pubmed/28851661",
-          body: "J chain and MEF2B highlighted LP cells in 20/20 NLPHLs and were negative in 43/43 CHLs.",
+          body: "J chain and MEF2B were negative in 43/43 CHLs and positive in 20/20 NLPHLs.",
         },
       ],
     });
+    scoreBy((t) => (/J chain/i.test(t) ? 0.92 : 0.02));
     const { POST } = await loadRoute();
-    const body = await getResponseJson(
-      await POST(ask("Are MEF2B and J chain useful in the diagnosis of NLPHL?"))
+    const body = await getResponseJson(await POST(ask("Is J chain expressed by HRS cells?")));
+
+    expect(search.mock.calls.map((c) => c[0])).toEqual([
+      "search_pathology_outlines",
+      "search_path_pubmed",
+    ]);
+    expect(body.citations[0].href).toBe("https://pubmed/28851661");
+    expect(answerCall()![3]).toContain("43/43 CHLs");
+  });
+
+  it("searches the fallback when no passage names the question's marker (TRPS1 case)", async () => {
+    // The reranker liked a GATA3-in-TNBC paper (0.85), but nothing said TRPS1.
+    mockAi({ source: "pubmed", fallback: "outlines", query: "TRPS1 triple-negative breast" });
+    searchBy({
+      search_path_pubmed: [
+        {
+          title: "GATA3 in TNBC",
+          href: "https://pm/gata3",
+          body: "GATA3 is positive in 51% of TNBC.",
+        },
+      ],
+      search_pathology_outlines: [
+        {
+          title: "Breast molecular subtypes",
+          href: "https://po/subtypes",
+          body: "TRPS1 (positive in 86% of triple negative and metaplastic carcinomas).",
+        },
+      ],
+    });
+    scoreBy((t) => (/TRPS1/.test(t) ? 0.95 : 0.85));
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(await POST(ask("Is TRPS1 sensitive for TNBC?")));
+    expect(search).toHaveBeenCalledTimes(2);
+    expect(body.citations[0].href).toBe("https://po/subtypes");
+  });
+
+  it("does not search a second corpus when the first one answers", async () => {
+    scoreBy(() => 0.8);
+    const { POST } = await loadRoute();
+    await POST(ask("What stains for oncocytoma?"));
+    expect(search).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ["off_topic", "What's a good recipe for banana bread?"],
+    ["too_broad", "Explain all of soft tissue pathology"],
+  ] as const)("declines %s questions without searching", async (scope, q) => {
+    mockAi({ scope });
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(await POST(ask(q)));
+    expect(body).toMatchObject({ answer: SCOPE_REPLY[scope], scope, citations: [], tokens: 340 });
+    expect(search).not.toHaveBeenCalled();
+    expect(answerCall()).toBeUndefined();
+  });
+
+  it("falls back to searching as asked when the planner fails", async () => {
+    searchBy({
+      search_who: [{ title: "WHO", href: "https://who/m", body: "Meningioma grade 2." }],
+    });
+    ai.mockImplementation(async (_p, _m, _k, _prompt, opts) => {
+      if (opts?.jsonMode) throw new Error("cloudflare API error: 500");
+      return {
+        content: "Grade 2 [1].",
+        tokenUsage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
+      };
+    });
+    const { POST } = await loadRoute();
+    const res = await POST(ask("What is the WHO grade of atypical meningioma?"));
+    expect(res.status).toBe(200);
+    expect(search).toHaveBeenCalledWith(
+      "search_who",
+      "What is the WHO grade of atypical meningioma?",
+      expect.anything()
     );
-    const hrefs = body.citations.map((c: Hit) => c.href);
-    expect(hrefs.slice(0, 2).sort()).toEqual(["https://pubmed/28851661", "https://who/nlphl"]);
-    const prompt = ai.mock.calls.find((c) => c[1] === ANSWER_MODEL)![3] as string;
-    expect(prompt).toContain("20/20 NLPHLs");
-    expect(prompt).toContain("MEF2B is typically expressed");
+  });
+
+  it("repairs a half-valid plan field by field", async () => {
+    mockAi('{"scope":"ok","source":"nonsense","query":"x","format":"poem"}');
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(await POST(ask("Histologic features of Warthin tumor")));
+    // Unknown source → keyword guess (outlines); too-short query → the question; bad format → paragraph.
+    expect(search).toHaveBeenCalledWith(
+      "search_pathology_outlines",
+      "Histologic features of Warthin tumor",
+      expect.anything()
+    );
+    expect(body.format).toBe("paragraph");
+  });
+
+  it("uses term-coverage order and no fallback search when the reranker is down", async () => {
+    rerank.mockRejectedValue(new Error("rerank: HTTP 500"));
+    const { POST } = await loadRoute();
+    const res = await POST(ask("What stains for oncocytoma?"));
+    expect(res.status).toBe(200);
+    expect(search).toHaveBeenCalledTimes(1);
   });
 
   it("rebuilds a flattened panel, sends it as rows, and returns it once", async () => {
@@ -209,8 +317,7 @@ describe("POST /api/user/ask-albright", () => {
     const body = await getResponseJson(
       await POST(ask("Chromophobe RCC versus oncocytoma stains?"))
     );
-
-    const prompt = ai.mock.calls.find((c) => c[1] === ANSWER_MODEL)![3] as string;
+    const prompt = answerCall()![3] as string;
     expect(prompt).toContain(
       "Table: Chromophobe RCC: Hale +++, KIT +++, CK7 +++; Oncocytoma: Hale -, KIT +++, CK7 rare"
     );
@@ -237,91 +344,51 @@ describe("POST /api/user/ask-albright", () => {
       "https://po/onco",
       "https://po/chromo",
     ]);
-    const prompt = ai.mock.calls.find((c) => c[1] === ANSWER_MODEL)![3] as string;
+    const prompt = answerCall()![3] as string;
     expect(prompt).toContain("First chunk");
     expect(prompt).toContain("Second chunk");
   });
 
-  const TIE = {
-    search_pathology_outlines: [{ title: "PO", href: "https://po/m", body: "Meningioma grade 2." }],
-    search_who: [{ title: "WHO", href: "https://who/m", body: "Meningioma grade 2." }],
-  };
-
-  it("uses the router's pick to break a tie between equally relevant pages", async () => {
-    searchBy(TIE);
-    mockAi("C");
-    const { POST } = await loadRoute();
-    const body = await getResponseJson(await POST(ask("Meningioma grade 2 criteria?")));
-    expect(body.citations[0].href).toBe("https://who/m");
-    expect(body.source).toBe("who");
-  });
-
-  it("falls back to keywords when the router answers off-format", async () => {
-    searchBy(TIE);
-    mockAi("The World Health");
-    const { POST } = await loadRoute();
-    const body = await getResponseJson(await POST(ask("What is the WHO grade of meningioma?")));
-    expect(body.citations[0].href).toBe("https://who/m");
-  });
-
-  it("falls back to keywords when the router call throws", async () => {
-    searchBy(TIE);
-    ai.mockImplementation(async (_p, model) => {
-      if (model === ROUTER_MODEL) throw new Error("cloudflare API error: 500");
-      return {
-        content: "Answer [1].",
-        tokenUsage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
-      };
-    });
-    const { POST } = await loadRoute();
-    const body = await getResponseJson(await POST(ask("Histologic features of meningioma")));
-    expect(body.citations[0].href).toBe("https://po/m");
-  });
-
-  it("skips a corpus that errors; 502s only when all three do", async () => {
-    searchBy({ search_who: new Error("HTTP 500"), search_pathology_outlines: HITS });
+  it("searches the fallback when the planned corpus errors; 502s when both do", async () => {
+    searchBy({ search_pathology_outlines: new Error("HTTP 500"), search_path_pubmed: HITS });
     const { POST } = await loadRoute();
     expect((await POST(ask("What stains for oncocytoma?"))).status).toBe(200);
 
     const down = new Error("HTTP 503");
-    searchBy({ search_who: down, search_pathology_outlines: down, search_path_pubmed: down });
+    searchBy({ search_pathology_outlines: down, search_path_pubmed: down });
     expect((await POST(ask("What stains for chromophobe?"))).status).toBe(502);
+  });
+
+  it("does not cache an answer built while a search was down", async () => {
+    searchBy({ search_pathology_outlines: new Error("HTTP 500"), search_path_pubmed: HITS });
+    const { POST } = await loadRoute();
+    await POST(ask("What stains for oncocytoma?"));
+    const body = await getResponseJson(await POST(ask("What stains for oncocytoma?")));
+    expect(body.cached).toBe(false);
   });
 
   it("serves a repeated question from cache with zero tokens", async () => {
     const { POST } = await loadRoute();
     await POST(ask("What stains for oncocytoma?"));
     const callsAfterFirst = ai.mock.calls.length;
-    const res = await POST(ask("  what stains for ONCOCYTOMA  "));
-    const body = await getResponseJson(res);
+    const body = await getResponseJson(await POST(ask("  what stains for ONCOCYTOMA  ")));
     expect(body).toMatchObject({ cached: true, tokens: 0 });
     expect(ai.mock.calls.length).toBe(callsAfterFirst);
   });
 
-  it("uses knowledge-base marker synonyms: searched, ranked, and stated to the model", async () => {
+  it("uses knowledge-base marker synonyms: searched and stated to the model", async () => {
     vi.mocked(lookupMarkerAliases).mockResolvedValue([
       { name: "CD117", aliases: ["CD117", "KIT", "c-KIT"] },
     ]);
-    searchBy({
-      search_pathology_outlines: [
-        { title: "overview", href: "https://po/a", body: "Oncocytoma overview text." },
-      ],
-      search_who: [
-        { title: "panel", href: "https://who/b", body: "Oncocytoma: KIT +++ diffusely." },
-      ],
-    });
-    mockAi("A");
+    mockAi({ query: "CD117 oncocytoma" });
     const { POST } = await loadRoute();
-    const body = await getResponseJson(await POST(ask("Is CD117 positive in oncocytoma?")));
-
+    await POST(ask("Is CD117 positive in oncocytoma?"));
     expect(search).toHaveBeenCalledWith(
-      "search_who",
-      "Is CD117 positive in oncocytoma? (CD117 / KIT / c-KIT)",
-      { limit: 3 }
+      "search_pathology_outlines",
+      "CD117 oncocytoma (CD117 / KIT / c-KIT)",
+      expect.anything()
     );
-    expect(body.citations[0].href).toBe("https://who/b");
-    const prompt = ai.mock.calls.find((c) => c[1] === ANSWER_MODEL)![3] as string;
-    expect(prompt).toContain("Same marker: CD117 = KIT = c-KIT.");
+    expect(answerCall()![3]).toContain("Same marker: CD117 = KIT = c-KIT.");
   });
 
   it("saves each answer to the caller's history and returns its id", async () => {
@@ -358,12 +425,11 @@ describe("POST /api/user/ask-albright", () => {
     expect(ai).not.toHaveBeenCalled();
     expect(search).not.toHaveBeenCalled();
     expect(saveHistory).not.toHaveBeenCalled();
-    vi.mocked(findInHistory).mockResolvedValue(null);
   });
 
   it("returns follow-up questions split off the answer", async () => {
     mockAi(
-      "A",
+      PLAN,
       "CK7 is diffuse in chromophobe [2].\nFollow-ups: What about S100A1? | Is Hale iron still used?"
     );
     const { POST } = await loadRoute();
@@ -380,26 +446,18 @@ describe("POST /api/user/ask-albright", () => {
     expect((await getResponseJson(res)).historyId).toBeNull();
   });
 
-  it("does not cache an answer built while a corpus was down", async () => {
-    searchBy({ search_who: new Error("HTTP 500"), search_pathology_outlines: HITS });
-    const { POST } = await loadRoute();
-    await POST(ask("What stains for oncocytoma?"));
-    const body = await getResponseJson(await POST(ask("What stains for oncocytoma?")));
-    expect(body.cached).toBe(false);
-  });
-
-  it("404s when no corpus returns passages, without an answer call", async () => {
+  it("404s when neither corpus returns passages, without an answer call", async () => {
     searchBy({});
     const { POST } = await loadRoute();
     const res = await POST(ask("What stains for oncocytoma?"));
     expect(res.status).toBe(404);
-    expect(ai.mock.calls.some((c) => c[1] === ANSWER_MODEL)).toBe(false);
+    expect(answerCall()).toBeUndefined();
   });
 
   it("502s when the answer model fails", async () => {
-    ai.mockImplementation(async (_p, model) => {
-      if (model === ROUTER_MODEL) return { content: "A" };
-      throw new Error("cloudflare API timeout after 15s");
+    ai.mockImplementation(async (_p, _m, _k, _prompt, opts) => {
+      if (opts?.jsonMode) return { content: JSON.stringify(PLAN) };
+      throw new Error("cloudflare API timeout after 20s");
     });
     const { POST } = await loadRoute();
     expect((await POST(ask("What stains for oncocytoma?"))).status).toBe(502);
