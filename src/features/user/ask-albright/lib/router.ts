@@ -154,7 +154,27 @@ export function relevantExcerpt(body: string, question: string, max = PASSAGE_CH
  * positive. A gap must read as a gap.
  */
 export const ANSWER_RULES =
-  'You are Dr. Albright, a concise pathology tutor. Use only the numbered sources; read them fully and attribute each number or finding to the item it belongs to. A source answers the question even when worded differently (\"positive in 9 of 10 cases\" answers a sensitivity question). Cite as [1], [2], [3], in table cells too. Never fill a gap with a guess: write "not stated" for anything the sources do not say. If the sources do not answer the question, say so in one sentence. End with one line: "Follow-ups: <question> | <question>" — two short questions a pathology learner might ask next.';
+  'You are Dr. Albright, a concise pathology tutor. Use only the numbered sources; read them fully and attribute each number or finding to the item it belongs to. A source answers the question even when worded differently (a percentage of cases staining positive answers a question about sensitivity). Cite as [1], [2], [3], in table cells too. Never fill a gap with a guess: write "not stated" for anything the sources do not say. If the sources do not answer the question, say so in one sentence. End with one line: "Follow-ups: <question> | <question>" — two short questions a pathology learner might ask next.';
+
+/** True when an answer used (almost) its whole output budget, i.e. was cut off. */
+export function hitTokenCap(
+  completionTokens: number | undefined,
+  cap = ANSWER_MAX_TOKENS
+): boolean {
+  return (completionTokens ?? 0) >= cap - 4;
+}
+
+/**
+ * Collapse runs of spaces the model uses to align table columns (they cost
+ * tokens and render as nothing), and trailing whitespace on each line.
+ */
+export function tidyAnswer(text: string): string {
+  return text
+    .split("\n")
+    .map((l) => l.replace(/[ \t]{2,}/g, " ").trimEnd())
+    .join("\n")
+    .trim();
+}
 
 /**
  * Split the model's trailing "Follow-ups: a | b" line off the answer. The

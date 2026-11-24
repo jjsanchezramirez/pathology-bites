@@ -139,11 +139,18 @@ const out = args.includes("--out") ? args[args.indexOf("--out") + 1] : null;
 
 async function run(c) {
   const t0 = Date.now();
-  const res = await fetch(`${base}/api/user/ask-albright`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-ask-albright-eval": "1" },
-    body: JSON.stringify({ question: c.q }),
-  });
+  let res;
+  try {
+    res = await fetch(`${base}/api/user/ask-albright`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-ask-albright-eval": "1" },
+      // A stuck request fails the case instead of stalling the whole run.
+      signal: AbortSignal.timeout(60_000),
+      body: JSON.stringify({ question: c.q }),
+    });
+  } catch (err) {
+    res = { ok: false, status: `error: ${err.message}`, json: async () => ({}) };
+  }
   const ms = Date.now() - t0;
   const d = await res.json().catch(() => ({}));
   const answer = d.answer ?? "";
