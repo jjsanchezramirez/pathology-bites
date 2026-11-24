@@ -96,26 +96,37 @@ function PanelTable({ table, href }: { table: AskTable; href?: string }) {
   );
 }
 
-/** `**bold**` and `[1]`-style citation markers; everything else is plain text. */
+function CiteLink({ cite }: { cite: AskResponse["citations"][number] }) {
+  return (
+    <a
+      href={cite.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="align-super text-[10px] font-medium text-primary hover:underline"
+    >
+      [{cite.n}]
+    </a>
+  );
+}
+
+/** `**bold**` and citation markers — `[1]`, or grouped like `[1,3]` / `[1, 3]`. */
 function Inline({ text, citations }: { text: string; citations: AskResponse["citations"] }) {
   return (
     <>
-      {text.split(/(\*\*[^*]+\*\*|\[\d\])/g).map((part, i) => {
+      {text.split(/(\*\*[^*]+\*\*|\[\d(?:,\s*\d)*\])/g).map((part, i) => {
         const bold = part.match(/^\*\*([^*]+)\*\*$/);
         if (bold) return <strong key={i}>{bold[1]}</strong>;
-        const m = part.match(/^\[(\d)\]$/);
-        const cite = m && citations.find((c) => c.n === Number(m[1]));
-        if (!cite) return <span key={i}>{part}</span>;
+        const group = part.match(/^\[(\d(?:,\s*\d)*)\]$/);
+        const cites = group
+          ? group[1].split(/,\s*/).map((n) => citations.find((c) => c.n === Number(n)))
+          : [];
+        if (!group || cites.some((c) => !c)) return <span key={i}>{part}</span>;
         return (
-          <a
-            key={i}
-            href={cite.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="align-super text-[10px] font-medium text-primary hover:underline"
-          >
-            [{cite.n}]
-          </a>
+          <span key={i}>
+            {cites.map((c) => (
+              <CiteLink key={c!.n} cite={c!} />
+            ))}
+          </span>
         );
       })}
     </>
