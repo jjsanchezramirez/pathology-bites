@@ -113,18 +113,18 @@ export function AlbrightAvatar({ mood, hovered }: { mood: AlbrightMood; hovered:
     >
       <DrAlbrightFigure className="h-full w-full overflow-visible" />
 
-      {/* Pipe smoke from the bowl (≈ 5px, 133px at this size). */}
-      {thinking && (
-        <span aria-hidden className="pointer-events-none absolute left-0 top-[124px]">
-          {[0, 1, 2, 3].map((i) => (
-            <span
-              key={i}
-              className="alb-puff absolute block h-2.5 w-2.5 rounded-full bg-slate-400/70 blur-[0.5px] dark:bg-slate-300/60"
-              style={{ animationDelay: `${i * 0.55}s` }}
-            />
-          ))}
-        </span>
-      )}
+      {/* Pipe smoke from the bowl (≈ 5px, 124px at this size): a slow drift
+          always, faster while thinking. Negative delays stagger the puffs from
+          the first frame instead of starting them together. */}
+      <span aria-hidden className="pointer-events-none absolute left-[1px] top-[118px]">
+        {[0, 1, 2, 3].map((i) => (
+          <span
+            key={i}
+            className="alb-puff absolute block h-3 w-3 rounded-full bg-slate-500/50 dark:bg-slate-300/50"
+            style={{ "--i": i } as React.CSSProperties}
+          />
+        ))}
+      </span>
 
       {bubble && (
         <span
@@ -147,7 +147,7 @@ export function AlbrightAvatar({ mood, hovered }: { mood: AlbrightMood; hovered:
           animation: alb-blink 5.5s infinite;
         }
         .alb .alb-moustache {
-          animation: alb-ruffle 7s ease-in-out infinite;
+          animation: alb-ruffle 6s ease-in-out infinite;
         }
         .alb-thinking .alb-eyes {
           animation:
@@ -155,11 +155,16 @@ export function AlbrightAvatar({ mood, hovered }: { mood: AlbrightMood; hovered:
             alb-glance 2.4s ease-in-out infinite;
         }
         .alb-thinking .alb-moustache {
-          animation: alb-ruffle-busy 1.6s ease-in-out infinite;
+          animation: alb-ruffle 2.4s ease-in-out infinite;
         }
-        .alb-puff {
-          animation: alb-puff 2.2s ease-out infinite;
+        .alb .alb-puff {
           opacity: 0;
+          animation: alb-puff 4.4s ease-out infinite;
+          animation-delay: calc(var(--i) * -1.1s);
+        }
+        .alb-thinking .alb-puff {
+          animation-duration: 2s;
+          animation-delay: calc(var(--i) * -0.5s);
         }
         .alb-bubble {
           animation: alb-pop 200ms ease-out;
@@ -174,34 +179,27 @@ export function AlbrightAvatar({ mood, hovered }: { mood: AlbrightMood; hovered:
             scale: 1 0.15;
           }
         }
+        /* A quick wiggle, then still. The moustache is ~27px wide, so it
+           needs a few degrees to read at all. */
         @keyframes alb-ruffle {
           0%,
-          84%,
+          80%,
           100% {
             rotate: 0deg;
             scale: 1 1;
           }
-          88% {
-            rotate: -2deg;
-            scale: 1 0.96;
+          83% {
+            rotate: -6deg;
+            scale: 1.06 0.94;
           }
-          92% {
-            rotate: 1.5deg;
-            scale: 1 1.02;
+          87% {
+            rotate: 5deg;
+            scale: 1.03 1;
           }
-          96% {
-            rotate: -0.5deg;
+          91% {
+            rotate: -3deg;
           }
-        }
-        @keyframes alb-ruffle-busy {
-          0%,
-          100% {
-            rotate: 0deg;
-          }
-          30% {
-            rotate: -1.5deg;
-          }
-          60% {
+          95% {
             rotate: 1deg;
           }
         }
@@ -219,11 +217,18 @@ export function AlbrightAvatar({ mood, hovered }: { mood: AlbrightMood; hovered:
         }
         @keyframes alb-puff {
           0% {
-            transform: translate(0, 0) scale(0.6);
-            opacity: 0.95;
+            transform: translate(0, 0) scale(0.4);
+            opacity: 0;
+          }
+          10% {
+            opacity: 0.9;
+          }
+          50% {
+            transform: translate(-8px, -30px) scale(1.4);
+            opacity: 0.55;
           }
           100% {
-            transform: translate(-14px, -44px) scale(2.4);
+            transform: translate(-3px, -62px) scale(2.3);
             opacity: 0;
           }
         }
@@ -238,9 +243,11 @@ export function AlbrightAvatar({ mood, hovered }: { mood: AlbrightMood; hovered:
           .alb .alb-moustache,
           .alb-thinking .alb-eyes,
           .alb-thinking .alb-moustache,
-          .alb-puff,
           .alb-bubble {
             animation: none;
+          }
+          .alb .alb-puff {
+            display: none;
           }
         }
       `}</style>
