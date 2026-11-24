@@ -11,6 +11,7 @@
 
 import type { AskSource } from "./router";
 import { questionTerms } from "./router";
+import { aliasPattern } from "./synonyms";
 
 export interface SourcedHit {
   source: AskSource;
@@ -80,12 +81,23 @@ function mentions(body: string, term: string): boolean {
  * on two of seven counts a lot. The router's pick and a source's own top hit
  * only break ties, so routing is a preference, not a gate.
  */
-export function rankPages(pages: Page[], question: string, preferred: AskSource): Page[] {
+export function rankPages(
+  pages: Page[],
+  question: string,
+  preferred: AskSource,
+  /** Marker synonyms per key term (synonyms.termAlternatives): "cd117" also matches "kit". */
+  alternatives: Map<string, string[]> = new Map()
+): Page[] {
   const terms = keyTerms(question);
   const lower = pages.map((p) => `${p.title} ${p.body}`.toLowerCase());
-  const df = new Map(terms.map((t) => [t, lower.filter((b) => mentions(b, t)).length]));
+  const has = (body: string, t: string) =>
+    mentions(body, t) ||
+    (alternatives.get(t) ?? []).some((alt) =>
+      new RegExp(`(^|[^a-z0-9])${aliasPattern(alt)}($|[^a-z0-9])`, "i").test(body)
+    );
+  const df = new Map(terms.map((t) => [t, lower.filter((b) => has(b, t)).length]));
   const score = (i: number) =>
-    terms.reduce((s, t) => (mentions(lower[i], t) ? s + 1 / (df.get(t) || 1) : s), 0) +
+    terms.reduce((s, t) => (has(lower[i], t) ? s + 1 / (df.get(t) || 1) : s), 0) +
     (pages[i].source === preferred ? 0.25 : 0) -
     pages[i].rank * 0.05;
   return pages

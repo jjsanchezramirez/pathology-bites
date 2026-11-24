@@ -27,7 +27,9 @@ import {
   relevantTables,
   tableToPromptLines,
 } from "./tables";
-import { mergeByHref, rankPages, type SourcedHit } from "./rank";
+import { mergeByHref, rankPages, keyTerms, type SourcedHit } from "./rank";
+import { lookupMarkerAliases } from "./marker-aliases";
+import { sameMarkerNote, termAlternatives } from "./synonyms";
 
 export interface AskCitation {
   n: number;
@@ -126,14 +128,24 @@ export async function askAlbright(question: string): Promise<AskResult> {
   if (hit) return { ...hit, tokens: 0, cached: true };
 
   const apiKey = getApiKey("cloudflare");
-  const { source, tokens: routerTokens } = await routeQuestion(question, apiKey);
+  const [{ source, tokens: routerTokens }, aliasGroups] = await Promise.all([
+    routeQuestion(question, apiKey),
+    lookupMarkerAliases(question),
+  ]);
+  // Marker synonyms from the knowledge base (CD117 = KIT…): searched for,
+  // matched when ranking and excerpting, and stated to the model.
+  const aliasWords = [...new Set(aliasGroups.flatMap((g) => g.aliases))];
+  const searchQuery = aliasGroups.length
+    ? `${question} (${aliasGroups.map((g) => g.aliases.join(" / ")).join("; ")})`
+    : question;
+  const expanded = `${question} ${aliasWords.join(" ")}`;
 
   // Search all three corpora in parallel (free, ~1.5s total) and let term
   // coverage pick the pages; the router's choice only breaks ties. A corpus
   // that errors is skipped rather than failing the question.
   const sources = Object.keys(SOURCE_TOOL) as AskSource[];
   const settled = await Promise.allSettled(
-    sources.map((src) => searchPathTalk(SOURCE_TOOL[src], question, { limit: PASSAGES }))
+    sources.map((src) => searchPathTalk(SOURCE_TOOL[src], searchQuery, { limit: PASSAGES }))
   );
   const found: SourcedHit[] = [];
   settled.forEach((r, i) => {
@@ -145,18 +157,19 @@ export async function askAlbright(question: string): Promise<AskResult> {
   });
   if (settled.every((r) => r.status === "rejected"))
     throw new Error("All PathTalk searches failed");
-  const hits = rankPages(mergeByHref(found), question, source).slice(0, PASSAGES);
+  const alternatives = termAlternatives(keyTerms(question), aliasGroups);
+  const hits = rankPages(mergeByHref(found), question, source, alternatives).slice(0, PASSAGES);
   if (hits.length === 0) throw new NoPassagesError("No passages found for that question");
 
   // Tables come out of the prose before excerpting, then go back in as one
   // line per row: the flattened form is what made the model misread them. The
   // same panel often sits on two pages (entity + overview): show and send it once.
-  const terms = questionTerms(question);
+  const terms = questionTerms(expanded);
   const tables: AskTable[] = [];
   const tableKeys = new Set<string>();
   const passages = hits.map((h, i) => {
     const { tables: found, prose } = extractSymbolTables(h.body);
-    let text = relevantExcerpt(prose, question);
+    let text = relevantExcerpt(prose, expanded);
     for (const t of relevantTables(found, terms)) {
       const key = JSON.stringify([t.headers, t.rows]);
       if (tableKeys.has(key)) continue;
@@ -170,7 +183,7 @@ export async function askAlbright(question: string): Promise<AskResult> {
     "cloudflare",
     ANSWER_MODEL,
     apiKey,
-    buildAnswerPrompt(question, passages),
+    buildAnswerPrompt(question, passages, sameMarkerNote(aliasGroups)),
     { system: ANSWER_SYSTEM, maxTokens: ANSWER_MAX_TOKENS, temperature: 0.2, timeoutMs: 15_000 }
   );
 
@@ -178,7 +191,9 @@ export async function askAlbright(question: string): Promise<AskResult> {
     const r = settled[i];
     return `${src}=${r.status === "fulfilled" ? r.value.length : "err"}`;
   });
-  log.info(`[ask-albright] hits ${counts.join(" ")}`);
+  log.info(
+    `[ask-albright] hits ${counts.join(" ")}; markers ${aliasGroups.map((g) => g.aliases.join("=")).join(", ") || "none"}`
+  );
 
   const result: AskResult = {
     answer: res.content.trim(),

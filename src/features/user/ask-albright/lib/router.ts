@@ -138,8 +138,10 @@ export const ANSWER_SYSTEM =
 
 export function buildAnswerPrompt(
   question: string,
-  passages: Array<{ title: string; text: string }>
+  passages: Array<{ title: string; text: string }>,
+  /** e.g. "Same marker: CD117 = KIT." — so a column named KIT answers a question about CD117. */
+  note = ""
 ): string {
   const sources = passages.map((p, i) => `[${i + 1}] ${p.title}: ${p.text}`).join("\n");
-  return `Sources:\n${sources}\n\nQuestion: ${question}`;
+  return `Sources:\n${sources}\n\n${note ? `${note}\n` : ""}Question: ${question}`;
 }

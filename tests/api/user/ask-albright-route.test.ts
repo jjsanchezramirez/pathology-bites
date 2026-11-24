@@ -7,10 +7,14 @@ vi.mock("@/shared/utils/logging", () => ({
 vi.mock("@/shared/config/ai-keys", () => ({ getApiKey: vi.fn(() => "test-token") }));
 vi.mock("@/shared/services/openai-compat", () => ({ callOpenAICompatText: vi.fn() }));
 vi.mock("@/shared/services/pathtalk", () => ({ searchPathTalk: vi.fn() }));
+vi.mock("@/features/user/ask-albright/lib/marker-aliases", () => ({
+  lookupMarkerAliases: vi.fn(async () => []),
+}));
 
 import { getApiKey } from "@/shared/config/ai-keys";
 import { callOpenAICompatText } from "@/shared/services/openai-compat";
 import { searchPathTalk } from "@/shared/services/pathtalk";
+import { lookupMarkerAliases } from "@/features/user/ask-albright/lib/marker-aliases";
 import { clearAskCache } from "@/features/user/ask-albright/lib/ask";
 import { ROUTER_MODEL, ANSWER_MODEL } from "@/features/user/ask-albright/lib/router";
 
@@ -287,6 +291,32 @@ describe("POST /api/user/ask-albright", () => {
     const body = await getResponseJson(res);
     expect(body).toMatchObject({ cached: true, tokens: 0 });
     expect(ai.mock.calls.length).toBe(callsAfterFirst);
+  });
+
+  it("uses knowledge-base marker synonyms: searched, ranked, and stated to the model", async () => {
+    vi.mocked(lookupMarkerAliases).mockResolvedValue([
+      { name: "CD117", aliases: ["CD117", "KIT", "c-KIT"] },
+    ]);
+    searchBy({
+      search_pathology_outlines: [
+        { title: "overview", href: "https://po/a", body: "Oncocytoma overview text." },
+      ],
+      search_who: [
+        { title: "panel", href: "https://who/b", body: "Oncocytoma: KIT +++ diffusely." },
+      ],
+    });
+    mockAi("A");
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(await POST(ask("Is CD117 positive in oncocytoma?")));
+
+    expect(search).toHaveBeenCalledWith(
+      "search_who",
+      "Is CD117 positive in oncocytoma? (CD117 / KIT / c-KIT)",
+      { limit: 3 }
+    );
+    expect(body.citations[0].href).toBe("https://who/b");
+    const prompt = ai.mock.calls.find((c) => c[1] === ANSWER_MODEL)![3] as string;
+    expect(prompt).toContain("Same marker: CD117 = KIT = c-KIT.");
   });
 
   it("does not cache an answer built while a corpus was down", async () => {
