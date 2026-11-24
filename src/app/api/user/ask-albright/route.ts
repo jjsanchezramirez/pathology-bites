@@ -6,7 +6,7 @@ import {
   askAlbright,
   isAskAlbrightAvailable,
 } from "@/features/user/ask-albright/lib/ask";
-import { saveHistory } from "@/features/user/ask-albright/lib/history";
+import { findInHistory, saveHistory } from "@/features/user/ask-albright/lib/history";
 import { MAX_QUESTION_CHARS } from "@/features/user/ask-albright/lib/router";
 import { requireUser } from "@/shared/utils/api/api-guard";
 import { APIRateLimiter } from "@/shared/utils/api/api-rate-limiter";
@@ -69,6 +69,8 @@ function limited(resetTime: number, message: string): NextResponse {
  *                 cached: { type: boolean }
  *                 tokens: { type: integer }
  *                 historyId: { type: string, nullable: true, description: id of the saved history entry }
+ *                 followUps: { type: array, items: { type: string }, description: suggested next questions }
+ *                 repeated: { type: boolean, description: true when this question was already in the caller's history and the saved answer is returned (no AI call) }
  *                 citations:
  *                   type: array
  *                   items:
@@ -110,6 +112,23 @@ export async function POST(request: NextRequest) {
 
   const body = await parseBody(request, bodySchema);
   if (body instanceof NextResponse) return body;
+
+  // Asked before? Return the saved answer: no AI call, no rate-limit charge.
+  try {
+    const prior = await findInHistory(auth.userId, body.question);
+    if (prior) {
+      return NextResponse.json({
+        ...prior.result,
+        followUps: prior.result.followUps ?? [],
+        cached: true,
+        tokens: 0,
+        historyId: prior.id,
+        repeated: true,
+      });
+    }
+  } catch (err) {
+    log.warn("[ask-albright] history lookup failed; answering fresh", err);
+  }
 
   const minute = perMinute.checkLimit(auth.userId, "ask-albright");
   if (!minute.allowed) return limited(minute.resetTime, "Slow down — try again in a minute.");

@@ -4,10 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ExternalLink, LoaderCircle, SendHorizontal, X } from "lucide-react";
 
-import { Badge } from "@/shared/components/ui/badge";
 import { cn } from "@/shared/utils";
 import { parseAnswerBlocks } from "../lib/answer-blocks";
-import { MAX_QUESTION_CHARS } from "../lib/router";
+import { MAX_QUESTION_CHARS, normalizeQuestion } from "../lib/router";
 import { AlbrightAvatar } from "./albright-avatar";
 
 interface AskResponse {
@@ -16,6 +15,9 @@ interface AskResponse {
   cached: boolean;
   citations: Array<{ n: number; title: string; href: string; sourceLabel?: string }>;
   tables?: AskTable[];
+  followUps?: string[];
+  /** True when the server answered from the user's history (asked before). */
+  repeated?: boolean;
 }
 
 interface AskTable {
@@ -305,6 +307,8 @@ export function AskAlbrightLauncher() {
   const [history, setHistory] = useState<HistoryEntry[] | null>(null);
   const [hovered, setHovered] = useState(false);
   const [justAnswered, setJustAnswered] = useState(false);
+  /** The question the answer on screen belongs to. */
+  const [answeredQuestion, setAnsweredQuestion] = useState<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const close = useCallback(() => setOpen(false), []);
 
@@ -319,14 +323,17 @@ export function AskAlbrightLauncher() {
     };
   }, [open, close]);
 
-  // Load the account's history the first time the card opens.
-  useEffect(() => {
-    if (!open || history !== null) return;
-    fetch("/api/user/ask-albright/history?limit=20")
+  // History is fetched once, as soon as the user reaches for the pill (hover,
+  // focus) — and opening waits for it, so the card grows once to its final
+  // size instead of opening and then jumping when "Recent questions" lands.
+  const historyLoad = useRef<Promise<void> | null>(null);
+  const loadHistory = useCallback(() => {
+    historyLoad.current ??= fetch("/api/user/ask-albright/history?limit=20")
       .then((r) => (r.ok ? r.json() : { entries: [] }))
       .then((d: { entries?: HistoryEntry[] }) => setHistory(d.entries ?? []))
       .catch(() => setHistory([]));
-  }, [open, history]);
+    return historyLoad.current;
+  }, []);
 
   if (pathname && HIDDEN.some((re) => re.test(pathname))) return null;
 
@@ -335,9 +342,24 @@ export function AskAlbrightLauncher() {
     if (res.ok) setHistory([]);
   }
 
-  async function ask() {
-    const q = question.trim();
-    if (q.length < 5 || loading) return;
+  // A question already answered isn't sent again: the one on screen can't be
+  // re-submitted, and one from history is reopened from history. (The server
+  // also answers repeats from history, as a backstop.)
+  const isShowing = (q: string) =>
+    !!result && !!answeredQuestion && normalizeQuestion(q) === normalizeQuestion(answeredQuestion);
+
+  async function ask(text: string = question) {
+    const q = text.trim();
+    if (q.length < 5 || loading || isShowing(q)) return;
+    const saved = history?.find((e) => normalizeQuestion(e.question) === normalizeQuestion(q));
+    if (saved) {
+      setQuestion(saved.question);
+      setAnsweredQuestion(saved.question);
+      setResult({ ...saved.result, repeated: true });
+      setError(null);
+      return;
+    }
+    setQuestion(q);
     setLoading(true);
     setJustAnswered(false);
     setError(null);
@@ -354,7 +376,8 @@ export function AskAlbrightLauncher() {
         return;
       }
       setResult(data as AskResponse);
-      setJustAnswered(true);
+      setAnsweredQuestion(q);
+      setJustAnswered(!data.repeated);
       if (data.historyId) {
         setHistory((h) => [
           {
@@ -373,9 +396,14 @@ export function AskAlbrightLauncher() {
     }
   }
 
-  function newQuestion() {
+  async function newQuestion() {
+    if (!open) {
+      // Don't grow until history is here (but never hang on a slow network).
+      await Promise.race([loadHistory(), new Promise((r) => setTimeout(r, 800))]);
+    }
     setOpen(true);
     setJustAnswered(false);
+    setAnsweredQuestion(null);
     setQuestion("");
     setResult(null);
     setError(null);
@@ -394,7 +422,11 @@ export function AskAlbrightLauncher() {
   return (
     <div
       className="fixed bottom-4 right-4 z-40 flex flex-col items-end"
-      onMouseEnter={() => setHovered(true)}
+      onMouseEnter={() => {
+        setHovered(true);
+        void loadHistory();
+      }}
+      onFocus={() => void loadHistory()}
       onMouseLeave={() => setHovered(false)}
       style={{
         marginBottom: "env(safe-area-inset-bottom)",
@@ -406,7 +438,7 @@ export function AskAlbrightLauncher() {
           the card so the cut reads as him sitting on it. */}
       <button
         type="button"
-        onClick={() => (open ? close() : newQuestion())}
+        onClick={() => (open ? close() : void newQuestion())}
         aria-label={open ? "Close Ask Dr. Albright" : "Ask Dr. Albright"}
         className={cn(
           "relative z-0 -mb-[10px] transition-[margin,transform] duration-300 ease-out focus-visible:outline-none",
@@ -484,7 +516,7 @@ export function AskAlbrightLauncher() {
                 />
                 <button
                   type="submit"
-                  disabled={loading || question.trim().length < 5}
+                  disabled={loading || question.trim().length < 5 || isShowing(question)}
                   aria-label="Ask"
                   className="absolute bottom-3 right-2 rounded-full bg-primary p-1.5 text-primary-foreground transition-opacity disabled:opacity-40"
                 >
@@ -503,6 +535,7 @@ export function AskAlbrightLauncher() {
                   entries={history}
                   onPick={(e) => {
                     setQuestion(e.question);
+                    setAnsweredQuestion(e.question);
                     setResult(e.result);
                   }}
                   onClear={() => void clearAll()}
@@ -511,22 +544,11 @@ export function AskAlbrightLauncher() {
 
               {result && (
                 <div className="space-y-2.5">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    {/* One badge per corpus the answer drew on (cached answers from
-                        before per-citation sources fall back to the top-level label). */}
-                    {[
-                      ...new Set(result.citations.map((c) => c.sourceLabel ?? result.sourceLabel)),
-                    ].map((label) => (
-                      <Badge
-                        key={label}
-                        variant="outline"
-                        className="border-sky-300 bg-sky-50 text-sky-700"
-                      >
-                        {label}
-                      </Badge>
-                    ))}
-                    {result.cached && <span className="text-xs text-muted-foreground">cached</span>}
-                  </div>
+                  {result.repeated && (
+                    <p className="text-xs text-muted-foreground">
+                      You asked this before — here&apos;s the saved answer.
+                    </p>
+                  )}
                   <AnswerText text={result.answer} citations={result.citations} />
                   {result.tables?.map((t) => {
                     const src = result.citations.find((c) => c.n === t.n);
@@ -555,7 +577,25 @@ export function AskAlbrightLauncher() {
                       />
                     );
                   })}
-                  <ol className="space-y-1">
+                  {(result.followUps?.length ?? 0) > 0 && (
+                    <div
+                      className="flex flex-wrap gap-1.5"
+                      aria-label="Suggested follow-up questions"
+                    >
+                      {result.followUps!.map((f) => (
+                        <button
+                          key={f}
+                          type="button"
+                          onClick={() => void ask(f)}
+                          className="rounded-full border bg-background px-2.5 py-1 text-left text-xs text-foreground/80 transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-foreground"
+                        >
+                          {f}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <p className="pt-1 text-[11px] font-medium text-muted-foreground">Sources</p>
+                  <ol className="-mt-1.5 space-y-1">
                     {result.citations.map((c) => (
                       <li key={c.n} className="text-xs">
                         <a
@@ -576,8 +616,8 @@ export function AskAlbrightLauncher() {
                       </li>
                     ))}
                   </ol>
-                  <p className="text-[11px] text-muted-foreground">
-                    AI-generated from the sources above. Educational use only — not for diagnosis.
+                  <p className="mt-3 border-t pt-2.5 text-center text-[11px] text-muted-foreground">
+                    Dr. Albright can make mistakes. Check the sources; not for diagnostic use.
                   </p>
                 </div>
               )}
@@ -589,7 +629,7 @@ export function AskAlbrightLauncher() {
         <div className={cn("flex h-14 items-center", open && "border-t")}>
           <button
             type="button"
-            onClick={newQuestion}
+            onClick={() => void newQuestion()}
             className={cn(barButton, "text-sm font-medium")}
           >
             {open && (result || error) ? "New question" : "Ask a question"}

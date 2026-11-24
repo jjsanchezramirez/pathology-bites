@@ -7,6 +7,7 @@ import {
   parseRouterReply,
   questionTerms,
   relevantExcerpt,
+  splitFollowUps,
 } from "@/features/user/ask-albright/lib/router";
 import { hitsFromFrames, parseSse } from "@/shared/services/pathtalk";
 
@@ -120,5 +121,30 @@ describe("PathTalk frame parsing", () => {
   it("returns [] for a real empty result", () => {
     const sse = `data: ${JSON.stringify({ result: { content: [] } })}\n`;
     expect(hitsFromFrames(parseSse(sse))).toEqual([]);
+  });
+});
+
+describe("splitFollowUps", () => {
+  it("splits the trailing follow-ups line off the answer", () => {
+    expect(
+      splitFollowUps("CK7 is diffuse [1].\nFollow-ups: What about S100A1? | Is Hale iron used?")
+    ).toEqual({
+      answer: "CK7 is diffuse [1].",
+      followUps: ["What about S100A1?", "Is Hale iron used?"],
+    });
+  });
+  it("tolerates bold and bullets", () => {
+    expect(
+      splitFollowUps(
+        "Answer.\n\n**Follow-ups:** 1. First question here? | 2. Second question here?"
+      ).followUps
+    ).toEqual(["First question here?", "Second question here?"]);
+  });
+  it("does not cut an answer that mentions follow-up in passing", () => {
+    const text = "Patients need follow-up of 5 years [1].";
+    expect(splitFollowUps(text)).toEqual({ answer: text, followUps: [] });
+  });
+  it("returns no follow-ups when the line is missing", () => {
+    expect(splitFollowUps("Just an answer.")).toEqual({ answer: "Just an answer.", followUps: [] });
   });
 });

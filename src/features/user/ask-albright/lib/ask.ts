@@ -18,6 +18,7 @@ import {
   heuristicSource,
   normalizeQuestion,
   parseRouterReply,
+  splitFollowUps,
   questionTerms,
   relevantExcerpt,
 } from "./router";
@@ -56,6 +57,8 @@ export interface AskResult {
   citations: AskCitation[];
   /** Symbol tables rebuilt from the passages (see tables.ts), for display. */
   tables: AskTable[];
+  /** Suggested next questions, from the same answer call. */
+  followUps: string[];
   /** Workers AI tokens this answer cost (0 when served from cache). */
   tokens: number;
   cached: boolean;
@@ -196,7 +199,7 @@ export async function askAlbright(question: string): Promise<AskResult> {
   );
 
   const result: AskResult = {
-    answer: res.content.trim(),
+    ...splitFollowUps(res.content),
     // The corpus the top-ranked passage came from (the router's pick only
     // breaks ties, so this can differ from it).
     source: hits[0].source,

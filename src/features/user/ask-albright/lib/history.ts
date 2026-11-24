@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { log } from "@/shared/utils/logging";
 import type { AskResult } from "./ask";
+import { normalizeQuestion } from "./router";
 
 /**
  * Per-user Ask Dr. Albright history (public.ask_albright_history).
@@ -89,6 +90,20 @@ export async function listHistory(userId: string, limit = 20): Promise<HistoryEn
       createdAt: r.created_at,
     })
   );
+}
+
+/**
+ * The caller's saved entry for this question (same after normalising case,
+ * spacing and trailing punctuation), if any. Lets a repeat be answered from
+ * history: no AI call, and it does not count against the rate limit.
+ */
+export async function findInHistory(
+  userId: string,
+  question: string
+): Promise<HistoryEntry | null> {
+  const want = normalizeQuestion(question);
+  const recent = await listHistory(userId, HISTORY_KEEP);
+  return recent.find((e) => normalizeQuestion(e.question) === want) ?? null;
 }
 
 /** Delete one entry (when `id` is given) or the user's whole history. */

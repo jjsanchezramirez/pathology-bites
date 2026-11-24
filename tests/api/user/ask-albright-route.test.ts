@@ -9,6 +9,7 @@ vi.mock("@/shared/services/openai-compat", () => ({ callOpenAICompatText: vi.fn(
 vi.mock("@/shared/services/pathtalk", () => ({ searchPathTalk: vi.fn() }));
 vi.mock("@/features/user/ask-albright/lib/history", () => ({
   saveHistory: vi.fn(async () => "hist-1"),
+  findInHistory: vi.fn(async () => null),
 }));
 vi.mock("@/features/user/ask-albright/lib/marker-aliases", () => ({
   lookupMarkerAliases: vi.fn(async () => []),
@@ -18,7 +19,7 @@ import { getApiKey } from "@/shared/config/ai-keys";
 import { callOpenAICompatText } from "@/shared/services/openai-compat";
 import { searchPathTalk } from "@/shared/services/pathtalk";
 import { lookupMarkerAliases } from "@/features/user/ask-albright/lib/marker-aliases";
-import { saveHistory } from "@/features/user/ask-albright/lib/history";
+import { findInHistory, saveHistory } from "@/features/user/ask-albright/lib/history";
 import { clearAskCache } from "@/features/user/ask-albright/lib/ask";
 import { ROUTER_MODEL, ANSWER_MODEL } from "@/features/user/ask-albright/lib/router";
 
@@ -133,7 +134,7 @@ describe("POST /api/user/ask-albright", () => {
 
     // Answer: capped output, only 3 passages, each trimmed.
     const answerCall = ai.mock.calls.find((c) => c[1] === ANSWER_MODEL)!;
-    expect(answerCall[4]).toMatchObject({ maxTokens: 220 });
+    expect(answerCall[4]).toMatchObject({ maxTokens: 280 });
     const prompt = answerCall[3] as string;
     expect(prompt.match(/^\[\d\]/gm)).toHaveLength(3);
     expect(prompt).not.toContain("Should be dropped");
@@ -332,6 +333,43 @@ describe("POST /api/user/ask-albright", () => {
       expect.objectContaining({ answer: expect.any(String) })
     );
     expect(body.historyId).toBe("hist-1");
+  });
+
+  it("answers a repeat from history: no AI call, no rate-limit charge", async () => {
+    vi.mocked(findInHistory).mockResolvedValue({
+      id: "hist-old",
+      question: "What stains for oncocytoma?",
+      createdAt: "2026-11-24T00:00:00Z",
+      result: { answer: "Saved [1].", citations: [], tables: [], followUps: ["Next?"] } as never,
+    });
+    const { POST } = await loadRoute();
+    // 12 repeats would trip the 10/min limit if they counted.
+    let last;
+    for (let i = 0; i < 12; i++) last = await POST(ask("what stains for oncocytoma", "rep"));
+    const body = await getResponseJson(last!);
+    expect(last!.status).toBe(200);
+    expect(body).toMatchObject({
+      answer: "Saved [1].",
+      repeated: true,
+      cached: true,
+      tokens: 0,
+      historyId: "hist-old",
+    });
+    expect(ai).not.toHaveBeenCalled();
+    expect(search).not.toHaveBeenCalled();
+    expect(saveHistory).not.toHaveBeenCalled();
+    vi.mocked(findInHistory).mockResolvedValue(null);
+  });
+
+  it("returns follow-up questions split off the answer", async () => {
+    mockAi(
+      "A",
+      "CK7 is diffuse in chromophobe [2].\nFollow-ups: What about S100A1? | Is Hale iron still used?"
+    );
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(await POST(ask("What stains for chromophobe?")));
+    expect(body.answer).toBe("CK7 is diffuse in chromophobe [2].");
+    expect(body.followUps).toEqual(["What about S100A1?", "Is Hale iron still used?"]);
   });
 
   it("still answers when saving history fails", async () => {

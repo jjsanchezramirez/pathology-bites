@@ -40,7 +40,8 @@ export const ANSWER_MODEL = "@cf/mistralai/mistral-small-3.1-24b-instruct";
 export const MAX_QUESTION_CHARS = 300;
 export const PASSAGES = 3;
 export const PASSAGE_CHARS = 600;
-export const ANSWER_MAX_TOKENS = 220;
+/** Room for a short answer or small table plus the one-line follow-ups (~40 tokens). */
+export const ANSWER_MAX_TOKENS = 280;
 
 const LETTER_TO_SOURCE: Record<string, AskSource> = { A: "outlines", B: "pubmed", C: "who" };
 
@@ -134,7 +135,28 @@ export function relevantExcerpt(body: string, question: string, max = PASSAGE_CH
  * positive. A gap must read as a gap.
  */
 export const ANSWER_SYSTEM =
-  'You are Dr. Albright, a concise pathology tutor. Answer in at most 4 sentences (or a small Markdown table if a comparison is asked for) using only the numbered sources. Cite as [1], [2], [3], in table cells too. Never fill a gap with a guess: write "not stated" for anything the sources do not say. If the sources do not answer the question, say so in one sentence.';
+  'You are Dr. Albright, a concise pathology tutor. Answer in at most 4 sentences (or a small Markdown table if a comparison is asked for) using only the numbered sources. Cite as [1], [2], [3], in table cells too. Never fill a gap with a guess: write "not stated" for anything the sources do not say. If the sources do not answer the question, say so in one sentence. End with one line: "Follow-ups: <question> | <question>" — two short questions a pathology learner might ask next.';
+
+/**
+ * Split the model's trailing "Follow-ups: a | b" line off the answer. The
+ * follow-ups ride along in the same call (~40 tokens) rather than costing a
+ * second one. Tolerates bold/bullet decoration and a missing line.
+ */
+export function splitFollowUps(text: string): { answer: string; followUps: string[] } {
+  const m = text.match(/(?:^|\n)[ \t>*_-]*\**follow[- ]?ups?\**\s*:\**\s*([\s\S]+?)\s*$/i);
+  if (!m) return { answer: text.trim(), followUps: [] };
+  const followUps = m[1]
+    .split(/\s*\|\s*|\n+/)
+    .map((q) =>
+      q
+        .replace(/^[\s*\d.)-]+/, "")
+        .replace(/\*+/g, "")
+        .trim()
+    )
+    .filter((q) => q.length >= 8 && q.length <= 120)
+    .slice(0, 3);
+  return { answer: text.slice(0, m.index).trim(), followUps };
+}
 
 export function buildAnswerPrompt(
   question: string,
