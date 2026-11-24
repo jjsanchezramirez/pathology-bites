@@ -94,7 +94,7 @@ const STOPWORDS = new Set(
 
 /** Content words of the question, for scoring passage windows. */
 export function questionTerms(question: string): string[] {
-  const words = question.toLowerCase().match(/[a-z0-9][a-z0-9-]*/g) ?? [];
+  const words: string[] = question.toLowerCase().match(/[a-z0-9][a-z0-9-]*/g) ?? [];
   return [...new Set(words.filter((w) => w.length > 1 && !STOPWORDS.has(w)))];
 }
 

@@ -6,6 +6,7 @@ import {
   askAlbright,
   isAskAlbrightAvailable,
 } from "@/features/user/ask-albright/lib/ask";
+import { saveHistory } from "@/features/user/ask-albright/lib/history";
 import { MAX_QUESTION_CHARS } from "@/features/user/ask-albright/lib/router";
 import { requireUser } from "@/shared/utils/api/api-guard";
 import { APIRateLimiter } from "@/shared/utils/api/api-rate-limiter";
@@ -67,6 +68,7 @@ function limited(resetTime: number, message: string): NextResponse {
  *                 sourceLabel: { type: string }
  *                 cached: { type: boolean }
  *                 tokens: { type: integer }
+ *                 historyId: { type: string, nullable: true, description: id of the saved history entry }
  *                 citations:
  *                   type: array
  *                   items:
@@ -119,7 +121,9 @@ export async function POST(request: NextRequest) {
     log.info(
       `[ask-albright] source=${result.source} cached=${result.cached} tokens=${result.tokens}`
     );
-    return NextResponse.json(result);
+    // Saved to the user's account history (never fails the answer).
+    const historyId = await saveHistory(auth.userId, body.question, result);
+    return NextResponse.json({ ...result, historyId });
   } catch (err) {
     if (err instanceof NoPassagesError) return apiError(err.message, 404);
     log.error("[ask-albright] failed", err);

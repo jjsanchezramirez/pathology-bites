@@ -7,6 +7,9 @@ vi.mock("@/shared/utils/logging", () => ({
 vi.mock("@/shared/config/ai-keys", () => ({ getApiKey: vi.fn(() => "test-token") }));
 vi.mock("@/shared/services/openai-compat", () => ({ callOpenAICompatText: vi.fn() }));
 vi.mock("@/shared/services/pathtalk", () => ({ searchPathTalk: vi.fn() }));
+vi.mock("@/features/user/ask-albright/lib/history", () => ({
+  saveHistory: vi.fn(async () => "hist-1"),
+}));
 vi.mock("@/features/user/ask-albright/lib/marker-aliases", () => ({
   lookupMarkerAliases: vi.fn(async () => []),
 }));
@@ -15,6 +18,7 @@ import { getApiKey } from "@/shared/config/ai-keys";
 import { callOpenAICompatText } from "@/shared/services/openai-compat";
 import { searchPathTalk } from "@/shared/services/pathtalk";
 import { lookupMarkerAliases } from "@/features/user/ask-albright/lib/marker-aliases";
+import { saveHistory } from "@/features/user/ask-albright/lib/history";
 import { clearAskCache } from "@/features/user/ask-albright/lib/ask";
 import { ROUTER_MODEL, ANSWER_MODEL } from "@/features/user/ask-albright/lib/router";
 
@@ -317,6 +321,25 @@ describe("POST /api/user/ask-albright", () => {
     expect(body.citations[0].href).toBe("https://who/b");
     const prompt = ai.mock.calls.find((c) => c[1] === ANSWER_MODEL)![3] as string;
     expect(prompt).toContain("Same marker: CD117 = KIT = c-KIT.");
+  });
+
+  it("saves each answer to the caller's history and returns its id", async () => {
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(await POST(ask("What stains for oncocytoma?", "user-h")));
+    expect(saveHistory).toHaveBeenCalledWith(
+      "user-h",
+      "What stains for oncocytoma?",
+      expect.objectContaining({ answer: expect.any(String) })
+    );
+    expect(body.historyId).toBe("hist-1");
+  });
+
+  it("still answers when saving history fails", async () => {
+    vi.mocked(saveHistory).mockResolvedValueOnce(null);
+    const { POST } = await loadRoute();
+    const res = await POST(ask("What stains for oncocytoma?"));
+    expect(res.status).toBe(200);
+    expect((await getResponseJson(res)).historyId).toBeNull();
   });
 
   it("does not cache an answer built while a corpus was down", async () => {

@@ -8,6 +8,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { cn } from "@/shared/utils";
 import { parseAnswerBlocks } from "../lib/answer-blocks";
 import { MAX_QUESTION_CHARS } from "../lib/router";
+import { AlbrightAvatar } from "./albright-avatar";
 
 interface AskResponse {
   answer: string;
@@ -23,8 +24,6 @@ interface AskTable {
   rows: Array<{ name: string; cells: string[] }>;
   focusRows: string[];
 }
-
-const AVATAR = "/images/dr-albright-seated.svg";
 
 // An active quiz must not get an answer button, and Anki owns its full screen.
 const HIDDEN = [/^\/dashboard\/quiz\/(?!new$)[^/]+$/, /^\/dashboard\/anki$/];
@@ -214,6 +213,83 @@ function AnswerText({ text, citations }: { text: string; citations: AskResponse[
   );
 }
 
+interface HistoryEntry {
+  id: string;
+  question: string;
+  result: AskResponse;
+  createdAt: string;
+}
+
+/**
+ * Recent questions saved to the user's account, shown when the card has no
+ * answer on screen. Clicking one reopens its answer without asking again.
+ * "Clear history" asks for a second click instead of a modal on top of the card.
+ */
+function RecentQuestions({
+  entries,
+  onPick,
+  onClear,
+}: {
+  entries: HistoryEntry[];
+  onPick: (e: HistoryEntry) => void;
+  onClear: () => void;
+}) {
+  const [confirming, setConfirming] = useState(false);
+  if (entries.length === 0) return null;
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="text-xs font-medium text-muted-foreground">Recent questions</p>
+        {confirming ? (
+          <span className="flex gap-2 text-xs">
+            <span className="text-muted-foreground">Clear all?</span>
+            <button
+              type="button"
+              onClick={() => {
+                setConfirming(false);
+                onClear();
+              }}
+              className="font-medium text-destructive hover:underline"
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirming(false)}
+              className="text-muted-foreground hover:underline"
+            >
+              Keep
+            </button>
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setConfirming(true)}
+            className="text-xs text-muted-foreground hover:text-foreground hover:underline"
+          >
+            Clear history
+          </button>
+        )}
+      </div>
+      <ul className="max-h-48 space-y-0.5 overflow-y-auto">
+        {entries.map((e) => (
+          <li key={e.id}>
+            <button
+              type="button"
+              onClick={() => onPick(e)}
+              className="w-full truncate rounded-md px-2 py-1 text-left text-sm hover:bg-muted"
+              title={e.question}
+            >
+              {e.question}
+            </button>
+          </li>
+        ))}
+      </ul>
+      <p className="text-[10px] text-muted-foreground">Saved to your account.</p>
+    </div>
+  );
+}
+
 /**
  * Bottom-right "Ask a question" pill with Dr. Albright peeking over it. The pill is the card's
  * footer: opening grows the card up and out from the corner (no overlay, no
@@ -226,6 +302,9 @@ export function AskAlbrightLauncher() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AskResponse | null>(null);
+  const [history, setHistory] = useState<HistoryEntry[] | null>(null);
+  const [hovered, setHovered] = useState(false);
+  const [justAnswered, setJustAnswered] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const close = useCallback(() => setOpen(false), []);
 
@@ -240,12 +319,27 @@ export function AskAlbrightLauncher() {
     };
   }, [open, close]);
 
+  // Load the account's history the first time the card opens.
+  useEffect(() => {
+    if (!open || history !== null) return;
+    fetch("/api/user/ask-albright/history?limit=20")
+      .then((r) => (r.ok ? r.json() : { entries: [] }))
+      .then((d: { entries?: HistoryEntry[] }) => setHistory(d.entries ?? []))
+      .catch(() => setHistory([]));
+  }, [open, history]);
+
   if (pathname && HIDDEN.some((re) => re.test(pathname))) return null;
+
+  async function clearAll() {
+    const res = await fetch("/api/user/ask-albright/history", { method: "DELETE" });
+    if (res.ok) setHistory([]);
+  }
 
   async function ask() {
     const q = question.trim();
     if (q.length < 5 || loading) return;
     setLoading(true);
+    setJustAnswered(false);
     setError(null);
     setResult(null);
     try {
@@ -260,6 +354,18 @@ export function AskAlbrightLauncher() {
         return;
       }
       setResult(data as AskResponse);
+      setJustAnswered(true);
+      if (data.historyId) {
+        setHistory((h) => [
+          {
+            id: data.historyId,
+            question: q,
+            result: data as AskResponse,
+            createdAt: new Date().toISOString(),
+          },
+          ...(h ?? []).filter((e) => e.question !== q),
+        ]);
+      }
     } catch {
       setError("Network error. Try again.");
     } finally {
@@ -269,6 +375,7 @@ export function AskAlbrightLauncher() {
 
   function newQuestion() {
     setOpen(true);
+    setJustAnswered(false);
     setQuestion("");
     setResult(null);
     setError(null);
@@ -287,26 +394,29 @@ export function AskAlbrightLauncher() {
   return (
     <div
       className="fixed bottom-4 right-4 z-40 flex flex-col items-end"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         marginBottom: "env(safe-area-inset-bottom)",
         marginRight: "env(safe-area-inset-right)",
       }}
     >
-      {/* Seated on the card's top edge. public/images/dr-albright-seated.svg is
-          dev/resources/design/svgs/dr_albright.svg with the smoke pod removed
-          and the canvas cut at the bottom of his body (473x975); the last few
-          px tuck behind the card so the cut reads as him sitting on it. */}
+      {/* Seated on the card's top edge (AlbrightAvatar: inline SVG from
+          public/images/dr-albright-seated.svg); the last few px tuck behind
+          the card so the cut reads as him sitting on it. */}
       <button
         type="button"
         onClick={() => (open ? close() : newQuestion())}
         aria-label={open ? "Close Ask Dr. Albright" : "Ask Dr. Albright"}
         className={cn(
-          "relative z-0 -mb-[10px] transition-[margin,transform] duration-300 ease-out hover:-translate-y-0.5 focus-visible:outline-none",
+          "relative z-0 -mb-[10px] transition-[margin,transform] duration-300 ease-out focus-visible:outline-none",
           open ? "mr-8" : "mr-[44px]" // (160 pill - 72 avatar) / 2: centred
         )}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element -- static SVG */}
-        <img src={AVATAR} alt="" width={72} height={148} className="h-[148px] w-[72px]" />
+        <AlbrightAvatar
+          mood={loading ? "thinking" : justAnswered ? "done" : "idle"}
+          hovered={hovered}
+        />
       </button>
 
       <div
@@ -387,6 +497,17 @@ export function AskAlbrightLauncher() {
               </form>
 
               {error && <p className="text-sm text-destructive">{error}</p>}
+
+              {!result && !loading && !error && history && (
+                <RecentQuestions
+                  entries={history}
+                  onPick={(e) => {
+                    setQuestion(e.question);
+                    setResult(e.result);
+                  }}
+                  onClear={() => void clearAll()}
+                />
+              )}
 
               {result && (
                 <div className="space-y-2.5">
