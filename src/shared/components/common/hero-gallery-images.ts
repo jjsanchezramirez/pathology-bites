@@ -4,8 +4,7 @@ export interface HeroGalleryImage {
   alt: string;
   avif1x: string;
   avif2x: string;
-  webp1x: string;
-  webp2x: string;
+  jpg1x: string;
   jpg2x: string;
 }
 
@@ -15,8 +14,7 @@ export const HERO_GALLERY_IMAGES: HeroGalleryImage[] = [
     alt: "Cervical cytology with adenocarcinoma in situ",
     avif1x: "/images/hero/cervical-cytology-with-adenocarcinoma-in-situ-abd31e6b-280.avif",
     avif2x: "/images/hero/cervical-cytology-with-adenocarcinoma-in-situ-85a78bbb-560.avif",
-    webp1x: "/images/hero/cervical-cytology-with-adenocarcinoma-in-situ-692186fc-280.webp",
-    webp2x: "/images/hero/cervical-cytology-with-adenocarcinoma-in-situ-ada3f73e-560.webp",
+    jpg1x: "/images/hero/cervical-cytology-with-adenocarcinoma-in-situ-df80eaaf-280.jpg",
     jpg2x: "/images/hero/cervical-cytology-with-adenocarcinoma-in-situ-94415f3c-560.jpg",
   },
   {
@@ -24,8 +22,7 @@ export const HERO_GALLERY_IMAGES: HeroGalleryImage[] = [
     alt: "Foveolar type adenoma, low power",
     avif1x: "/images/hero/foveolar-type-adenoma-low-power-02b445cc-280.avif",
     avif2x: "/images/hero/foveolar-type-adenoma-low-power-e4f33afc-560.avif",
-    webp1x: "/images/hero/foveolar-type-adenoma-low-power-ee18148b-280.webp",
-    webp2x: "/images/hero/foveolar-type-adenoma-low-power-af06d9fe-560.webp",
+    jpg1x: "/images/hero/foveolar-type-adenoma-low-power-21f94126-280.jpg",
     jpg2x: "/images/hero/foveolar-type-adenoma-low-power-66ee2df4-560.jpg",
   },
   {
@@ -33,8 +30,7 @@ export const HERO_GALLERY_IMAGES: HeroGalleryImage[] = [
     alt: "Cervical cytology with herpes changes",
     avif1x: "/images/hero/cervical-cytology-with-herpes-changes-multinucleation-997e1405-280.avif",
     avif2x: "/images/hero/cervical-cytology-with-herpes-changes-multinucleation-41481419-560.avif",
-    webp1x: "/images/hero/cervical-cytology-with-herpes-changes-multinucleation-cc767c4f-280.webp",
-    webp2x: "/images/hero/cervical-cytology-with-herpes-changes-multinucleation-0c823fe9-560.webp",
+    jpg1x: "/images/hero/cervical-cytology-with-herpes-changes-multinucleation-a6c63a1d-280.jpg",
     jpg2x: "/images/hero/cervical-cytology-with-herpes-changes-multinucleation-2fa0453c-560.jpg",
   },
   {
@@ -42,8 +38,7 @@ export const HERO_GALLERY_IMAGES: HeroGalleryImage[] = [
     alt: "Foveolar type adenoma, high power",
     avif1x: "/images/hero/foveolar-type-adenoma-apical-mucin-cap-e3fa72f6-280.avif",
     avif2x: "/images/hero/foveolar-type-adenoma-apical-mucin-cap-59c2afb8-560.avif",
-    webp1x: "/images/hero/foveolar-type-adenoma-apical-mucin-cap-4189773b-280.webp",
-    webp2x: "/images/hero/foveolar-type-adenoma-apical-mucin-cap-16e9fc39-560.webp",
+    jpg1x: "/images/hero/foveolar-type-adenoma-apical-mucin-cap-a23e0df3-280.jpg",
     jpg2x: "/images/hero/foveolar-type-adenoma-apical-mucin-cap-7d54b508-560.jpg",
   },
   {
@@ -51,8 +46,7 @@ export const HERO_GALLERY_IMAGES: HeroGalleryImage[] = [
     alt: "Paget disease with secondary osteosarcoma",
     avif1x: "/images/hero/paget-disease-with-secondary-osteosarcoma-low-fee28ba2-280.avif",
     avif2x: "/images/hero/paget-disease-with-secondary-osteosarcoma-low-9f003ba3-560.avif",
-    webp1x: "/images/hero/paget-disease-with-secondary-osteosarcoma-low-f7258cea-280.webp",
-    webp2x: "/images/hero/paget-disease-with-secondary-osteosarcoma-low-185ed196-560.webp",
+    jpg1x: "/images/hero/paget-disease-with-secondary-osteosarcoma-low-52aa2464-280.jpg",
     jpg2x: "/images/hero/paget-disease-with-secondary-osteosarcoma-low-29385179-560.jpg",
   },
   {
@@ -60,8 +54,7 @@ export const HERO_GALLERY_IMAGES: HeroGalleryImage[] = [
     alt: "Paget disease, low power",
     avif1x: "/images/hero/paget-disease-low-power-0d28c123-280.avif",
     avif2x: "/images/hero/paget-disease-low-power-b677a0b9-560.avif",
-    webp1x: "/images/hero/paget-disease-low-power-545162a8-280.webp",
-    webp2x: "/images/hero/paget-disease-low-power-1c5c4953-560.webp",
+    jpg1x: "/images/hero/paget-disease-low-power-6af27375-280.jpg",
     jpg2x: "/images/hero/paget-disease-low-power-ca4664a5-560.jpg",
   },
   {
@@ -71,10 +64,7 @@ export const HERO_GALLERY_IMAGES: HeroGalleryImage[] = [
       "/images/hero/paget-disease-thickened-trabeculae-osteoblastic-rimming-b5583461-280.avif",
     avif2x:
       "/images/hero/paget-disease-thickened-trabeculae-osteoblastic-rimming-57b72c84-560.avif",
-    webp1x:
-      "/images/hero/paget-disease-thickened-trabeculae-osteoblastic-rimming-426895e5-280.webp",
-    webp2x:
-      "/images/hero/paget-disease-thickened-trabeculae-osteoblastic-rimming-ad718606-560.webp",
+    jpg1x: "/images/hero/paget-disease-thickened-trabeculae-osteoblastic-rimming-aed88a07-280.jpg",
     jpg2x: "/images/hero/paget-disease-thickened-trabeculae-osteoblastic-rimming-6bd5cf26-560.jpg",
   },
   {
@@ -82,8 +72,7 @@ export const HERO_GALLERY_IMAGES: HeroGalleryImage[] = [
     alt: "Congenital mesoblastic nephroma",
     avif1x: "/images/hero/cogenital-mesoblastic-nephroma-fat-infiltration-medium-dcefd724-280.avif",
     avif2x: "/images/hero/cogenital-mesoblastic-nephroma-fat-infiltration-medium-4349c45b-560.avif",
-    webp1x: "/images/hero/cogenital-mesoblastic-nephroma-fat-infiltration-medium-20fcae26-280.webp",
-    webp2x: "/images/hero/cogenital-mesoblastic-nephroma-fat-infiltration-medium-d4ffe23a-560.webp",
+    jpg1x: "/images/hero/cogenital-mesoblastic-nephroma-fat-infiltration-medium-42a3971c-280.jpg",
     jpg2x: "/images/hero/cogenital-mesoblastic-nephroma-fat-infiltration-medium-961a21cc-560.jpg",
   },
   {
@@ -91,8 +80,7 @@ export const HERO_GALLERY_IMAGES: HeroGalleryImage[] = [
     alt: "Congenital mesoblastic nephroma, cellular type",
     avif1x: "/images/hero/cogenital-mesoblastic-nephroma-cellular-type-high-50b3e532-280.avif",
     avif2x: "/images/hero/cogenital-mesoblastic-nephroma-cellular-type-high-7393f633-560.avif",
-    webp1x: "/images/hero/cogenital-mesoblastic-nephroma-cellular-type-high-31132e66-280.webp",
-    webp2x: "/images/hero/cogenital-mesoblastic-nephroma-cellular-type-high-403f3a5f-560.webp",
+    jpg1x: "/images/hero/cogenital-mesoblastic-nephroma-cellular-type-high-53acd7a9-280.jpg",
     jpg2x: "/images/hero/cogenital-mesoblastic-nephroma-cellular-type-high-9a82b5a0-560.jpg",
   },
   {
@@ -100,8 +88,7 @@ export const HERO_GALLERY_IMAGES: HeroGalleryImage[] = [
     alt: "Paget disease with fat infiltration",
     avif1x: "/images/hero/paget-disease-with-secondary-osteosarcoma-fat-821aeebd-280.avif",
     avif2x: "/images/hero/paget-disease-with-secondary-osteosarcoma-fat-390b850c-560.avif",
-    webp1x: "/images/hero/paget-disease-with-secondary-osteosarcoma-fat-57b7bfbb-280.webp",
-    webp2x: "/images/hero/paget-disease-with-secondary-osteosarcoma-fat-0ec1e6d1-560.webp",
+    jpg1x: "/images/hero/paget-disease-with-secondary-osteosarcoma-fat-604d98fd-280.jpg",
     jpg2x: "/images/hero/paget-disease-with-secondary-osteosarcoma-fat-a65934a8-560.jpg",
   },
 ];
