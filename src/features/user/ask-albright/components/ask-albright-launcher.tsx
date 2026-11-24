@@ -183,15 +183,43 @@ function AnswerText({ text, citations }: { text: string; citations: AskResponse[
   return (
     <div className="space-y-1.5 text-sm leading-relaxed">
       {parseAnswerBlocks(text).map((b, i) => {
-        if (b.kind === "ul") {
+        if (b.kind === "list") {
           return (
-            <ul key={i} className="list-disc space-y-1 pl-4">
-              {b.items.map((item, k) => (
-                <li key={k}>
-                  <Inline text={item} citations={citations} />
-                </li>
-              ))}
-            </ul>
+            <div key={i} className="space-y-0.5">
+              {b.title && (
+                <p className="text-xs font-semibold text-foreground/80">
+                  <Inline text={b.title} citations={citations} />
+                </p>
+              )}
+              {b.inline ? (
+                // A panel of short items flows on one line: PAX8¹ · CAIX¹ · CD10¹ …
+                <p className="leading-relaxed">
+                  {b.items.map((item, k) => (
+                    <span key={k}>
+                      {/* Real spaces around the dot: without them the line has no
+                          break opportunity and runs off the card. */}
+                      {k > 0 && (
+                        <>
+                          {" "}
+                          <span className="mx-0.5 text-muted-foreground/60">·</span>{" "}
+                        </>
+                      )}
+                      <span className={item.length <= 30 ? "whitespace-nowrap" : undefined}>
+                        <Inline text={item} citations={citations} />
+                      </span>
+                    </span>
+                  ))}
+                </p>
+              ) : (
+                <ul className="list-disc space-y-1 pl-4">
+                  {b.items.map((item, k) => (
+                    <li key={k}>
+                      <Inline text={item} citations={citations} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           );
         }
         if (b.kind === "table") {

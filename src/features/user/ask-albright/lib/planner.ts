@@ -99,7 +99,8 @@ export const SCOPE_REPLY: Record<Exclude<PlanScope, "ok">, string> = {
 /** The answer instruction for each format. */
 export const FORMAT_INSTRUCTION: Record<AnswerFormat, string> = {
   sentence: "Answer in one or two sentences.",
-  bullets: 'Answer as a short bullet list ("- "), one fact per bullet.',
+  bullets:
+    'Answer as short bullets ("- "). Group them under bold labels on their own line (e.g. "**Positive:**", "**Negative:**"), one label per group; keep each bullet to the item and its key detail. Never list an item in more than one group, and leave out items the sources do not mention (no "not stated" group).',
   paragraph: "Answer in a short paragraph of at most 4 sentences.",
   table:
     "Answer as a small Markdown table (rows = items, columns = features), then one sentence that answers the question directly.",
