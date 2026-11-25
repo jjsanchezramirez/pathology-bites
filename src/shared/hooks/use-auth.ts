@@ -19,6 +19,12 @@ import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { realtimeService } from "@/shared/services/realtime-service";
 import { createClient } from "@/shared/services/client";
+import {
+  AuthTimeoutError,
+  SESSION_CHECK_MS,
+  clearLocalAuthStorage,
+  withTimeout,
+} from "@/shared/services/auth-guards";
 import { isPublicRoute } from "@/shared/utils/route-helpers";
 import type { User, Session } from "@supabase/supabase-js";
 import type { UserRole } from "@/shared/utils/auth/auth-helpers";
@@ -189,10 +195,12 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
 
     const initAuth = async () => {
       try {
+        // Bounded: a saved session that never resolves left pages on
+        // skeletons forever (auth-guards.ts).
         const {
           data: { session },
           error,
-        } = await supabase.auth.getSession();
+        } = await withTimeout(supabase.auth.getSession(), SESSION_CHECK_MS, "Session check");
 
         if (error) {
           log.error("[useAuth] Error getting session:", error);
@@ -232,6 +240,22 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
         }
       } catch (err) {
         log.error("Auth initialization error:", err);
+        if (err instanceof AuthTimeoutError) {
+          // Treat the stuck session as broken: drop this browser's copy and
+          // show the person as signed out so they can sign in again.
+          clearLocalAuthStorage();
+          if (mounted.current) {
+            setAuthState({
+              user: null,
+              session: null,
+              role: null,
+              isAuthenticated: false,
+              isLoading: false,
+              error: err.message,
+            });
+          }
+          return;
+        }
         if (mounted.current) {
           setAuthState((prev) => ({
             ...prev,
