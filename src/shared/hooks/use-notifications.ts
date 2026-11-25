@@ -1,102 +1,89 @@
 // src/hooks/use-notifications.ts
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+// Notifications + unread count for the signed-in user, from one shared SWR cache entry
+// per (user, page, limit). The hook is mounted by several header/sidebar components;
+// each used to fetch on its own (9 requests per /admin load), which queued the
+// dashboard's requests behind them.
+
+import { useCallback } from "react";
+import useSWR from "swr";
 import { notificationsService } from "@/shared/services/service";
 import { NotificationWithSource } from "@/shared/types/notifications";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 
+interface NotificationsData {
+  notifications: NotificationWithSource[];
+  unreadCount: number;
+  total: number;
+  hasMore: boolean;
+}
+
 export function useNotifications(page: number = 1, limit: number = 20) {
-  const [notifications, setNotifications] = useState<NotificationWithSource[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [total, setTotal] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
-
   const { user, isAuthenticated } = useAuthContext();
+  const key = isAuthenticated && user ? (["notifications", user.id, page, limit] as const) : null;
 
-  const loadNotifications = useCallback(async () => {
-    if (!isAuthenticated || !user) {
-      setNotifications([]);
-      setUnreadCount(0);
-      setTotal(0);
-      setHasMore(false);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      const [paginatedNotifications, count] = await Promise.all([
-        notificationsService.getNotifications(user.id, page, limit),
-        notificationsService.getUnreadCount(user.id),
+  const { data, error, isLoading, mutate } = useSWR<NotificationsData>(
+    key,
+    async () => {
+      const [paginated, unreadCount] = await Promise.all([
+        notificationsService.getNotifications(user!.id, page, limit),
+        notificationsService.getUnreadCount(user!.id),
       ]);
-
-      setNotifications(paginatedNotifications.notifications);
-      setTotal(paginatedNotifications.total);
-      setHasMore(paginatedNotifications.hasMore);
-      setUnreadCount(count);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error("Failed to load notifications"));
-    } finally {
-      setLoading(false);
-    }
-  }, [isAuthenticated, page, limit, user]);
-
-  useEffect(() => {
-    loadNotifications();
-  }, [loadNotifications]);
+      return {
+        notifications: paginated.notifications,
+        unreadCount,
+        total: paginated.total,
+        hasMore: paginated.hasMore,
+      };
+    },
+    { dedupingInterval: 30_000, revalidateOnFocus: false }
+  );
 
   const markAsRead = useCallback(
     async (notificationId: string) => {
       if (!user) return;
-
-      try {
-        await notificationsService.markAsRead(notificationId);
-
-        // Update local state
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
-        );
-
-        // Update unread count
-        setUnreadCount((prev) => Math.max(0, prev - 1));
-      } catch (err) {
-        throw err;
-      }
+      await notificationsService.markAsRead(notificationId);
+      await mutate(
+        (prev) =>
+          prev && {
+            ...prev,
+            notifications: prev.notifications.map((n) =>
+              n.id === notificationId ? { ...n, read: true } : n
+            ),
+            unreadCount: Math.max(0, prev.unreadCount - 1),
+          },
+        { revalidate: false }
+      );
     },
-    [user]
+    [user, mutate]
   );
 
   const markAllAsRead = useCallback(async () => {
     if (!user) return;
-
-    try {
-      await notificationsService.markAllAsRead(user.id);
-
-      // Update local state
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-
-      setUnreadCount(0);
-    } catch (err) {
-      throw err;
-    }
-  }, [user]);
+    await notificationsService.markAllAsRead(user.id);
+    await mutate(
+      (prev) =>
+        prev && {
+          ...prev,
+          notifications: prev.notifications.map((n) => ({ ...n, read: true })),
+          unreadCount: 0,
+        },
+      { revalidate: false }
+    );
+  }, [user, mutate]);
 
   const refresh = useCallback(() => {
-    loadNotifications();
-  }, [loadNotifications]);
+    void mutate();
+  }, [mutate]);
 
   return {
-    notifications,
-    loading,
-    error,
-    unreadCount,
-    total,
-    hasMore,
+    notifications: data?.notifications ?? [],
+    loading: !!key && isLoading,
+    error: (error as Error | undefined) ?? null,
+    unreadCount: data?.unreadCount ?? 0,
+    total: data?.total ?? 0,
+    hasMore: data?.hasMore ?? false,
     page,
     limit,
     markAsRead,

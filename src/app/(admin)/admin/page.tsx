@@ -150,11 +150,13 @@ export default function AdminDashboardPage() {
             <RecentActivityCard activities={activities} />
             <QuickActionsCard actions={quickActions} />
           </ContentGrid>
-          {/* System Status - admins only: /api/admin/system-status returns active-user and
-              storage figures and 403s everyone else (contributors share admin mode) */}
-          {adminMode === "admin" && isAdmin && <SystemStatus />}
         </>
       )}
+      {/* System Status - admins only: /api/admin/system-status returns active-user and
+          storage figures and 403s everyone else (contributors share admin mode).
+          Outside the loading switch on purpose: it has its own skeleton, and mounting it
+          only after the stats arrived made its request wait for theirs. */}
+      {adminMode === "admin" && isAdmin && <SystemStatus />}
     </PageContainer>
   );
 }
