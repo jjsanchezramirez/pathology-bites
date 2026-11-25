@@ -79,6 +79,7 @@ export function VersionHistoryDialog({
           changed_by: string;
           created_at: string;
           is_current?: boolean;
+          legacy?: boolean;
           changer?: { first_name: string; last_name: string };
         }
 
@@ -94,6 +95,7 @@ export function VersionHistoryDialog({
           created_by: version.changed_by,
           created_at: version.created_at,
           is_current: version.is_current,
+          legacy: version.legacy ?? false,
           creator: version.changer,
         }));
 
@@ -139,6 +141,9 @@ export function VersionHistoryDialog({
     selectedVersionIndex !== null && selectedVersionIndex < versions.length - 1
       ? versions[selectedVersionIndex + 1]
       : null;
+  // Older snapshots may hold only some fields, so a field-by-field diff against one would show
+  // changes that never happened. Show the version on its own instead.
+  const canDiff = Boolean(previousVersion && !previousVersion.legacy && !selectedVersion?.legacy);
 
   // Render version content
   const renderVersionContent = (
@@ -521,6 +526,14 @@ export function VersionHistoryDialog({
                                 Current
                               </Badge>
                             )}
+                            {version.legacy && (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] text-muted-foreground"
+                              >
+                                Older format
+                              </Badge>
+                            )}
                           </div>
 
                           {/* Creator and date */}
@@ -582,7 +595,7 @@ export function VersionHistoryDialog({
                         {selectedVersion.change_summary}
                       </p>
                     )}
-                    {previousVersion && (
+                    {canDiff && previousVersion && (
                       <p className="text-xs text-muted-foreground mt-1">
                         Comparing with{" "}
                         {formatVersion(
@@ -594,8 +607,18 @@ export function VersionHistoryDialog({
                     )}
                   </div>
                   <div className="p-6">
-                    {previousVersion ? (
+                    {canDiff && previousVersion ? (
                       renderVersionContent(selectedVersion, true, previousVersion)
+                    ) : previousVersion ? (
+                      <>
+                        <div className="mb-4 p-3 rounded-lg border bg-muted/50">
+                          <p className="text-xs font-medium text-muted-foreground">
+                            Saved in the older history format, which may not include every field, so
+                            changes are not highlighted for this version.
+                          </p>
+                        </div>
+                        {renderVersionContent(selectedVersion, false)}
+                      </>
                     ) : (
                       <>
                         <div className="mb-4 p-3 rounded-lg border bg-blue-50 dark:bg-blue-950/30 border-blue-300 dark:border-blue-800">

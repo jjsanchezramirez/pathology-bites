@@ -85,18 +85,30 @@ const STATUS_BY_CODE: Record<string, number> = {
   "40P01": 409, // deadlock
 };
 
+// Plain messages for Postgres errors, so table and constraint names don't reach the browser.
+const MESSAGE_BY_CODE: Record<string, string> = {
+  "22P02": "Invalid data: a value has the wrong format",
+  "23502": "Invalid data: a required value is missing",
+  "23503": "Invalid data: a category, set, image, tag or reviewer does not exist",
+  "23505": "This change conflicts with an existing record",
+  "23514": "Invalid data: a value is not allowed",
+  "40001": "Someone else changed this question at the same time; try again",
+  "40P01": "Someone else changed this question at the same time; try again",
+};
+
 function toWriteError(
   error: { code?: string; message: string; details?: string | null },
   context: string
 ): QuestionWriteError {
   const status = (error.code && STATUS_BY_CODE[error.code]) || 500;
   if (status === 500) log.error(`${context} failed:`, error);
+  else if (!error.code?.startsWith("PB")) log.warn(`${context} refused:`, error);
   const message =
     status === 500
       ? "Failed to save the question"
       : error.code?.startsWith("PB")
         ? error.message
-        : `Invalid data: ${error.message}`;
+        : (MESSAGE_BY_CODE[error.code ?? ""] ?? "Invalid data");
   return new QuestionWriteError(message, status, error.code);
 }
 

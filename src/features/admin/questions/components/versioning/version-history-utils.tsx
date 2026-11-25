@@ -43,6 +43,8 @@ export interface QuestionVersion {
   created_by: string;
   created_at: string;
   is_current?: boolean;
+  /** Saved before full snapshots existed; it may hold only some fields, so it is not diffed. */
+  legacy?: boolean;
   creator?: {
     first_name: string;
     last_name: string;

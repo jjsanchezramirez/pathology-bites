@@ -47,6 +47,7 @@ import { POST as submitPOST } from "@/app/api/admin/questions/[id]/submit-for-re
 import { POST as approvePOST } from "@/app/api/admin/questions/[id]/approve/route";
 import { POST as rejectPOST } from "@/app/api/admin/questions/[id]/reject/route";
 import { POST as reassignPOST } from "@/app/api/admin/questions/[id]/reassign/route";
+import { POST as restorePOST } from "@/app/api/admin/questions/[id]/restore/route";
 import { DELETE as deleteDELETE } from "@/app/api/admin/questions/[id]/delete/route";
 import { POST as bulkPOST } from "@/app/api/admin/questions/bulk/route";
 import { POST as bulkApprovePOST } from "@/app/api/admin/questions/bulk-approve/route";
@@ -202,6 +203,24 @@ describe("single-question review routes", () => {
     expect(res.status).toBe(200);
     expect(transition.mock.calls[0][0].action).toBe("archive");
     expect(body).toMatchObject({ success: true, archived: true, questionId: QUESTION_ID });
+  });
+
+  it("restore moves an archived question back to draft", async () => {
+    transition.mockResolvedValue(result({ action: "restore", status: "draft" }));
+    const res = await restorePOST(req(`${QUESTION_ID}/restore`, {}), params);
+    expect(res.status).toBe(200);
+    expect(transition.mock.calls[0][0]).toMatchObject({
+      action: "restore",
+      questionId: QUESTION_ID,
+    });
+  });
+
+  it("restore passes a refusal through with its status", async () => {
+    transition.mockRejectedValue(
+      new QuestionWriteError("Only archived questions can be restored", 409, "PBC01")
+    );
+    const res = await restorePOST(req(`${QUESTION_ID}/restore`, {}), params);
+    expect(res.status).toBe(409);
   });
 
   it("requires a signed-in user", async () => {

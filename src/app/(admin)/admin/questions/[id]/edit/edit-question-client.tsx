@@ -211,12 +211,15 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
     }
   };
 
-  // Handle save button click - show confirmation dialog for published questions
+  // Published and flagged questions are live: their edits are patch, minor or major.
+  const isLiveQuestion = question?.status === "published" || question?.status === "flagged";
+
+  // Handle save button click - show confirmation dialog for live questions
   const handleSaveClick = (e: React.FormEvent) => {
     e.preventDefault();
 
     // For published questions, show the confirmation dialog
-    if (question?.status === "published") {
+    if (isLiveQuestion) {
       setShowSaveConfirmDialog(true);
     } else {
       // For non-published questions, submit directly
@@ -243,7 +246,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
     // For minor/major edits on published questions, check if reviewer is assigned
     const updateType = form.getValues("updateType");
     if (
-      question?.status === "published" &&
+      isLiveQuestion &&
       !isPatchEdit &&
       ["minor", "major"].includes(updateType || "") &&
       !assignedReviewerId
@@ -435,7 +438,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
           </div>
 
           {/* Edit Type Card for Published Questions */}
-          {question.status === "published" && (
+          {isLiveQuestion && (
             <EditTypeCard
               updateType={(form.watch("updateType") as "patch" | "minor" | "major") || "patch"}
               isPatchEditDisabled={isPatchEditDisabled}
@@ -458,7 +461,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
             </Button>
 
             <div className="flex gap-3">
-              {question.status !== "published" && question.status !== "pending_review" && (
+              {!isLiveQuestion && question.status !== "pending_review" && (
                 <Button
                   type="button"
                   onClick={handleSaveAndSubmit}

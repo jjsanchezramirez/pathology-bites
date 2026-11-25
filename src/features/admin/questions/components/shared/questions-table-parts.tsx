@@ -10,7 +10,7 @@ import {
   Search,
   MoreVertical,
   Edit,
-  Trash2,
+  RotateCcw,
   Flag,
   History,
   Eye,
@@ -311,6 +311,7 @@ function RowActions({
   onExport,
   onEditCategory,
   onEditSet,
+  onRestore,
 }: {
   question: QuestionWithDetails;
   onEdit: (question: QuestionWithDetails) => void;
@@ -319,6 +320,7 @@ function RowActions({
   onExport?: (question: QuestionWithDetails) => void;
   onEditCategory?: (question: QuestionWithDetails) => void;
   onEditSet?: (question: QuestionWithDetails) => void;
+  onRestore?: (question: QuestionWithDetails) => void;
 }) {
   const { isAdmin, can } = useUserRole();
   const { user } = useAuthContext();
@@ -332,6 +334,10 @@ function RowActions({
     canCreate: can("create_questions"),
     userId: user?.id || null,
   });
+
+  // An archived question can be restored to draft by its author or an admin
+  const canRestore =
+    question.status === "archived" && (isAdmin || question.created_by === user?.id);
 
   // Hide version history when question is at the initial v1.0.0 (nothing to show)
   const hasVersionBeyondInitial =
@@ -393,10 +399,16 @@ function RowActions({
             </DropdownMenuItem>
           </>
         )}
+        {canRestore && onRestore && (
+          <DropdownMenuItem onClick={() => onRestore(question)}>
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Restore to draft
+          </DropdownMenuItem>
+        )}
         {canDelete && (
           <DropdownMenuItem className="text-red-600" onClick={() => onDelete(question)}>
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
+            <Archive className="h-4 w-4 mr-2" />
+            Archive
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>
@@ -414,6 +426,7 @@ export function QuestionRow({
   onExport,
   onEditCategory,
   onEditSet,
+  onRestore,
   isSelected,
   onSelect,
   isAdmin,
@@ -426,6 +439,7 @@ export function QuestionRow({
   onExport?: (question: QuestionWithDetails) => void;
   onEditCategory?: (question: QuestionWithDetails) => void;
   onEditSet?: (question: QuestionWithDetails) => void;
+  onRestore?: (question: QuestionWithDetails) => void;
   isSelected: boolean;
   onSelect: (questionId: string, checked: boolean) => void;
   isAdmin: boolean;
@@ -505,6 +519,7 @@ export function QuestionRow({
           onExport={onExport}
           onEditCategory={onEditCategory}
           onEditSet={onEditSet}
+          onRestore={onRestore}
         />
       </TableCell>
     </TableRow>

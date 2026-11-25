@@ -149,6 +149,21 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
     setShowDeleteDialog(true);
   }, []);
 
+  const handleRestore = useCallback(
+    async (question: QuestionWithDetails) => {
+      try {
+        const response = await apiClient.post(`/api/admin/questions/${question.id}/restore`, {});
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "Failed to restore question");
+        toast.success("Question restored to draft");
+        refetch();
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to restore question");
+      }
+    },
+    [refetch]
+  );
+
   const handleViewHistory = useCallback((question: QuestionWithDetails) => {
     setQuestionForHistory(question);
     setShowVersionHistory(true);
@@ -551,6 +566,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
                     onExport={handleExportQuestion}
                     onEditCategory={showAdminFeatures ? handleEditCategory : undefined}
                     onEditSet={showAdminFeatures ? handleEditSet : undefined}
+                    onRestore={handleRestore}
                     isSelected={selectedQuestions.includes(question.id)}
                     onSelect={handleSelectQuestion}
                     isAdmin={showAdminFeatures}

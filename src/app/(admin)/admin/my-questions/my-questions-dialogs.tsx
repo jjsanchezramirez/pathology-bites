@@ -38,8 +38,8 @@ export function DeleteQuestionsDialog({
           <DialogTitle>Archive {count === 1 ? "question" : `${count} questions`}?</DialogTitle>
           <DialogDescription>
             {count === 1
-              ? "This archives the draft question. It is kept with its history and can be restored later."
-              : `This archives ${count} draft questions. They are kept with their history and can be restored later.`}
+              ? "This archives the draft question. It is kept with its history, and you can restore it from the Question Database (Archived filter)."
+              : `This archives ${count} draft questions. They are kept with their history, and you can restore them from the Question Database (Archived filter).`}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
