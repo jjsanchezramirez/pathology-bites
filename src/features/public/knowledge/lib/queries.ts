@@ -16,6 +16,7 @@ import "server-only";
 import { cache } from "react";
 
 import { createClient } from "@/shared/services/server";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 
 export interface EntityRow {
   id: string;
@@ -344,8 +345,9 @@ interface Monograph {
  * Returns null when the slug matches nothing, which the page turns into a 404.
  */
 export const entityMonograph = cache(async (slug: string): Promise<Monograph | null> => {
-  const sb = await createClient();
-  const { data, error } = await sb.rpc("kb_entity_monograph", { p_slug: slug });
+  // Service role: the kb_* rollups are SECURITY DEFINER and granted to service_role only,
+  // so the public can't call them directly through /rest/v1/rpc; the page shows the result.
+  const { data, error } = await createServiceRoleClient().rpc("kb_entity_monograph", { p_slug: slug });
   if (error) throw new Error(error.message);
   const m = data as unknown as Monograph | null;
   if (!m || !m.entity) return null;
@@ -436,13 +438,14 @@ export interface MarkerRollup {
  * Every marker statement attributed to one entity, per source, in ONE request.
  *
  * Like `entityMonograph` this is a single scalar jsonb row from a SECURITY
- * DEFINER function granted to anon, so the anon cookie client can call it and
- * PostgREST's row cap cannot truncate it. Returns null when the slug matches
+ * DEFINER function (service-role only, called server-side), so PostgREST's row
+ * cap cannot truncate it. Returns null when the slug matches
  * nothing.
  */
 export const entityMarkerRollup = cache(async (slug: string): Promise<MarkerRollup | null> => {
-  const sb = await createClient();
-  const { data, error } = await sb.rpc("kb_entity_marker_rollup", { p_slug: slug });
+  // Service role: the kb_* rollups are SECURITY DEFINER and granted to service_role only,
+  // so the public can't call them directly through /rest/v1/rpc; the page shows the result.
+  const { data, error } = await createServiceRoleClient().rpc("kb_entity_marker_rollup", { p_slug: slug });
   if (error) throw new Error(error.message);
   const r = data as unknown as MarkerRollup | null;
   if (!r || !r.entity) return null;
@@ -473,8 +476,9 @@ export interface MarkerEntityRollup {
  * each source's own statement, same rules (never pooled, disagreement shown).
  */
 export const markerEntityRollup = cache(async (slug: string): Promise<MarkerEntityRollup | null> => {
-  const sb = await createClient();
-  const { data, error } = await sb.rpc("kb_marker_entity_rollup", { p_slug: slug });
+  // Service role: the kb_* rollups are SECURITY DEFINER and granted to service_role only,
+  // so the public can't call them directly through /rest/v1/rpc; the page shows the result.
+  const { data, error } = await createServiceRoleClient().rpc("kb_marker_entity_rollup", { p_slug: slug });
   if (error) throw new Error(error.message);
   const r = data as unknown as MarkerEntityRollup | null;
   if (!r || !r.marker) return null;
