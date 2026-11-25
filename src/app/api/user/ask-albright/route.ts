@@ -18,7 +18,7 @@ const bodySchema = z.object({
 });
 
 // Cost guards. In-memory, so per instance (see api-rate-limiter.ts) — a soft
-// cap on spend, not a security boundary. ASK_ALBRIGHT_ENABLED=false is the hard stop.
+// cap on spend, not a security boundary. It is off unless NEXT_PUBLIC_ASK_ALBRIGHT_ENABLED=true (lib/enabled.ts).
 const perMinute = new APIRateLimiter({ windowMs: 60_000, maxRequests: 10 });
 const perDay = new APIRateLimiter({ windowMs: 24 * 60 * 60 * 1000, maxRequests: 50 });
 
