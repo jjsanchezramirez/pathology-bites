@@ -96,7 +96,8 @@ export interface AskResult {
 
 /** Whether the feature can run: kill switch on and Workers AI configured. */
 export function isAskAlbrightAvailable(): boolean {
-  if (process.env.ASK_ALBRIGHT_ENABLED === "false") return false;
+  // Off unless explicitly enabled (read at call time so tests can toggle it).
+  if (process.env.NEXT_PUBLIC_ASK_ALBRIGHT_ENABLED !== "true") return false;
   return getApiKey("cloudflare") !== "";
 }
 

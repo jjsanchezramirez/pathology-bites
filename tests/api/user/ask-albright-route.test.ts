@@ -119,7 +119,7 @@ describe("POST /api/user/ask-albright", () => {
     vi.mocked(getApiKey).mockReturnValue("test-token");
     vi.mocked(findInHistory).mockResolvedValue(null);
     vi.mocked(lookupMarkerAliases).mockResolvedValue([]);
-    delete process.env.ASK_ALBRIGHT_ENABLED;
+    process.env.NEXT_PUBLIC_ASK_ALBRIGHT_ENABLED = "true";
     clearAskCache();
     searchBy({ search_pathology_outlines: HITS });
     scoreBy();
@@ -140,8 +140,8 @@ describe("POST /api/user/ask-albright", () => {
     expect(ai).not.toHaveBeenCalled();
   });
 
-  it("503s when switched off, without spending a call", async () => {
-    process.env.ASK_ALBRIGHT_ENABLED = "false";
+  it("503s when not switched on, without spending a call", async () => {
+    delete process.env.NEXT_PUBLIC_ASK_ALBRIGHT_ENABLED;
     const { POST } = await loadRoute();
     expect((await POST(ask("What stains for oncocytoma?"))).status).toBe(503);
     expect(ai).not.toHaveBeenCalled();
