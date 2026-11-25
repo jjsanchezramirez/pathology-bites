@@ -5,7 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { captureSignupSource } from "@/shared/utils/analytics/signup-source";
 import {
   CONSENT_CHANGED_EVENT,
@@ -112,18 +112,20 @@ function PageTracker() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  // The first page's view comes from the inline gtag('config') call.
+  const isFirstPage = useRef(true);
+
   useEffect(() => {
+    if (isFirstPage.current) {
+      isFirstPage.current = false;
+      return;
+    }
     if (typeof window !== "undefined" && window.gtag) {
       const searchParamsString = searchParams?.toString() || "";
       const url = pathname + (searchParamsString ? `?${searchParamsString}` : "");
 
-      window.gtag("config", GA_MEASUREMENT_ID!, {
-        page_location: window.location.href,
-        page_path: url,
-        page_title: document.title,
-      });
-
-      // Track page view
+      // One page_view per later route change. Calling gtag('config') here as
+      // well (it sends a page_view by default) counted every navigation twice.
       window.gtag("event", "page_view", {
         page_location: window.location.href,
         page_path: url,
