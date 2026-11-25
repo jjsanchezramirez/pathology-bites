@@ -1,12 +1,23 @@
-import { Architects_Daughter } from "next/font/google";
+import { Antic, Architects_Daughter } from "next/font/google";
 
-// Scoped to dashboard/admin layouts only — the "notebook" theme uses this font.
+// Fonts referenced by dashboard theme variables (see dashboard-themes.ts).
 // Loading via next/font self-hosts via Vercel, removes the render-blocking
-// Google Fonts stylesheet on public pages, and exposes `--font-architects-daughter`
-// so theme variables can reference it.
+// Google Fonts stylesheet on public pages, and exposes CSS variables
+// so theme variables can reference them.
+
+// "notebook" theme
 export const architectsDaughter = Architects_Daughter({
   subsets: ["latin"],
   weight: "400",
   variable: "--font-architects-daughter",
   display: "swap",
+});
+
+// "sage-garden" theme
+export const antic = Antic({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-antic",
+  display: "swap",
+  preload: false,
 });

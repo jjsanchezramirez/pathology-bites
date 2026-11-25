@@ -13,7 +13,7 @@
  * - Dashboard (/dashboard/*): User can toggle light/dark/system
  * - Admin (/admin/*): User can toggle light/dark/system
  *
- * NOTE: Dashboard theme colors (notebook/tangerine) are managed separately
+ * NOTE: Dashboard theme colors (tangerine/sage-garden/notebook/default) are managed separately
  * by DashboardThemeContext, not by this provider.
  */
 "use client";
