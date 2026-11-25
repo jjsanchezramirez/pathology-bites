@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { log } from "@/shared/utils/logging";
 
 const mergeTagsSchema = z.object({
@@ -128,7 +129,10 @@ export async function POST(request: NextRequest) {
     log.debug("New question_tags to insert:", newQuestionTags.length, newQuestionTags);
 
     if (newQuestionTags.length > 0) {
-      const { error: insertError } = await supabase.from("question_tags").insert(newQuestionTags);
+      // Question tables are written only with the service role (admin checked above).
+      const { error: insertError } = await createServiceRoleClient()
+        .from("question_tags")
+        .insert(newQuestionTags);
 
       if (insertError) {
         log.error("Error inserting new question_tags:", insertError);
@@ -141,7 +145,7 @@ export async function POST(request: NextRequest) {
 
     // 4. Delete all source question_tags (AFTER successfully inserting target tags)
     // This prevents data loss if the insert operation fails
-    const { error: deleteSourceError } = await supabase
+    const { error: deleteSourceError } = await createServiceRoleClient()
       .from("question_tags")
       .delete()
       .in("tag_id", sourceTagIds);

@@ -2,12 +2,7 @@
 import { useState, useCallback } from "react";
 import { createClient } from "@/shared/services/client";
 import { toast } from "@/shared/utils/ui/toast";
-import {
-  QuestionData,
-  QuestionInsert,
-  QuestionUpdate,
-  QuestionWithDetails,
-} from "@/shared/types/questions";
+import { QuestionUpdate, QuestionWithDetails } from "@/shared/types/questions";
 
 import { TABLE_NAMES, isDifficultyLevel, isQuestionStatus } from "@/shared/types/database";
 import { apiClient } from "@/shared/utils/api/api-client";
@@ -45,7 +40,6 @@ export interface UseQuestionsReturn {
       reviewerId?: string;
     }
   ) => Promise<unknown>;
-  createQuestion: (data: QuestionInsert) => Promise<QuestionData>;
 }
 
 export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsReturn {
@@ -234,15 +228,15 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
         }
 
         if (!response.ok) {
-          throw new Error(data.error || "Failed to delete question");
+          throw new Error(data.error || "Failed to archive question");
         }
 
-        toast.success(data.message || "Question deleted successfully");
+        toast.success(data.message || "Question archived");
 
         // Refetch questions
         await fetchQuestions();
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to delete question";
+        const message = err instanceof Error ? err.message : "Failed to archive question";
         toast.error(message);
         throw err;
       }
@@ -299,34 +293,6 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
     [fetchQuestions]
   );
 
-  const createQuestion = useCallback(
-    async (data: QuestionInsert): Promise<QuestionData> => {
-      try {
-        const { data: newQuestion, error } = await supabase
-          .from(TABLE_NAMES.QUESTIONS)
-          .insert(data)
-          .select()
-          .single();
-
-        if (error) {
-          throw new Error(error.message);
-        }
-
-        toast.success("Question created successfully");
-
-        // Refetch questions
-        await fetchQuestions();
-
-        return newQuestion;
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to create question";
-        toast.error(message);
-        throw err;
-      }
-    },
-    [supabase, fetchQuestions]
-  );
-
   return {
     questions,
     total,
@@ -335,6 +301,5 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
     refetch: fetchQuestions,
     deleteQuestion,
     updateQuestion,
-    createQuestion,
   };
 }
