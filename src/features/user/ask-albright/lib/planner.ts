@@ -19,8 +19,9 @@
  */
 
 import { ANSWER_RULES, type AskSource, heuristicSource } from "./router";
+import { KNOWN_STAINS } from "./tables";
 
-export type AnswerFormat = "sentence" | "bullets" | "paragraph" | "table";
+export type AnswerFormat = "sentence" | "bullets" | "paragraph" | "table" | "marker";
 export type PlanScope = "ok" | "off_topic" | "too_broad";
 
 export interface Plan {
@@ -39,19 +40,26 @@ export interface Plan {
 export const PLANNER_MODEL = "@cf/mistralai/mistral-small-3.1-24b-instruct";
 
 export const PLANNER_SYSTEM = `You plan answers for a pathology Q&A tool. Reply with JSON only:
-{"scope":"ok"|"off_topic"|"too_broad","source":"who"|"outlines"|"pubmed"|"literature","fallback":"who"|"outlines"|"pubmed"|"literature","query":"...","focus":"...","format":"sentence"|"bullets"|"paragraph"|"table","items":["..."]}
+{"scope":"ok"|"off_topic"|"too_broad","source":"who"|"outlines"|"pubmed"|"literature","fallback":"who"|"outlines"|"pubmed"|"literature","query":"...","focus":"...","format":"sentence"|"bullets"|"paragraph"|"table"|"marker","items":["..."]}
 - scope: off_topic if not about pathology or medicine; too_broad only if it asks about 5 or more diagnoses at once, or for a whole organ system or field (\"explain all of soft tissue pathology\"). Comparing 2-4 diagnoses (e.g. a three-way IHC table) is ok.
 - source: who = WHO classification, definitions, grading, diagnostic criteria; outlines = textbook morphology, immunostains, differentials, IHC panels; pubmed = study results, sensitivity/specificity, percentages, outcomes; literature = newer or detailed findings. fallback: the next best, different from source.
-- query: 3-8 search words: diagnosis, marker, gene or feature names (expand abbreviations, correct misspellings, keep marker names).
+- query: 3-8 search words: diagnosis, marker, gene or feature names (expand abbreviations, correct misspellings, keep marker names). For a marker question: the marker name plus \"immunostain\".
 - focus: what to look for in the sources, under 12 words. Never state an answer or a fact.
-- format: table only for comparing 2+ items across features; bullets for lists; sentence for a single fact; else paragraph.
+- format: marker when the question is about an immunostain itself (what it stains, where it is positive or negative), not about one diagnosis; table for comparing 2+ items, including any \"X vs Y\"; bullets for lists; sentence for a single fact; else paragraph. Marker questions use source outlines.
 - items: when comparing diagnoses, each one's full name, misspellings corrected; [] otherwise.`;
 
 const COMPARES = /\b(compare|comparison|versus|vs\.?|table|differ|difference|distinguish)\b/i;
 const YES_NO = /^\s*(is|are|does|do|can|could|should|was|were|has|have)\b/i;
 
+/** A marker name in the question: CD99, TTF-1, S100, p63, SOX10… or desmin, calretinin. */
+export function namesMarker(question: string): boolean {
+  return (question.match(/[A-Za-z0-9][A-Za-z0-9-]*/g) ?? []).some(
+    (w) => (/[a-z]/i.test(w) && /\d/.test(w)) || KNOWN_STAINS.has(w.toLowerCase())
+  );
+}
+
 const SOURCES: AskSource[] = ["who", "outlines", "pubmed", "literature"];
-const FORMATS: AnswerFormat[] = ["sentence", "bullets", "paragraph", "table"];
+const FORMATS: AnswerFormat[] = ["sentence", "bullets", "paragraph", "table", "marker"];
 const SCOPES: PlanScope[] = ["ok", "off_topic", "too_broad"];
 
 /** The plan used when the planner call fails or returns junk: search as asked. */
@@ -109,6 +117,18 @@ export function parsePlan(raw: string, question: string): Plan {
     format = "sentence";
   } else if (format === "table" && items.length < 2 && !COMPARES.test(question)) {
     format = "paragraph";
+  } else if (format === "marker" && !namesMarker(question)) {
+    // "Reed Sternberg cell markers" asks about a cell, not a marker: the
+    // four marker groups came back as "Positive — normal tissue: None".
+    format = "bullets";
+  } else if (
+    (format === "paragraph" || format === "bullets") &&
+    /\b(vs\.?|versus)\b/i.test(question) &&
+    !YES_NO.test(question)
+  ) {
+    // An explicit "X vs Y" reads best as a table ("necrotizing vs
+    // non-necrotizing granuloma causes" came back as a paragraph).
+    format = "table";
   }
   return { scope, source, fallback, query, focus, format, items };
 }
@@ -125,8 +145,14 @@ export const SCOPE_REPLY: Record<Exclude<PlanScope, "ok">, string> = {
 export const FORMAT_INSTRUCTION: Record<AnswerFormat, string> = {
   sentence: "Answer in one or two sentences. No tables.",
   bullets:
-    'Answer as short bullets ("- "). Group them under bold labels on their own line (e.g. "**Positive:**", "**Negative:**"), one label per group; keep each bullet to the item and its key detail. Never list an item in more than one group, and leave out items the sources do not mention (no "not stated" group). No tables.',
-  paragraph: "Answer in a short paragraph of at most 4 sentences. No tables.",
+    'Answer as short bullets ("- "). Group them under short bold labels on their own line ("**Label:**") that name what the group is, chosen from the question; skip labels if one group is enough. Keep each bullet to the item and its key detail. Never list an item in more than one group, and leave out items the sources do not mention. No tables.',
+  paragraph:
+    "Answer in a short paragraph of at most 4 short sentences; the first sentence answers the question directly. No tables.",
+  // Marker questions get the four groups a pathologist looks for (the order
+  // PathologyOutlines' stain pages use): asked "TTF-1 positive tumors", the
+  // answer had wandered through thymic carcinoma and mucicarmine instead.
+  marker:
+    'Answer as short bullets ("- ") under these bold labels, in this order, each on its own line: "**Positive — normal tissue:**", "**Negative — normal tissue:**", "**Positive — tumors:**", "**Negative — tumors:**". One tissue or tumor per bullet with its key detail (pattern, % if given). Omit a label the sources say nothing about. No other labels, no tables.',
   table:
     "Answer as a compact Markdown table: at most 5 columns and 8 rows, cells under 10 words, no padding or alignment spaces (rows = items, columns = features). Cite in the cells too; write 'not stated' in any cell the sources do not cover, and in every cell for an item no source covers. Then one sentence that answers the question directly.",
 };

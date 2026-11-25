@@ -8,6 +8,7 @@ import {
   splitFollowUps,
   hitTokenCap,
   tidyAnswer,
+  dropUnaskedGaps,
 } from "@/features/user/ask-albright/lib/router";
 import { hitsFromFrames, parseSse } from "@/shared/services/pathtalk";
 
@@ -140,5 +141,22 @@ describe("tidyAnswer / hitTokenCap", () => {
     expect(hitTokenCap(357)).toBe(true);
     expect(hitTokenCap(200)).toBe(false);
     expect(hitTokenCap(undefined)).toBe(false);
+  });
+});
+
+describe("dropUnaskedGaps", () => {
+  it("drops a trailing unasked 'sources do not mention' sentence after a cited answer", () => {
+    expect(
+      dropUnaskedGaps("RS cells are CD30+ and CD15+ [1]. The sources do not mention CD99.")
+    ).toBe("RS cells are CD30+ and CD15+ [1].");
+    expect(
+      dropUnaskedGaps(
+        "Barrett is columnar metaplasia [1]. The sources do not provide a percentage of cases with goblet cells."
+      )
+    ).toBe("Barrett is columnar metaplasia [1].");
+  });
+  it("keeps a whole-answer 'not covered' (nothing cited)", () => {
+    const t = "The sources do not discuss TRPS1 in triple-negative carcinoma.";
+    expect(dropUnaskedGaps(t)).toBe(t);
   });
 });

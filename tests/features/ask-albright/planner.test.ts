@@ -4,6 +4,7 @@ import {
   PLANNER_SYSTEM,
   answerSystem,
   fallbackPlan,
+  namesMarker,
   parsePlan,
 } from "@/features/user/ask-albright/lib/planner";
 import { ANSWER_RULES } from "@/features/user/ask-albright/lib/router";
@@ -43,6 +44,21 @@ describe("parsePlan", () => {
     expect(parsePlan(table, "Is there a table of CK7 vs CK20 patterns?").format).toBe("table");
     const items = JSON.stringify({ format: "table", items: ["CHL", "NLPHL"] });
     expect(parsePlan(items, "CHL and NLPHL markers").format).toBe("table");
+  });
+
+  it("uses the marker shape only when the question names a marker", () => {
+    const marker = JSON.stringify({ format: "marker", query: "x y z" });
+    expect(parsePlan(marker, "what does CD99 stain").format).toBe("marker");
+    expect(parsePlan(marker, "TTF-1 positive tumors").format).toBe("marker");
+    expect(parsePlan(marker, "desmin positive tumors").format).toBe("marker");
+    expect(parsePlan(marker, "Reed Sternberg cell markers").format).toBe("bullets");
+    expect(namesMarker("Reed Sternberg cell markers")).toBe(false);
+  });
+
+  it("turns an explicit 'X vs Y' into a table, but not a yes/no question", () => {
+    const para = JSON.stringify({ format: "paragraph", query: "x y z" });
+    expect(parsePlan(para, "necrotizing vs non necrotizing granuloma causes").format).toBe("table");
+    expect(parsePlan(para, "Is CK7 better vs CD10?").format).toBe("paragraph");
   });
 
   it("keeps up to four compared items, dropping junk", () => {
