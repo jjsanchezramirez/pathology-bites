@@ -39,6 +39,9 @@ function headingOf(line: string): string | null {
   return null;
 }
 
+/** Placeholder bullets the model writes for empty groups ("- None"). */
+const EMPTY_ITEM = /^(none|not stated|n\/a|nil|none reported|none mentioned)\.?$/i;
+
 function listBlock(title: string | null, items: string[]): AnswerBlock {
   // Mostly-short panels flow inline; one longer note ("CAIX (diffuse,
   // membranous in 75–100%)") shouldn't push the whole panel back to one per line.
@@ -99,7 +102,10 @@ export function parseAnswerBlocks(text: string): AnswerBlock[] {
       while (i < lines.length && isBullet(lines[i]) && headingOf(lines[i]) === null) {
         items.push(lines[i++].replace(BULLET, "").trim());
       }
-      blocks.push(items.length ? listBlock(title, items) : { kind: "p", text: `**${title}**` });
+      const real = items.filter((it) => !EMPTY_ITEM.test(plain(it)));
+      // A group that only said "None" is dropped; a bare label stays as text.
+      if (real.length) blocks.push(listBlock(title, real));
+      else if (!items.length) blocks.push({ kind: "p", text: `**${title}**` });
       continue;
     }
     if (isBullet(lines[i])) {
@@ -107,7 +113,8 @@ export function parseAnswerBlocks(text: string): AnswerBlock[] {
       while (i < lines.length && isBullet(lines[i]) && headingOf(lines[i]) === null) {
         items.push(lines[i++].replace(BULLET, "").trim());
       }
-      blocks.push(listBlock(null, items));
+      const real = items.filter((it) => !EMPTY_ITEM.test(plain(it)));
+      if (real.length) blocks.push(listBlock(null, real));
       continue;
     }
     blocks.push({ kind: "p", text: line });

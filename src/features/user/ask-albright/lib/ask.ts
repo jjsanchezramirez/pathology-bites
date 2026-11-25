@@ -23,6 +23,7 @@ import {
   splitFollowUps,
   hitTokenCap,
   tidyAnswer,
+  dropUnaskedGaps,
   questionTerms,
   relevantExcerpt,
 } from "./router";
@@ -386,8 +387,10 @@ export async function askAlbright(
   const answerOnce = (format: AnswerFormat) =>
     callOpenAICompatText("cloudflare", ANSWER_MODEL, apiKey, prompt, {
       system: answerSystem(format),
-      maxTokens: format === "table" ? TABLE_MAX_TOKENS : ANSWER_MAX_TOKENS,
-      temperature: 0.2,
+      maxTokens: format === "table" || format === "marker" ? TABLE_MAX_TOKENS : ANSWER_MAX_TOKENS,
+      // 0: the same question gives the same answer (graded answers differed
+      // from the owner's reruns at 0.2).
+      temperature: 0,
       timeoutMs: 20_000,
     });
   let res = await answerOnce(plan.format);
@@ -397,7 +400,7 @@ export async function askAlbright(
   // model padded the header with spaces until the cap and never wrote a row
   // ("Endometrial carcinoma vs endocervical adenocarcinoma"). Retry once as a
   // paragraph rather than show a fragment; this costs only on the rare miss.
-  const cap = format === "table" ? TABLE_MAX_TOKENS : ANSWER_MAX_TOKENS;
+  const cap = format === "table" || format === "marker" ? TABLE_MAX_TOKENS : ANSWER_MAX_TOKENS;
   if (hitTokenCap(res.tokenUsage?.completion_tokens, cap) && format !== "paragraph") {
     log.warn(`[ask-albright] ${format} answer hit the token cap; retrying as a paragraph`);
     res = await answerOnce("paragraph");
@@ -410,7 +413,9 @@ export async function askAlbright(
   );
 
   const result: AskResult = {
-    ...splitFollowUps(tidyAnswer(res.content)),
+    ...(({ answer, followUps }) => ({ answer: dropUnaskedGaps(answer), followUps }))(
+      splitFollowUps(tidyAnswer(res.content))
+    ),
     source: hits[0].source,
     sourceLabel: SOURCE_LABEL[hits[0].source],
     // Links come from retrieval, never from the model, so they cannot be invented.

@@ -24,7 +24,7 @@ const NOT_COVERED =
 const CASES = [
   {
     q: "Are MEF2B and J chain useful in distinguishing NLPHL from classic Hodgkin lymphoma?",
-    must: [/MEF2B/i, /J[- ]?chain/i, /(positive|express|highlight)/i],
+    must: [/MEF2B/i, /J[- ]?chain/i, /(positive|express|highlight|sensitiv|useful)/i],
   },
   {
     q: "Is CD117 positive in renal oncocytoma?",

@@ -36,7 +36,7 @@ const MAX_ROW_NAME_TOKENS = 6;
 const MAX_FIRST_ROW_NAME = 4;
 
 // Title-case or lowercase stain names that fail the shape test in `markerLike`.
-const KNOWN_STAINS = new Set(
+export const KNOWN_STAINS = new Set(
   [
     "hale",
     "vimentin",

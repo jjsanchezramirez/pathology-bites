@@ -105,4 +105,17 @@ describe("parseAnswerBlocks", () => {
       { kind: "p", text: "**Genetic findings**" },
     ]);
   });
+
+  it("drops groups whose only bullet is a placeholder like 'None'", () => {
+    const text =
+      "**Positive — normal tissue:**\n- None\n**Positive — tumors:**\n- Ewing sarcoma [1]\n- Synovial sarcoma [1]";
+    expect(parseAnswerBlocks(text)).toEqual([
+      {
+        kind: "list",
+        title: "Positive — tumors",
+        items: ["Ewing sarcoma [1]", "Synovial sarcoma [1]"],
+        inline: false,
+      },
+    ]);
+  });
 });

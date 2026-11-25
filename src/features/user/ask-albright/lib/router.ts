@@ -55,7 +55,7 @@ export const RELEVANCE_MIN = 0.1;
 export const SEARCH_LIMIT = 3;
 /** Room for a short answer, list or small table plus the one-line follow-ups (~40 tokens). */
 export const ANSWER_MAX_TOKENS = 360;
-/** Tables get more room: a three-way IHC table legitimately ran past 360. */
+/** Tables and marker profiles get more room: a three-way IHC table legitimately ran past 360. */
 export const TABLE_MAX_TOKENS = 600;
 
 /**
@@ -158,7 +158,7 @@ export function relevantExcerpt(body: string, question: string, max = PASSAGE_CH
  * positive. A gap must read as a gap.
  */
 export const ANSWER_RULES =
-  'You are Dr. Albright, a concise pathology tutor. Use only the numbered sources; read them fully and attribute each number or finding to the item it belongs to. A source answers the question even when worded differently (a percentage of cases staining positive answers a question about sensitivity). Cite as [1], [2], [3]. Never fill a gap with a guess. If the sources do not answer the question, say so in one sentence. End with one line: "Follow-ups: <question> | <question>" — two short questions a pathology learner might ask next.';
+  'You are Dr. Albright, a concise pathology tutor. Use only the numbered sources; read them fully and attribute each number or finding to the item it belongs to. A source answers the question even when worded differently (a percentage of cases staining positive answers a question about sensitivity). Cite as [1], [2], [3]. Lead with the direct answer and stay on what was asked. Never fill a gap with a guess; if the sources do not answer the question, say so in one sentence, but do not list other things the sources leave out. End with one line: "Follow-ups: <question> | <question>" — two short questions a pathology learner might ask next.';
 
 /** True when an answer used (almost) its whole output budget, i.e. was cut off. */
 export function hitTokenCap(
@@ -178,6 +178,26 @@ export function tidyAnswer(text: string): string {
     .map((l) => l.replace(/[ \t]{2,}/g, " ").trimEnd())
     .join("\n")
     .trim();
+}
+
+/**
+ * Drop a trailing "The sources do not mention …" sentence when the rest is a
+ * cited answer. The model kept volunteering gaps nobody asked about ("The
+ * sources do not mention CD99"); a whole-answer "not covered" stays, since it
+ * has no citation elsewhere.
+ */
+export function dropUnaskedGaps(answer: string): string {
+  const GAP =
+    /\s*(?:However,\s*)?(?:the (?:provided )?sources?|it is) (?:do(?:es)? not|don't|doesn't|is not|are not)\b[^.\n]*\.\s*$/i;
+  let out = answer;
+  for (let i = 0; i < 2; i++) {
+    const m = out.match(GAP);
+    if (!m || m.index === undefined) break;
+    const rest = out.slice(0, m.index);
+    if (!/\[\d/.test(rest)) break;
+    out = rest.trimEnd();
+  }
+  return out;
 }
 
 /**
