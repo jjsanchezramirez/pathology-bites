@@ -1,12 +1,8 @@
-import { createClient } from "@/shared/services/server";
-import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import { requireUser } from "@/shared/utils/api/api-guard";
-import { hasPermission, parsePermissions } from "@/shared/utils/auth/permissions";
 import { parseBody } from "@/shared/utils/api/parse-body";
-import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
+import { runTransitionRoute } from "@/features/admin/questions/services/transition-route";
+import { z } from "zod";
 
 const reassignQuestionSchema = z.object({
   reviewer_id: z.string().min(1),
@@ -70,116 +66,11 @@ const reassignQuestionSchema = z.object({
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const supabase = await createClient();
     const { id: questionId } = await params;
-
-    // Get current user
-    const auth = requireUser(request);
-    if (auth instanceof NextResponse) return auth;
-    const userId = auth.userId;
-
-    // Parse request body
     const body = await parseBody(request, reassignQuestionSchema);
     if (body instanceof NextResponse) return body;
-    const { reviewer_id } = body;
-
-    // Verify new reviewer exists and may review. Service-role read: users RLS only lets a
-    // non-admin read their own row.
-    const adminClient = createServiceRoleClient();
-    const { data: reviewer, error: reviewerError } = await adminClient
-      .from("users")
-      .select("id, role, permissions")
-      .eq("id", reviewer_id)
-      .single();
-
-    if (reviewerError || !reviewer) {
-      return NextResponse.json(
-        { error: "Invalid reviewer_id: reviewer not found" },
-        { status: 400 }
-      );
-    }
-
-    // The reviewer must be an admin or hold review_questions.
-    if (!hasPermission(reviewer.role, parsePermissions(reviewer.permissions), "review_questions")) {
-      return NextResponse.json(
-        { error: "Selected user is not a reviewer or admin" },
-        { status: 400 }
-      );
-    }
-
-    // Get the question to verify status and ownership
-    const { data: question, error: fetchError } = await supabase
-      .from("questions")
-      .select("id, status, created_by, reviewer_id")
-      .eq("id", questionId)
-      .single();
-
-    if (fetchError || !question) {
-      return NextResponse.json({ error: "Question not found" }, { status: 404 });
-    }
-
-    // Verify question is in pending_review state
-    if (question.status !== "pending_review") {
-      return NextResponse.json(
-        { error: `Cannot reassign question with status: ${question.status}` },
-        { status: 400 }
-      );
-    }
-
-    // Admins, or the author holding create_questions.
-    const isAdmin = auth.role === "admin";
-    const isAuthor = question.created_by === userId && auth.can("create_questions");
-
-    if (!isAdmin && !isAuthor) {
-      return NextResponse.json(
-        { error: "Only an admin or the question's author can reassign this question" },
-        { status: 403 }
-      );
-    }
-    if (reviewer.id === question.created_by) {
-      return NextResponse.json(
-        { error: "An author cannot review their own question" },
-        { status: 400 }
-      );
-    }
-
-    // Update reviewer assignment. Service role after the checks above: RLS only lets an
-    // author update draft/rejected rows, so a caller-client update matched nothing.
-    const { data: updatedQuestion, error: updateError } = await adminClient
-      .from("questions")
-      .update({
-        reviewer_id: reviewer_id,
-        updated_at: new Date().toISOString(),
-        updated_by: userId,
-      })
-      .eq("id", questionId)
-      // The status check above only short-circuits; this filter is the actual
-      // barrier, so a reassign can't land on a question a reviewer just
-      // approved or rejected (see CLAUDE.md TOCTOU).
-      .eq("status", "pending_review")
-      .select()
-      .maybeSingle();
-
-    if (updateError) {
-      log.error("Error reassigning question:", updateError);
-      return NextResponse.json(
-        { error: `Failed to reassign question: ${updateError.message}` },
-        { status: 500 }
-      );
-    }
-
-    // Zero rows matched: it left pending_review between our read and our write.
-    if (!updatedQuestion) {
-      return NextResponse.json({ error: "Question is no longer pending review" }, { status: 409 });
-    }
-
-    // Revalidate caches to update all admin pages
-    revalidateQuestions({ questionId, includeDashboard: true });
-
-    return NextResponse.json({
-      success: true,
-      question: updatedQuestion,
-      message: `Question reassigned to new reviewer`,
+    return await runTransitionRoute(request, questionId, "reassign", {
+      reviewerId: body.reviewer_id,
     });
   } catch (error) {
     log.error("Unexpected error reassigning question:", error);

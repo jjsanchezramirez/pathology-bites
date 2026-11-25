@@ -196,6 +196,8 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
           version_major,
           version_minor,
           version_patch,
+          source,
+          source_detail,
           question_options(*),
           question_images(*, image:images(*)),
           categories(*),
@@ -397,10 +399,10 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to delete questions");
+        throw new Error(data.error || "Failed to archive questions");
       }
 
-      toast.success(data.message || `Successfully deleted ${data.affectedCount} question(s)`);
+      toast.success(data.message || `Archived ${data.affectedCount} question(s)`);
       refetch();
       // Refresh to update sidebar counts
       router.refresh();
@@ -408,7 +410,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
       setShowBulkDeleteConfirm(false);
     } catch (error) {
       log.error("Error performing bulk delete:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to delete questions");
+      toast.error(error instanceof Error ? error.message : "Failed to archive questions");
     } finally {
       setIsBulkDeleting(false);
     }
@@ -624,8 +626,8 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
         <BlurredDialog
           open={showBulkDeleteConfirm}
           onOpenChange={setShowBulkDeleteConfirm}
-          title="Delete Selected Questions"
-          description={`Are you sure you want to delete ${selectedQuestions.length} selected question${selectedQuestions.length === 1 ? "" : "s"}? This action cannot be undone.`}
+          title="Archive Selected Questions"
+          description={`Archive ${selectedQuestions.length} selected question${selectedQuestions.length === 1 ? "" : "s"}? Archived questions keep their history and can be restored.`}
           maxWidth="md"
           footer={
             <>
@@ -645,10 +647,10 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
                 {isBulkDeleting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Deleting...
+                    Archiving...
                   </>
                 ) : (
-                  `Delete ${selectedQuestions.length} Question${selectedQuestions.length === 1 ? "" : "s"}`
+                  `Archive ${selectedQuestions.length} Question${selectedQuestions.length === 1 ? "" : "s"}`
                 )}
               </Button>
             </>
@@ -656,8 +658,8 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
         >
           <div className="py-4">
             <p className="text-sm text-muted-foreground">
-              This will permanently remove the selected questions from the database. Questions that
-              are currently approved or in use may not be deletable based on your permissions.
+              Only drafts and rejected questions are archived; others in the selection are skipped.
+              Nothing is deleted, and archived questions can be restored.
             </p>
           </div>
         </BlurredDialog>

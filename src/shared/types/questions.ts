@@ -125,6 +125,9 @@ export interface QuestionImageFormData {
   order_index: number;
 }
 
+/** How a question was written: by hand, with the in-site AI, by a bot batch, or imported. */
+export type QuestionSource = "manual" | "ai_assisted" | "llm_batch" | "import";
+
 export interface QuestionFormData {
   title: string;
   stem: string;
@@ -141,6 +144,8 @@ export interface QuestionFormData {
   question_options: QuestionOptionFormData[];
   question_images: QuestionImageFormData[];
   tag_ids: string[];
+  source?: QuestionSource;
+  source_detail?: Record<string, unknown>;
 }
 
 // Interface for question filters including question set

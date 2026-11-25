@@ -2564,6 +2564,7 @@ export type Database = {
           changed_by: string;
           created_at: string | null;
           id: string;
+          legacy: boolean;
           question_data: Json;
           question_id: string;
           update_type: string | null;
@@ -2576,6 +2577,7 @@ export type Database = {
           changed_by: string;
           created_at?: string | null;
           id?: string;
+          legacy?: boolean;
           question_data: Json;
           question_id: string;
           update_type?: string | null;
@@ -2588,6 +2590,7 @@ export type Database = {
           changed_by?: string;
           created_at?: string | null;
           id?: string;
+          legacy?: boolean;
           question_data?: Json;
           question_id?: string;
           update_type?: string | null;
@@ -2629,6 +2632,8 @@ export type Database = {
           reviewer_feedback: string | null;
           reviewer_id: string | null;
           status: Database["public"]["Enums"]["question_status"] | null;
+          source: string;
+          source_detail: Json;
           stem: string;
           teaching_point: string;
           title: string;
@@ -2655,6 +2660,8 @@ export type Database = {
           reviewer_feedback?: string | null;
           reviewer_id?: string | null;
           status?: Database["public"]["Enums"]["question_status"] | null;
+          source?: string;
+          source_detail?: Json;
           stem: string;
           teaching_point: string;
           title: string;
@@ -2681,6 +2688,8 @@ export type Database = {
           reviewer_feedback?: string | null;
           reviewer_id?: string | null;
           status?: Database["public"]["Enums"]["question_status"] | null;
+          source?: string;
+          source_detail?: Json;
           stem?: string;
           teaching_point?: string;
           title?: string;
@@ -4306,6 +4315,16 @@ export type Database = {
         Args: { p_loser: string; p_winner: string };
         Returns: undefined;
       };
+      save_question: {
+        Args: {
+          p_actor: string;
+          p_change_summary?: string;
+          p_payload: Json;
+          p_question_id: string;
+          p_update_type?: string;
+        };
+        Returns: Json;
+      };
       select_quiz_questions: {
         Args: {
           p_category_ids?: string[];
@@ -4317,6 +4336,17 @@ export type Database = {
         Returns: {
           question_id: string;
         }[];
+      };
+      transition_question: {
+        Args: {
+          p_action: string;
+          p_actor: string;
+          p_feedback?: string;
+          p_notes?: string;
+          p_question_id: string;
+          p_reviewer_id?: string;
+        };
+        Returns: Json;
       };
       update_question_analytics_batch: {
         Args: { question_ids: string[] };

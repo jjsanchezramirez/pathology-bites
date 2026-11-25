@@ -6,6 +6,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import {
+  Archive,
   Search,
   MoreVertical,
   Edit,
@@ -177,8 +178,8 @@ export function TableControls({
             Reject
           </Button>
           <Button variant="destructive" size="sm" onClick={() => onBulkOperation("delete")}>
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
+            <Archive className="h-4 w-4 mr-2" />
+            Archive
           </Button>
           <Button variant="outline" size="sm" onClick={() => onBulkOperation("export")}>
             <Download className="h-4 w-4 mr-2" />

@@ -22,7 +22,7 @@ import { StepMetadata } from "./steps/step-metadata";
 import { StepProgressBar } from "./step-progress-bar";
 
 // Import types
-import { QuestionFormData, QuestionWithDetails } from "@/shared/types/questions";
+import { QuestionFormData, QuestionSource, QuestionWithDetails } from "@/shared/types/questions";
 import { EducationalContent } from "./content-selector";
 import { log } from "@/shared/utils/logging";
 
@@ -51,6 +51,9 @@ export interface FormState {
   jsonData: string;
   selectedAIModel: string | null;
   selectedContent: EducationalContent | null;
+  // How the question is being written; set when JSON is pasted (import) or the AI drafts it.
+  source: QuestionSource;
+  sourceDetail: Record<string, unknown>;
 
   // Step 2: Content
   title: string;
@@ -151,6 +154,8 @@ export function MultiStepQuestionForm({
         jsonData: "",
         selectedAIModel: null,
         selectedContent: null,
+        source: "manual", // not sent on edit; only an admin changes a question's source
+        sourceDetail: {},
         title: initialData.title || "",
         stem: initialData.stem || "",
         answerOptions:
@@ -182,6 +187,8 @@ export function MultiStepQuestionForm({
       jsonData: "",
       selectedAIModel: null,
       selectedContent: null,
+      source: "manual",
+      sourceDetail: {},
       title: "",
       stem: "",
       answerOptions: [
@@ -390,6 +397,8 @@ export function MultiStepQuestionForm({
         tag_ids: formState.tag_ids,
         difficulty: formState.difficulty,
         status: formState.status,
+        source: formState.source,
+        source_detail: formState.sourceDetail,
       };
 
       await onSubmit(questionData);

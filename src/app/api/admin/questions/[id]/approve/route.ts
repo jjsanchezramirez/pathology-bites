@@ -1,9 +1,10 @@
-import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
-import { requireUser } from "@/shared/utils/api/api-guard";
-import { NotificationTriggers } from "@/shared/services/notification-triggers";
-import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
+import { runTransitionRoute } from "@/features/admin/questions/services/transition-route";
+import { z } from "zod";
+
+// Optional reviewer note stored on the approval record.
+const approveQuestionSchema = z.object({ feedback: z.string().nullish() }).passthrough();
 
 /**
  * @swagger
@@ -48,112 +49,11 @@ import { log } from "@/shared/utils/logging";
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const supabase = await createClient();
     const { id: questionId } = await params;
-
-    // Get current user
-    const auth = requireUser(request);
-    if (auth instanceof NextResponse) return auth;
-    const userId = auth.userId;
-
-    // Get the question to verify reviewer assignment
-    const { data: question, error: fetchError } = await supabase
-      .from("questions")
-      .select("id, status, reviewer_id, created_by")
-      .eq("id", questionId)
-      .single();
-
-    if (fetchError || !question) {
-      return NextResponse.json({ error: "Question not found" }, { status: 404 });
-    }
-
-    // Verify question is in pending_review state
-    if (question.status !== "pending_review") {
-      return NextResponse.json(
-        { error: `Cannot approve question with status: ${question.status}` },
-        { status: 400 }
-      );
-    }
-
-    // Admins, or the assigned reviewer holding review_questions (never on their own
-    // question). RLS (questions update WITH CHECK) enforces the same rule.
-    const isAdmin = auth.role === "admin";
-    const isAssignedReviewer =
-      question.reviewer_id === userId &&
-      question.created_by !== userId &&
-      auth.can("review_questions");
-
-    if (!isAdmin && !isAssignedReviewer) {
-      return NextResponse.json(
-        { error: "Only the assigned reviewer or admin can approve this question" },
-        { status: 403 }
-      );
-    }
-
-    // Update question to published
-    const { data: updatedQuestion, error: updateError } = await supabase
-      .from("questions")
-      .update({
-        status: "published",
-        published_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        updated_by: userId,
-      })
-      .eq("id", questionId)
-      // The status check above only short-circuits; this filter is the actual
-      // barrier. Without it two concurrent reviewers both read pending_review
-      // and both write, double-notifying the creator (see CLAUDE.md TOCTOU).
-      .eq("status", "pending_review")
-      .select()
-      .maybeSingle();
-
-    if (updateError) {
-      log.error("Error approving question:", updateError);
-      return NextResponse.json(
-        { error: `Failed to approve question: ${updateError.message}` },
-        { status: 500 }
-      );
-    }
-
-    // Zero rows matched: someone else moved it out of pending_review between
-    // our read and our write. Bail before the review record and notification.
-    if (!updatedQuestion) {
-      return NextResponse.json({ error: "Question is no longer pending review" }, { status: 409 });
-    }
-
-    // Record the review action
-    const { error: reviewError } = await supabase.from("question_reviews").insert({
-      question_id: questionId,
-      reviewer_id: userId,
-      action: "approved",
-      feedback: null,
-    });
-
-    if (reviewError) {
-      log.error("Error recording review:", reviewError);
-      // Don't fail the request if review recording fails
-    }
-
-    // Send notification to creator
-    try {
-      const notificationTriggers = new NotificationTriggers();
-      await notificationTriggers.onQuestionApproved(
-        updatedQuestion.created_by,
-        questionId,
-        updatedQuestion.title,
-        userId
-      );
-    } catch (error) {
-      log.error("Error sending approval notification:", error);
-      // Don't fail the request if notification fails
-    }
-
-    // Revalidate caches to update all admin pages
-    revalidateQuestions({ questionId, includeDashboard: true });
-
-    return NextResponse.json({
-      success: true,
-      question: updatedQuestion,
+    const raw = await request.json().catch(() => ({}));
+    const parsed = approveQuestionSchema.safeParse(raw ?? {});
+    return await runTransitionRoute(request, questionId, "approve", {
+      feedback: parsed.success ? (parsed.data.feedback ?? null) : null,
     });
   } catch (error) {
     log.error("Unexpected error approving question:", error);
