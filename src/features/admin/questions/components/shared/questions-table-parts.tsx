@@ -337,7 +337,8 @@ function RowActions({
 
   // An archived question can be restored to draft by its author or an admin
   const canRestore =
-    question.status === "archived" && (isAdmin || question.created_by === user?.id);
+    question.status === "archived" &&
+    (isAdmin || (can("create_questions") && question.created_by === user?.id));
 
   // Hide version history when question is at the initial v1.0.0 (nothing to show)
   const hasVersionBeyondInitial =

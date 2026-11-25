@@ -498,7 +498,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
       </Form>
 
       {/* Save Confirmation Dialog */}
-      {question?.status === "published" && (
+      {isLiveQuestion && (
         <SaveConfirmationDialog
           open={showSaveConfirmDialog}
           onOpenChange={setShowSaveConfirmDialog}

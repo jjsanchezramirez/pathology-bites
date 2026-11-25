@@ -10,7 +10,7 @@
  * else's questions, submit, approve or publish; a person reviews each draft in the admin.
  *
  * Usage (on your own machine, with the bot's credentials in .env.local):
- *   node --env-file=.env.local scripts/bot-batch-upload.mjs <questions.json> [--dry-run] [--resume] [--site <url>]
+ *   node --env-file=.env.local scripts/bot-batch-upload.mjs <questions.json> [--dry-run] [--resume | --force] [--site <url>]
  *
  * Environment:
  *   NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY   (already in .env.local)
@@ -25,7 +25,8 @@
  * Questions are sent one at a time. A refused question is reported and the rest continue.
  * A results file (<questions>.results.json) is rewritten after every question, so it lists the
  * new ids and any errors even if the run stops halfway. --resume skips the questions that the
- * results file already shows as uploaded; without it, a re-run creates them again.
+ * results file already shows as uploaded (same position, same title, same site). If a results
+ * file exists, the script stops unless you pass --resume, or --force to upload everything again.
  * --site must be an https address on pathologybites.com (or http://localhost for testing),
  * because the bot's sign-in token is sent there.
  */
@@ -35,6 +36,7 @@ import { createClient } from "@supabase/supabase-js";
 const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
 const resume = args.includes("--resume");
+const force = args.includes("--force");
 const siteFlag = args.indexOf("--site");
 const site = (
   siteFlag >= 0
@@ -50,7 +52,7 @@ function fail(message) {
 
 if (!file)
   fail(
-    "Usage: node --env-file=.env.local scripts/bot-batch-upload.mjs <questions.json> [--dry-run] [--resume] [--site <url>]"
+    "Usage: node --env-file=.env.local scripts/bot-batch-upload.mjs <questions.json> [--dry-run] [--resume | --force] [--site <url>]"
   );
 
 // The bot's token goes to this host, so only the real site (or a local dev server) is allowed.
@@ -71,15 +73,19 @@ if (!isLocal && !isLive)
   );
 
 const out = file.replace(/\.json$/i, "") + ".results.json";
-let previous = [];
-if (resume) {
-  try {
-    previous = JSON.parse(await readFile(out, "utf8")).results ?? [];
-  } catch {
-    fail(`--resume needs ${out} from an earlier run`);
-  }
+let previous = null;
+try {
+  previous = JSON.parse(await readFile(out, "utf8"));
+} catch {
+  previous = null;
 }
-const alreadyUploaded = new Map(previous.filter((r) => r.id).map((r) => [r.index, r]));
+if (resume && !previous) fail(`--resume needs ${out} from an earlier run`);
+if (!resume && !force && previous)
+  fail(`${out} exists from an earlier run: pass --resume to skip uploaded questions, or --force`);
+if (resume && previous.site !== site) fail(`${out} was uploaded to ${previous.site}, not ${site}`);
+const alreadyUploaded = new Map(
+  (resume ? (previous.results ?? []) : []).filter((r) => r.id).map((r) => [r.index, r])
+);
 
 let questions;
 try {
@@ -133,7 +139,7 @@ const batch = new Date().toISOString();
 const results = [];
 const saveResults = () => writeFile(out, JSON.stringify({ site, batch, results }, null, 2));
 for (const [i, question] of questions.entries()) {
-  if (alreadyUploaded.has(i)) {
+  if (alreadyUploaded.get(i)?.title === question.title) {
     results.push(alreadyUploaded.get(i));
     console.log(`  skip  #${i + 1} ${question.title} (uploaded earlier)`);
     continue;
