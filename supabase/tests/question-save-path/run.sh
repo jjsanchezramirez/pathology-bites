@@ -3,8 +3,8 @@
 # Usage: PGHOST=... PGUSER=postgres ./run.sh   (creates and drops database qsp_test)
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
-mig="$here/../../migrations/20261125140000_question_save_path.sql"
-down="$here/../../migrations/rollback/20261125140000_question_save_path.down.sql"
+mig="$here/../../../docs/question-authoring/migrations/20261125140000_question_save_path.sql"
+down="$here/../../../docs/question-authoring/migrations/rollback/20261125140000_question_save_path.down.sql"
 db=qsp_test
 psql -q -v ON_ERROR_STOP=1 -d postgres -c "drop database if exists $db" -c "create database $db"
 run() { psql -q -X -v ON_ERROR_STOP=1 -d "$db" "$@"; }

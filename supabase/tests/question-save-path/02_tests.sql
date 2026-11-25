@@ -225,6 +225,14 @@ update questions set reviewer_id = :both where id = :'aq';
 select pg_temp.expect_error(format($$select save_question('00000000-0000-0000-0000-0000000000c2', %L, '{"stem":"s2"}', null, 'minor')$$, :'aq'), 'PBV01');
 select pg_temp.expect_error(format($$select save_question('00000000-0000-0000-0000-0000000000c2', %L, '{"stem":"s2","reviewer_id":"00000000-0000-0000-0000-0000000000c2"}', null, 'minor')$$, :'aq'), 'PBV01');
 
+-- the person who made a minor edit cannot review it, even if reassigned to them later
+select save_question(:both, :'aq', '{"stem":"edited by both","reviewer_id":"00000000-0000-0000-0000-0000000000c1"}', null, 'minor');
+select pg_temp.expect_error(format($$select transition_question('00000000-0000-0000-0000-00000000000a', %L, 'reassign', '00000000-0000-0000-0000-0000000000c2')$$, :'aq'), 'PBV01');
+update questions set reviewer_id = :both where id = :'aq';
+select pg_temp.expect_error(format($$select transition_question('00000000-0000-0000-0000-0000000000c2', %L, 'approve')$$, :'aq'), 'PBA01');
+select transition_question(:admin, :'aq', 'reassign', :reviewer);
+select transition_question(:reviewer, :'aq', 'approve');
+
 -- minor edit then re-approval keeps the first publication date
 select pg_sleep(0.01);
 select save_question(:admin, :'aq', '{"stem":"s3","reviewer_id":"00000000-0000-0000-0000-0000000000c1"}', null, 'minor');
