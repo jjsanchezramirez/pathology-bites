@@ -3,12 +3,9 @@
 @config '../../tailwind.config.ts';
 
 /*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
+  Tailwind v4 defaults border color to `currentcolor`. Use the theme's
+  `--border` (via `--color-border`) so borders follow light/dark mode and the
+  dashboard theme; a fixed gray-200 here made every dark-mode border glare.
 */
 @layer base {
   *,
@@ -16,7 +13,7 @@
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
+    border-color: var(--color-border, currentcolor);
   }
 
   /* Smooth page transitions for dashboard mode switching - but NOT on anki page */
