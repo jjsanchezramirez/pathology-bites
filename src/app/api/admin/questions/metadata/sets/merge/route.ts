@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { log } from "@/shared/utils/logging";
 
 const mergeSetsSchema = z.object({
@@ -104,7 +105,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Start transaction by moving all questions from source sets to target set
-    const { error: moveError, count: movedCount } = await supabase
+    // Question tables are written only with the service role (admin checked above).
+    const { error: moveError, count: movedCount } = await createServiceRoleClient()
       .from("questions")
       // count: "exact" — without it `count` is always null and the response
       // reported movedQuestions: 0 for every merge.

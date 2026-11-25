@@ -4,6 +4,7 @@ import { z } from "zod";
 import { requireAdmin, requireStaff } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { log } from "@/shared/utils/logging";
 
 const createTagSchema = z.object({
@@ -390,7 +391,8 @@ export async function DELETE(request: NextRequest) {
     const { tagId } = body;
 
     // First delete all question_tags relationships
-    const { error: relationError } = await supabase
+    // Question tables are written only with the service role (admin checked above).
+    const { error: relationError } = await createServiceRoleClient()
       .from("question_tags")
       .delete()
       .eq("tag_id", tagId);
