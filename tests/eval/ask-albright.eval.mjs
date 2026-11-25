@@ -124,6 +124,15 @@ const CASES = [
       /oncocytoma[^.]{0,40}(CD117|KIT)[^.]{0,20}negative/i,
     ],
   },
+  // Scope: a three-way IHC table is a normal question (it was declined as
+  // "too broad" under a 3-diagnosis rule); a whole field or off-topic is not.
+  {
+    q: "CHL vs NLPHL vs PBML IHC table",
+    must: [/\|/, /CD30/i, /CD15|CD20|OCT-?2|BOB-?1|PAX5|MEF2B/i],
+    not: [/covers a lot/i],
+  },
+  { q: "Explain all of soft tissue pathology", must: [/covers a lot/i] },
+  { q: "What's a good recipe for banana bread?", must: [/only help with pathology/i] },
   // PathologyOutlines: "TRPS1 (positive in 86% of triple negative and metaplastic carcinomas)".
   // A run once answered "2%" (the adjacent GATA3 mutation rate) — keep that out.
   {

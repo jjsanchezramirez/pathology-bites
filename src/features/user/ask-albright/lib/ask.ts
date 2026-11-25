@@ -6,10 +6,12 @@ import { type PathTalkHit, searchPathTalk } from "@/shared/services/pathtalk";
 import { log } from "@/shared/utils/logging";
 import {
   ANSWER_MAX_TOKENS,
+  TABLE_MAX_TOKENS,
   ANSWER_MODEL,
   type AskSource,
   PASSAGES,
   PASSAGE_CHARS,
+  COMPARE_MAX_SEARCHES,
   MAX_SEARCHES,
   RELEVANCE_MIN,
   RERANK_CHARS,
@@ -222,6 +224,23 @@ function names(text: string, subject: string[]): boolean {
  * alone can't see this: for "Is TRPS1 sensitive for TNBC?" it scored a
  * GATA3-in-TNBC paper 0.85, so the corpus that had "TRPS1 … 86%" was skipped.
  */
+const ITEM_STOP = new Set(["the", "and", "with", "type", "not", "otherwise", "specified", "nos"]);
+
+/**
+ * Whether a page is about a compared diagnosis: most of the diagnosis's words
+ * (≥70%, ≥3 letters) appear in the page TITLE. Titles, not bodies — a CHL page
+ * names NLPHL in its differential, which would wrongly count as covering it.
+ */
+export function coversItem(title: string, item: string): boolean {
+  const words = (item.toLowerCase().match(/[a-z0-9]+/g) ?? []).filter(
+    (w) => w.length >= 3 && !ITEM_STOP.has(w)
+  );
+  if (words.length === 0) return false;
+  const t = title.toLowerCase();
+  const hit = words.filter((w) => new RegExp(`(^|[^a-z0-9])${w}`).test(t)).length;
+  return hit / words.length >= 0.7;
+}
+
 function missesSubject(candidates: Candidate[], subjects: string[][]): boolean {
   if (subjects.length === 0 || candidates.length === 0) return false;
   const text = candidates.map((c) => `${c.page.title} ${c.page.body}`).join(" ");
@@ -298,6 +317,30 @@ export async function askAlbright(
     anyFailed ||= found.failed;
     candidates = [...candidates, ...found.candidates].sort((a, b) => b.score - a.score);
   }
+  // Comparisons: every compared diagnosis needs its own page. One search
+  // covered NLPHL and CHL but not PMBL, and the model filled the PMBL column
+  // with invented "Negative"s. Search each missing one by name (planned corpus).
+  const missing = () =>
+    plan.items.filter((item) => !candidates.some((c) => coversItem(c.page.title, item)));
+  if (plan.items.length >= 2) {
+    const itemWords = new Set(plan.items.join(" ").toLowerCase().split(/\W+/));
+    // Topic words only: drop the diagnoses themselves, including their
+    // all-caps abbreviations (CHL, NLPHL…), but keep technique words.
+    const TECHNIQUE = new Set(["IHC", "FISH", "PCR", "NGS", "ISH", "EBER", "WHO"]);
+    const extra = plan.query
+      .split(/\s+/)
+      .filter((w) => !itemWords.has(w.toLowerCase()))
+      .filter((w) => !/^[A-Z]{2,}$/.test(w) || TECHNIQUE.has(w))
+      .join(" ");
+    for (const item of missing()) {
+      if (searched.length >= COMPARE_MAX_SEARCHES) break;
+      searched.push(plan.source);
+      const q = `${item} ${extra}`.trim();
+      const found = await searchCorpus(plan.source, q, question, expanded, alternatives);
+      anyFailed ||= found.failed;
+      candidates = [...candidates, ...found.candidates].sort((a, b) => b.score - a.score);
+    }
+  }
   if (candidates.length === 0) {
     if (anyFailed) throw new Error("PathTalk search failed");
     throw new NoPassagesError("No passages found for that question");
@@ -307,7 +350,18 @@ export async function askAlbright(
   const namesAll = (c: Candidate) =>
     subjects.every((sub) => names(`${c.page.title} ${c.page.body}`, sub)) ? 1 : 0;
   candidates.sort((a, b) => namesAll(b) - namesAll(a) || b.score - a.score);
-  const chosen = candidates.slice(0, PASSAGES);
+  // One passage per compared diagnosis first (best-scored page about it), then
+  // the best of the rest.
+  const chosen: Candidate[] = [];
+  for (const item of plan.items) {
+    const best = candidates.find((c) => !chosen.includes(c) && coversItem(c.page.title, item));
+    if (best) chosen.push(best);
+  }
+  const want = Math.max(PASSAGES, Math.min(plan.items.length, 4));
+  for (const c of candidates) {
+    if (chosen.length >= want) break;
+    if (!chosen.includes(c)) chosen.push(c);
+  }
   const hits = chosen.map((c) => c.page);
 
   // 3. Read: whole passages (up to PASSAGE_CHARS each, centred on the question
@@ -332,7 +386,7 @@ export async function askAlbright(
   const answerOnce = (format: AnswerFormat) =>
     callOpenAICompatText("cloudflare", ANSWER_MODEL, apiKey, prompt, {
       system: answerSystem(format),
-      maxTokens: ANSWER_MAX_TOKENS,
+      maxTokens: format === "table" ? TABLE_MAX_TOKENS : ANSWER_MAX_TOKENS,
       temperature: 0.2,
       timeoutMs: 20_000,
     });
@@ -343,7 +397,8 @@ export async function askAlbright(
   // model padded the header with spaces until the cap and never wrote a row
   // ("Endometrial carcinoma vs endocervical adenocarcinoma"). Retry once as a
   // paragraph rather than show a fragment; this costs only on the rare miss.
-  if (hitTokenCap(res.tokenUsage?.completion_tokens) && format !== "paragraph") {
+  const cap = format === "table" ? TABLE_MAX_TOKENS : ANSWER_MAX_TOKENS;
+  if (hitTokenCap(res.tokenUsage?.completion_tokens, cap) && format !== "paragraph") {
     log.warn(`[ask-albright] ${format} answer hit the token cap; retrying as a paragraph`);
     res = await answerOnce("paragraph");
     answerTokens += res.tokenUsage?.total_tokens ?? 0;
@@ -351,7 +406,7 @@ export async function askAlbright(
   }
 
   log.info(
-    `[ask-albright] plan ${plan.source}/${plan.format} q="${plan.query}" searched=${searched.join("+")} top=${chosen[0]?.score.toFixed(2)} markers=${aliasGroups.map((g) => g.name).join(",") || "none"}`
+    `[ask-albright] plan ${plan.source}/${plan.format} q="${plan.query}" items=${plan.items.join("|") || "-"} searched=${searched.join("+")} top=${chosen[0]?.score.toFixed(2)} markers=${aliasGroups.map((g) => g.name).join(",") || "none"}`
   );
 
   const result: AskResult = {

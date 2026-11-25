@@ -22,9 +22,9 @@ import { searchPathTalk } from "@/shared/services/pathtalk";
 import { rerankScores } from "@/features/user/ask-albright/lib/rerank";
 import { lookupMarkerAliases } from "@/features/user/ask-albright/lib/marker-aliases";
 import { findInHistory, saveHistory } from "@/features/user/ask-albright/lib/history";
-import { clearAskCache } from "@/features/user/ask-albright/lib/ask";
+import { clearAskCache, coversItem } from "@/features/user/ask-albright/lib/ask";
 import { FORMAT_INSTRUCTION, SCOPE_REPLY } from "@/features/user/ask-albright/lib/planner";
-import { ANSWER_MAX_TOKENS } from "@/features/user/ask-albright/lib/router";
+import { TABLE_MAX_TOKENS } from "@/features/user/ask-albright/lib/router";
 
 const ai = vi.mocked(callOpenAICompatText);
 const search = vi.mocked(searchPathTalk);
@@ -170,7 +170,7 @@ describe("POST /api/user/ask-albright", () => {
     );
 
     const call = answerCall()!;
-    expect(call[4]).toMatchObject({ maxTokens: ANSWER_MAX_TOKENS });
+    expect(call[4]).toMatchObject({ maxTokens: TABLE_MAX_TOKENS });
     expect(call[4]?.system).toContain(FORMAT_INSTRUCTION.table);
     const prompt = call[3] as string;
     expect(prompt).toContain("Look for: CK7 pattern in each tumour");
@@ -241,6 +241,63 @@ describe("POST /api/user/ask-albright", () => {
     const body = await getResponseJson(await POST(ask("Is TRPS1 sensitive for TNBC?")));
     expect(search).toHaveBeenCalledTimes(2);
     expect(body.citations[0].href).toBe("https://po/subtypes");
+  });
+
+  it("searches each compared diagnosis the first results missed, and sends a passage for each", async () => {
+    // Regression: "CHL vs NLPHL vs PBML IHC table" found NLPHL and CHL pages only,
+    // and the model invented a column of "Negative" for PMBL.
+    mockAi({
+      format: "table",
+      query: "CHL NLPHL PMBL IHC",
+      items: [
+        "Classic Hodgkin lymphoma",
+        "Nodular lymphocyte predominant Hodgkin lymphoma",
+        "Primary mediastinal large B-cell lymphoma",
+      ],
+    });
+    search.mockImplementation(async (_tool, q) =>
+      /primary mediastinal/i.test(q as string)
+        ? [
+            {
+              title: "Primary mediastinal large B cell lymphoma",
+              href: "https://po/pmbl",
+              body: "PMBL is CD20+, CD30 weak.",
+            },
+          ]
+        : [
+            {
+              title: "Classic Hodgkin lymphoma",
+              href: "https://po/chl",
+              body: "HRS cells CD30+ CD15+.",
+            },
+            {
+              title: "Nodular lymphocyte predominant Hodgkin lymphoma",
+              href: "https://po/nlphl",
+              body: "LP cells CD20+.",
+            },
+          ]
+    );
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(await POST(ask("CHL vs NLPHL vs PBML IHC table")));
+    expect(search).toHaveBeenCalledTimes(2);
+    expect(search.mock.calls[1][1]).toBe("Primary mediastinal large B-cell lymphoma IHC");
+    expect(body.citations.map((c: Hit) => c.href).sort()).toEqual([
+      "https://po/chl",
+      "https://po/nlphl",
+      "https://po/pmbl",
+    ]);
+  });
+
+  it("judges coverage by page title, not by a differential mentioned in the body", () => {
+    expect(
+      coversItem(
+        "primary mediastinal (thymic) large B cell lymphoma",
+        "Primary Mediastinal B-Cell Lymphoma"
+      )
+    ).toBe(true);
+    expect(
+      coversItem("Classic Hodgkin lymphoma", "Nodular lymphocyte predominant Hodgkin lymphoma")
+    ).toBe(false);
   });
 
   it("does not search a second corpus when the first one answers", async () => {
@@ -435,7 +492,7 @@ describe("POST /api/user/ask-albright", () => {
       return answers === 1
         ? {
             content: "| Feature / Diagnosis" + " ".repeat(300) + "| Morphology",
-            tokenUsage: { prompt_tokens: 1500, completion_tokens: 360, total_tokens: 1860 },
+            tokenUsage: { prompt_tokens: 1500, completion_tokens: 600, total_tokens: 2100 },
           }
         : {
             content: "Endometrial carcinoma is ER-positive [1].",
@@ -453,7 +510,7 @@ describe("POST /api/user/ask-albright", () => {
     expect(body).toMatchObject({
       answer: "Endometrial carcinoma is ER-positive [1].",
       format: "paragraph",
-      tokens: 1860 + 1530,
+      tokens: 2100 + 1530,
     });
   });
 

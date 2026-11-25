@@ -19,6 +19,7 @@ describe("parsePlan", () => {
       query: "J chain Hodgkin Reed-Sternberg",
       focus: "J chain status in HRS cells",
       format: "sentence",
+      items: [],
     });
     expect(parsePlan(raw, Q)).toEqual({
       scope: "ok",
@@ -27,7 +28,34 @@ describe("parsePlan", () => {
       query: "J chain Hodgkin Reed-Sternberg",
       focus: "J chain status in HRS cells",
       format: "sentence",
+      items: [],
     });
+  });
+
+  it("only allows a table for real comparisons", () => {
+    const table = JSON.stringify({ format: "table", query: "CD117 oncocytoma" });
+    expect(parsePlan(table, "Is CD117 positive in renal oncocytoma?").format).toBe("sentence");
+    expect(parsePlan(table, "Immunophenotype of oncocytoma").format).toBe("paragraph");
+    expect(parsePlan(table, "CK7 vs CD117 in oncocytoma").format).toBe("table");
+    expect(
+      parsePlan(table, "Are MEF2B and J chain useful in distinguishing NLPHL from CHL?").format
+    ).toBe("sentence");
+    expect(parsePlan(table, "Is there a table of CK7 vs CK20 patterns?").format).toBe("table");
+    const items = JSON.stringify({ format: "table", items: ["CHL", "NLPHL"] });
+    expect(parsePlan(items, "CHL and NLPHL markers").format).toBe("table");
+  });
+
+  it("keeps up to four compared items, dropping junk", () => {
+    const plan = parsePlan(
+      JSON.stringify({
+        items: ["Classic Hodgkin lymphoma", 3, "", "Primary mediastinal large B-cell lymphoma"],
+      }),
+      Q
+    );
+    expect(plan.items).toEqual([
+      "Classic Hodgkin lymphoma",
+      "Primary mediastinal large B-cell lymphoma",
+    ]);
   });
 
   it("finds the JSON inside chatter or a code fence", () => {

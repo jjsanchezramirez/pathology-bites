@@ -31,18 +31,24 @@ export interface Plan {
   query: string;
   focus: string;
   format: AnswerFormat;
+  /** For comparisons: the diagnoses compared, spelled out (each gets a passage). */
+  items: string[];
 }
 
 /** Planner model (mistral-small made sound scope/source calls; llama-8b invented labels). */
 export const PLANNER_MODEL = "@cf/mistralai/mistral-small-3.1-24b-instruct";
 
 export const PLANNER_SYSTEM = `You plan answers for a pathology Q&A tool. Reply with JSON only:
-{"scope":"ok"|"off_topic"|"too_broad","source":"who"|"outlines"|"pubmed"|"literature","fallback":"who"|"outlines"|"pubmed"|"literature","query":"...","focus":"...","format":"sentence"|"bullets"|"paragraph"|"table"}
-- scope: off_topic if not about pathology or medicine; too_broad if it asks about 3 or more diagnoses at once or for a whole field; else ok.
+{"scope":"ok"|"off_topic"|"too_broad","source":"who"|"outlines"|"pubmed"|"literature","fallback":"who"|"outlines"|"pubmed"|"literature","query":"...","focus":"...","format":"sentence"|"bullets"|"paragraph"|"table","items":["..."]}
+- scope: off_topic if not about pathology or medicine; too_broad only if it asks about 5 or more diagnoses at once, or for a whole organ system or field (\"explain all of soft tissue pathology\"). Comparing 2-4 diagnoses (e.g. a three-way IHC table) is ok.
 - source: who = WHO classification, definitions, grading, diagnostic criteria; outlines = textbook morphology, immunostains, differentials, IHC panels; pubmed = study results, sensitivity/specificity, percentages, outcomes; literature = newer or detailed findings. fallback: the next best, different from source.
-- query: 3-8 search words: diagnosis, marker, gene or feature names (expand abbreviations, keep marker names).
+- query: 3-8 search words: diagnosis, marker, gene or feature names (expand abbreviations, correct misspellings, keep marker names).
 - focus: what to look for in the sources, under 12 words. Never state an answer or a fact.
-- format: table only for comparing 2+ items across features; bullets for lists; sentence for a single fact; else paragraph.`;
+- format: table only for comparing 2+ items across features; bullets for lists; sentence for a single fact; else paragraph.
+- items: when comparing diagnoses, each one's full name, misspellings corrected; [] otherwise.`;
+
+const COMPARES = /\b(compare|comparison|versus|vs\.?|table|differ|difference|distinguish)\b/i;
+const YES_NO = /^\s*(is|are|does|do|can|could|should|was|were|has|have)\b/i;
 
 const SOURCES: AskSource[] = ["who", "outlines", "pubmed", "literature"];
 const FORMATS: AnswerFormat[] = ["sentence", "bullets", "paragraph", "table"];
@@ -58,6 +64,7 @@ export function fallbackPlan(question: string): Plan {
     query: question,
     focus: "",
     format: /\b(compare|versus|vs\.?|table)\b/i.test(question) ? "table" : "paragraph",
+    items: [],
   };
 }
 
@@ -85,7 +92,25 @@ export function parsePlan(raw: string, question: string): Plan {
       ? j.query.trim().slice(0, 120)
       : question;
   const focus = typeof j.focus === "string" ? j.focus.trim().slice(0, 120) : "";
-  return { scope, source, fallback, query, focus, format: pick(j.format, FORMATS, base.format) };
+  const items = Array.isArray(j.items)
+    ? j.items
+        .filter((x): x is string => typeof x === "string")
+        .map((x) => x.trim())
+        .filter((x) => x.length >= 3 && x.length <= 80)
+        .slice(0, 4)
+    : [];
+  let format = pick(j.format, FORMATS, base.format);
+  // A table only for real comparisons. With `items` in the schema the planner
+  // started tabulating yes/no questions ("Is CD117 positive in oncocytoma?" →
+  // a table of "PPV: not stated" rows).
+  // A yes/no question gets a direct answer unless a table was asked for: "Are
+  // MEF2B and J chain useful in distinguishing NLPHL from CHL?" became a table.
+  if (format === "table" && YES_NO.test(question) && !/\btable\b/i.test(question)) {
+    format = "sentence";
+  } else if (format === "table" && items.length < 2 && !COMPARES.test(question)) {
+    format = "paragraph";
+  }
+  return { scope, source, fallback, query, focus, format, items };
 }
 
 /** What Dr. Albright says instead of searching, for out-of-scope questions. */
@@ -93,17 +118,17 @@ export const SCOPE_REPLY: Record<Exclude<PlanScope, "ok">, string> = {
   off_topic:
     "I can only help with pathology questions. Try asking about a diagnosis, stain or finding.",
   too_broad:
-    "That covers a lot at once. Try one or two diagnoses at a time, e.g. a specific differential or panel.",
+    "That covers a lot at once. Try up to four diagnoses at a time, e.g. a specific differential or IHC panel.",
 };
 
 /** The answer instruction for each format. */
 export const FORMAT_INSTRUCTION: Record<AnswerFormat, string> = {
-  sentence: "Answer in one or two sentences.",
+  sentence: "Answer in one or two sentences. No tables.",
   bullets:
-    'Answer as short bullets ("- "). Group them under bold labels on their own line (e.g. "**Positive:**", "**Negative:**"), one label per group; keep each bullet to the item and its key detail. Never list an item in more than one group, and leave out items the sources do not mention (no "not stated" group).',
-  paragraph: "Answer in a short paragraph of at most 4 sentences.",
+    'Answer as short bullets ("- "). Group them under bold labels on their own line (e.g. "**Positive:**", "**Negative:**"), one label per group; keep each bullet to the item and its key detail. Never list an item in more than one group, and leave out items the sources do not mention (no "not stated" group). No tables.',
+  paragraph: "Answer in a short paragraph of at most 4 sentences. No tables.",
   table:
-    "Answer as a compact Markdown table: at most 4 columns and 6 rows, cells under 10 words, no padding or alignment spaces (rows = items, columns = features). Then one sentence that answers the question directly.",
+    "Answer as a compact Markdown table: at most 5 columns and 8 rows, cells under 10 words, no padding or alignment spaces (rows = items, columns = features). Cite in the cells too; write 'not stated' in any cell the sources do not cover, and in every cell for an item no source covers. Then one sentence that answers the question directly.",
 };
 
 /** The answer model's system prompt: shared rules plus the planned format. */
