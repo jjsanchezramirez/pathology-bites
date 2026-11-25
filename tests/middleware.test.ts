@@ -32,7 +32,10 @@ describe("middleware identity headers", () => {
 
   it("strips client-supplied identity headers on public API routes", async () => {
     const res = await middleware(
-      req("/api/public/tools/anki", { "x-user-id": "forged", "x-user-role": "admin" })
+      req("/api/public/tools/virtual-slides/wsi-related", {
+        "x-user-id": "forged",
+        "x-user-role": "admin",
+      })
     );
     // Without an explicit override list, Next passes the ORIGINAL headers (forged ones
     // included) to the handler; with one, only the listed headers reach it.
@@ -80,7 +83,9 @@ describe("middleware identity headers", () => {
 
   it("strips a forged permissions header on public API routes", async () => {
     const res = await middleware(
-      req("/api/public/tools/anki", { "x-user-permissions": "create_questions" })
+      req("/api/public/tools/virtual-slides/wsi-related", {
+        "x-user-permissions": "create_questions",
+      })
     );
     expect(forwarded(res, "x-user-permissions")).toBeNull();
   });
