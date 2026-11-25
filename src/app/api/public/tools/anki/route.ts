@@ -9,7 +9,7 @@ export const revalidate = 300;
  * brotli (the native iOS app — URLSession has no br support). The browser
  * web client keeps reading the .json.br object directly.
  *
- * Indirection is the same pattern as /api/public/tools/virtual-slides: read
+ * Indirection: read
  * the short-TTL manifest, fetch the immutable content-addressed object it
  * points at, and return it decompressed (Node's fetch auto-decompresses
  * Content-Encoding: br).

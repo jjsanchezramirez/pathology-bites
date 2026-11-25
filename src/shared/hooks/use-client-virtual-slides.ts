@@ -317,17 +317,8 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
         }
       }
 
-      if (process.env.NODE_ENV === "production") {
-        log.error("[VirtualSlides] R2 fetch failed in production. Check R2 CORS and network.", e);
-        throw new Error(msg);
-      }
-      log.warn(
-        "[VirtualSlides] R2 fetch failed in dev, falling back to /api/public/tools/virtual-slides"
-      );
-      return await fetchWithTimeout("/api/public/tools/virtual-slides", {
-        cache: "force-cache",
-        timeoutMs: 8000,
-      });
+      log.error("[VirtualSlides] R2 fetch failed. Check R2 CORS and network.", e);
+      throw new Error(msg);
     }
   }
 
