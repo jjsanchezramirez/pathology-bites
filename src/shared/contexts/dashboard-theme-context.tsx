@@ -29,6 +29,19 @@ import { log } from "@/shared/utils/logging";
  * Manual URL nav (typing /admin or /dashboard) should switch the theme even
  * without clicking the mode toggle — this is the source of truth, not the cookie.
  */
+/** Themes offered on the student dashboard. The admin area only gets "default". */
+const STUDENT_THEME_IDS = ["tangerine", "sage-garden", "notebook", "default"];
+
+/** Every CSS variable any theme writes, in either mode. */
+const ALL_THEME_VARIABLE_KEYS = Array.from(
+  new Set(
+    dashboardThemes.flatMap((theme) => [
+      ...Object.keys(theme.variables.light),
+      ...Object.keys(theme.variables.dark),
+    ])
+  )
+);
+
 function deriveAdminModeFromPathname(pathname: string | null, isStaff: boolean): AdminMode {
   const isAdminPath = !!pathname && pathname.startsWith("/admin");
   return isAdminPath && isStaff ? "admin" : "user";
@@ -90,8 +103,8 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
       // Admin area: only default theme
       return dashboardThemes.filter((theme) => theme.id === "default");
     } else {
-      // User mode: notebook and tangerine themes
-      return dashboardThemes.filter((theme) => ["notebook", "tangerine"].includes(theme.id));
+      // Student dashboard: everything listed in STUDENT_THEME_IDS
+      return dashboardThemes.filter((theme) => STUDENT_THEME_IDS.includes(theme.id));
     }
   };
 
@@ -241,6 +254,12 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
       // Check if we're in dark mode
       const isDarkMode = root.classList.contains("dark");
       const variables = isDarkMode ? theme.variables.dark : theme.variables.light;
+
+      // Clear variables another theme set that this one doesn't define
+      // (e.g. Notebook's shadows), so switching themes never leaks styles.
+      ALL_THEME_VARIABLE_KEYS.forEach((key) => {
+        if (!(key in variables)) root.style.removeProperty(key);
+      });
 
       // Apply theme variables directly to override the default CSS variables
       Object.entries(variables).forEach(([key, value]) => {

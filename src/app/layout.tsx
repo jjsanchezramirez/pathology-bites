@@ -11,7 +11,7 @@ import { AuthProvider } from "@/features/auth/components/auth-provider";
 import { AnalyticsProvider } from "@/shared/contexts/analytics-provider";
 import { OrganizationSchema, WebsiteSchema } from "@/shared/components/seo/structured-data";
 import { NotificationRefreshProvider } from "@/shared/contexts/notification-refresh-context";
-import { architectsDaughter } from "@/shared/fonts/dashboard-fonts";
+import { antic, architectsDaughter } from "@/shared/fonts/dashboard-fonts";
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://pathologybites.com"),
@@ -108,10 +108,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // Don't try to initialize Supabase here at all since middleware handles auth
   // Just render the layout
   return (
-    // architectsDaughter.variable must sit on <html> because the dashboard
-    // theme system writes `--font-sans: var(--font-architects-daughter)` onto
+    // The theme font variables must sit on <html> because the dashboard
+    // theme system writes `--font-sans: var(--font-…)` onto
     // document.documentElement — narrower scope leaves the var unresolved.
-    <html lang="en" className={architectsDaughter.variable} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${architectsDaughter.variable} ${antic.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         {/* DNS-prefetch the R2 image + data origins (img./data.pathologybites.com). It serves the desktop-only hero gallery
             and the below-the-fold repository logos — neither is the mobile LCP element
