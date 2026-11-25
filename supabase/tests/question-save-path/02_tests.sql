@@ -232,6 +232,8 @@ update questions set reviewer_id = :both where id = :'aq';
 select pg_temp.expect_error(format($$select transition_question('00000000-0000-0000-0000-0000000000c2', %L, 'approve')$$, :'aq'), 'PBA01');
 select transition_question(:admin, :'aq', 'reassign', :reviewer);
 select transition_question(:reviewer, :'aq', 'approve');
+-- once that review is over, the earlier editor may review a later round
+select pg_temp.ok(internal.last_review_editor(:'aq') is null, 'edit stops counting after its review ends');
 
 -- minor edit then re-approval keeps the first publication date
 select pg_sleep(0.01);

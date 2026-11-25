@@ -15,7 +15,7 @@
 -- Errors use custom SQLSTATEs so the app can map them to HTTP codes:
 --   PBA01 forbidden (403)  PBN01 not found (404)  PBV01 invalid input (400)  PBC01 wrong state (409)
 --
--- Rollback: supabase/migrations/rollback/20261125140000_question_save_path.down.sql
+-- Rollback: rollback/20261125140000_question_save_path.down.sql (next to this file)
 
 begin;
 
@@ -265,21 +265,32 @@ $$;
 
 revoke all on function internal.assert_valid_reviewer(uuid, uuid) from public, anon, authenticated;
 
--- Who made the live edit (minor or major) that sent a question back to review, if any.
--- That person may not review it, however the reviewer was chosen.
+-- Who made the live edit (minor or major) that sent a question into its current review, if any.
+-- That person may not review it, however the reviewer was chosen. Once the question leaves review
+-- (approved, rejected, archived) the edit no longer counts, so an old editor can review later rounds.
 create or replace function internal.last_review_editor(p_question_id uuid)
 returns uuid
 language sql
 stable
 set search_path = ''
 as $$
-  select v.changed_by
-  from public.question_versions v
-  where v.question_id = p_question_id
-    and not v.legacy
-    and v.update_type in ('minor', 'major')
-  order by v.created_at desc
-  limit 1
+  with e as (
+    select v.changed_by, v.created_at
+    from public.question_versions v
+    where v.question_id = p_question_id
+      and not v.legacy
+      and v.update_type in ('minor', 'major')
+    order by v.created_at desc
+    limit 1
+  )
+  select e.changed_by
+  from e
+  where not exists (
+    select 1 from public.question_versions later
+    where later.question_id = p_question_id
+      and not later.legacy
+      and later.created_at > e.created_at
+      and coalesce(later.question_data->>'status', '') <> 'pending_review')
 $$;
 
 revoke all on function internal.last_review_editor(uuid) from public, anon, authenticated;
