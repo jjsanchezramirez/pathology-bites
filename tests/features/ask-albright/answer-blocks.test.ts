@@ -1,0 +1,121 @@
+import { describe, it, expect } from "vitest";
+import { parseAnswerBlocks } from "@/features/user/ask-albright/lib/answer-blocks";
+
+describe("parseAnswerBlocks", () => {
+  it("parses a Markdown table and keeps the text around it in order", () => {
+    // Shape of the real NLPHL answer that rendered as raw pipes.
+    const text = [
+      "| Marker | NLPHL | CHL |",
+      "| --- | --- | --- |",
+      "| **MEF2B** | Expressed in LP cells [1], [3] | Not expressed [1] |",
+      "| **J chain** | Expressed [1] | Not expressed [1] |",
+      "The sources do not cover NLPHL vs THRLBCL.",
+    ].join("\n");
+    expect(parseAnswerBlocks(text)).toEqual([
+      {
+        kind: "table",
+        header: ["Marker", "NLPHL", "CHL"],
+        rows: [
+          ["**MEF2B**", "Expressed in LP cells [1], [3]", "Not expressed [1]"],
+          ["**J chain**", "Expressed [1]", "Not expressed [1]"],
+        ],
+      },
+      { kind: "p", text: "The sources do not cover NLPHL vs THRLBCL." },
+    ]);
+  });
+
+  it("pads short rows to the header width", () => {
+    const blocks = parseAnswerBlocks("| A | B | C |\n|---|---|---|\n| 1 | 2 |");
+    expect(blocks[0]).toEqual({ kind: "table", header: ["A", "B", "C"], rows: [["1", "2", ""]] });
+  });
+
+  it("keeps a lone pipe line (no header + row) as text", () => {
+    expect(parseAnswerBlocks("| just one line |")).toEqual([
+      { kind: "p", text: "| just one line |" },
+    ]);
+  });
+
+  it("splits run-together bullets and keeps paragraphs before and after in order", () => {
+    expect(parseAnswerBlocks("Intro. - First [1]. - Second [2].\nAfter.")).toEqual([
+      { kind: "p", text: "Intro." },
+      { kind: "list", title: null, items: ["First [1].", "Second [2]."], inline: false },
+      { kind: "p", text: "After." },
+    ]);
+  });
+
+  it("leaves a dash inside a sentence alone", () => {
+    expect(parseAnswerBlocks("CK7 - patchy in oncocytoma [1].")).toEqual([
+      { kind: "p", text: "CK7 - patchy in oncocytoma [1]." },
+    ]);
+  });
+
+  it("turns labels into group titles and keeps indented bullets in their group (CCRCC shape)", () => {
+    const text = [
+      "- **Positive stains for CCRCC:**",
+      "  - PAX8 [1, 3]",
+      "  - CAIX (diffuse, membranous in 75 - 100% of cases) [1, 3]",
+      "  - CD10 [1, 3]",
+      "  - PAX2 [3]",
+      "  - Vimentin [1, 3]",
+      "- **Negative stains for CCRCC:**",
+      "  - CK7 [1, 2]",
+      "  - CK20 [3]",
+      "  - Inhibin [3]",
+    ].join("\n");
+    expect(parseAnswerBlocks(text)).toEqual([
+      {
+        kind: "list",
+        title: "Positive stains for CCRCC",
+        items: [
+          "PAX8 [1, 3]",
+          "CAIX (diffuse, membranous in 75 - 100% of cases) [1, 3]",
+          "CD10 [1, 3]",
+          "PAX2 [3]",
+          "Vimentin [1, 3]",
+        ],
+        inline: true,
+      },
+      {
+        kind: "list",
+        title: "Negative stains for CCRCC",
+        items: ["CK7 [1, 2]", "CK20 [3]", "Inhibin [3]"],
+        inline: true,
+      },
+    ]);
+  });
+
+  it("accepts plain and ### headings", () => {
+    const blocks = parseAnswerBlocks("**Positive:**\n- A\n- B\n- C\n### Genetics\n- VHL loss [1]");
+    expect(blocks.map((b) => (b.kind === "list" ? b.title : null))).toEqual([
+      "Positive",
+      "Genetics",
+    ]);
+  });
+
+  it("keeps long items as bullets, short panels inline", () => {
+    const long = "A".repeat(60);
+    expect(parseAnswerBlocks(`- ${long}\n- ${long}\n- ${long}`)[0]).toMatchObject({
+      inline: false,
+    });
+    expect(parseAnswerBlocks("- A\n- B")[0]).toMatchObject({ inline: false }); // fewer than 3
+  });
+
+  it("keeps a label with nothing under it as bold text", () => {
+    expect(parseAnswerBlocks("**Genetic findings:**")).toEqual([
+      { kind: "p", text: "**Genetic findings**" },
+    ]);
+  });
+
+  it("drops groups whose only bullet is a placeholder like 'None'", () => {
+    const text =
+      "**Positive — normal tissue:**\n- None\n**Positive — tumors:**\n- Ewing sarcoma [1]\n- Synovial sarcoma [1]";
+    expect(parseAnswerBlocks(text)).toEqual([
+      {
+        kind: "list",
+        title: "Positive — tumors",
+        items: ["Ewing sarcoma [1]", "Synovial sarcoma [1]"],
+        inline: false,
+      },
+    ]);
+  });
+});

@@ -2,8 +2,8 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import Image from "next/image";
-import { useImageCacheHandler } from "@/shared/hooks/use-smart-image-cache";
+import { DrAlbrightFullFigure } from "./dr-albright-figure";
+import { AlbrightMotionStyles } from "./dr-albright-motion";
 
 interface Particle {
   id: string;
@@ -11,7 +11,7 @@ interface Particle {
 }
 
 interface FloatingCharacterProps {
-  imagePath: string;
+  /** Accessible name for the figure. */
   imageAlt: string;
   size?: number;
   wrapperClassName?: string;
@@ -34,8 +34,13 @@ const Smoke = ({ offset, containerSize }: { offset: number; containerSize: numbe
   return <div className="smoke-particle absolute rounded-full bg-primary/20 z-10" style={style} />;
 };
 
+/**
+ * The floating Dr. Albright on the homepage hero, 404 and error pages. Drawn
+ * inline (DrAlbrightFullFigure) rather than loaded as an image, so he blinks
+ * and ruffles his moustache like the Ask Dr. Albright popup — same
+ * AlbrightMotionStyles — on top of this component's float and pipe smoke.
+ */
 const FloatingCharacter = ({
-  imagePath,
   imageAlt,
   size = DEFAULT_SIZE,
   wrapperClassName = "",
@@ -43,7 +48,6 @@ const FloatingCharacter = ({
   const [particles, setParticles] = useState<Particle[]>([]);
   const [mounted, setMounted] = useState(false);
   const particleCounter = useRef(0);
-  const handleImageLoad = useImageCacheHandler(imagePath, true); // Priority cache for Dr. Albright
 
   useEffect(() => {
     setMounted(true);
@@ -140,24 +144,10 @@ const FloatingCharacter = ({
             <Smoke key={particle.id} offset={particle.offset} containerSize={size} />
           ))}
 
-        <div className="floating relative w-full h-full z-0">
-          {mounted ? (
-            <Image
-              src={imagePath}
-              alt={imageAlt}
-              fill
-              sizes={`${size}px`}
-              className="object-contain"
-              unoptimized
-              onLoad={handleImageLoad}
-            />
-          ) : (
-            <div
-              className="w-full h-full bg-muted/20 rounded animate-pulse"
-              style={{ aspectRatio: "1" }}
-            />
-          )}
+        <div className="floating alb relative w-full h-full z-0" role="img" aria-label={imageAlt}>
+          <DrAlbrightFullFigure className="h-full w-full" />
         </div>
+        <AlbrightMotionStyles />
       </div>
     </>
   );
