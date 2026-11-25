@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/shared/services/client";
+import { useUserProfile } from "@/shared/hooks/use-user-profile";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,22 +16,18 @@ import { RefreshCw, LogOut, ChevronUp, Shield, ShieldAlert, ShieldCheck, User } 
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { log } from "@/shared/utils/logging";
 
-interface UserProfile {
-  id: string;
-  email: string | null;
-  role: string;
-  first_name: string | null;
-  last_name: string | null;
-}
-
 interface SidebarAuthStatusProps {
   isCollapsed?: boolean;
 }
 
 export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProps) {
   const { user, isLoading, isAuthenticated, error } = useAuthContext();
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [profileLoading, setProfileLoading] = useState(false);
+  // Shared, cached profile (see useUserProfile): the sidebar used to fetch it itself.
+  const {
+    profile: userProfile,
+    loading: profileLoading,
+    refresh: refreshProfile,
+  } = useUserProfile();
   const [isHydrated, setIsHydrated] = useState(false);
 
   const supabase = createClient();
@@ -44,111 +41,11 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
   const refreshAuth = async () => {
     try {
       await supabase.auth.refreshSession();
-      // Reload profile after refresh
-      if (user) {
-        setProfileLoading(true);
-        const { data: profile } = await supabase
-          .from("users")
-          .select("id, email, role, first_name, last_name")
-          .eq("id", user.id)
-          .maybeSingle();
-        setUserProfile(profile);
-        setProfileLoading(false);
-      }
+      await refreshProfile();
     } catch (error) {
       log.error("Failed to refresh auth:", error);
     }
   };
-
-  // Load user profile when user changes
-  useEffect(() => {
-    let mounted = true;
-
-    const loadProfile = async () => {
-      if (!user || !isAuthenticated) {
-        setUserProfile(null);
-        return;
-      }
-
-      try {
-        setProfileLoading(true);
-
-        const { data: profile, error: profileError } = await supabase
-          .from("users")
-          .select("id, email, role, first_name, last_name")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (!mounted) return;
-
-        if (profileError) {
-          // Only log meaningful errors (empty objects are often false positives from RLS)
-          if (profileError.message || profileError.code) {
-            log.error("Profile error:", profileError);
-          }
-          // Fallback to auth metadata when database query fails
-          const fallbackProfile = {
-            id: user.id,
-            email: user.email || null,
-            role: "user",
-            first_name:
-              user.user_metadata?.first_name ||
-              user.user_metadata?.full_name?.split(" ")[0] ||
-              null,
-            last_name:
-              user.user_metadata?.last_name ||
-              user.user_metadata?.full_name?.split(" ").slice(1).join(" ") ||
-              null,
-          };
-          setUserProfile(fallbackProfile);
-        } else if (profile) {
-          setUserProfile(profile);
-        } else {
-          // User exists in auth but not found in database - use auth metadata as fallback
-          const fallbackProfile = {
-            id: user.id,
-            email: user.email || null,
-            role: "user",
-            first_name:
-              user.user_metadata?.first_name ||
-              user.user_metadata?.full_name?.split(" ")[0] ||
-              null,
-            last_name:
-              user.user_metadata?.last_name ||
-              user.user_metadata?.full_name?.split(" ").slice(1).join(" ") ||
-              null,
-          };
-          setUserProfile(fallbackProfile);
-        }
-      } catch (err) {
-        if (!mounted) return;
-        log.error("Profile fetch error:", err);
-        // Fallback to auth metadata on exception
-        const fallbackProfile = {
-          id: user.id,
-          email: user.email || null,
-          role: "user",
-          first_name:
-            user.user_metadata?.first_name || user.user_metadata?.full_name?.split(" ")[0] || null,
-          last_name:
-            user.user_metadata?.last_name ||
-            user.user_metadata?.full_name?.split(" ").slice(1).join(" ") ||
-            null,
-        };
-        setUserProfile(fallbackProfile);
-      } finally {
-        if (mounted) {
-          setProfileLoading(false);
-        }
-      }
-    };
-
-    loadProfile();
-
-    return () => {
-      mounted = false;
-    };
-  }, [user?.id, isAuthenticated, supabase, user]);
 
   const handleSignOut = async () => {
     try {

@@ -1,8 +1,8 @@
 // src/components/dashboard/profile-dropdown.tsx
 "use client";
 
-import { useState, useEffect } from "react";
 import { createClient } from "@/shared/services/client";
+import { useUserProfile } from "@/shared/hooks/use-user-profile";
 import { Button } from "@/shared/components/ui/button";
 import {
   DropdownMenu,
@@ -16,80 +16,12 @@ import { Avatar, AvatarFallback } from "@/shared/components/ui/avatar";
 import { User, Settings, LogOut, RefreshCw } from "lucide-react";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 
-interface UserProfile {
-  id: string;
-  email: string | null;
-  role: string;
-  first_name: string | null;
-  last_name: string | null;
-}
-
 export function ProfileDropdown() {
   const { user, isLoading, isAuthenticated, error, refreshAuth, isHydrated } = useAuthContext();
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [profileLoading, setProfileLoading] = useState(false);
+  // Shared, cached profile (see useUserProfile): this menu used to fetch it itself.
+  const { profile: userProfile, loading: profileLoading } = useUserProfile();
 
   const supabase = createClient();
-
-  // Load user profile
-  useEffect(() => {
-    let mounted = true;
-
-    const loadProfile = async () => {
-      if (!user || !isAuthenticated) {
-        setUserProfile(null);
-        return;
-      }
-
-      try {
-        setProfileLoading(true);
-
-        const { data: profile, error: profileError } = await supabase
-          .from("users")
-          .select("id, email, role, first_name, last_name")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (!mounted) return;
-
-        if (profileError) {
-          setUserProfile(null);
-        } else if (profile) {
-          setUserProfile(profile);
-        } else {
-          // User exists in auth but not found in database - this shouldn't happen
-          // Let's use the auth data as fallback
-          const fallbackProfile = {
-            id: user.id,
-            email: user.email || null,
-            role: "user",
-            first_name:
-              user.user_metadata?.first_name ||
-              user.user_metadata?.full_name?.split(" ")[0] ||
-              null,
-            last_name:
-              user.user_metadata?.last_name ||
-              user.user_metadata?.full_name?.split(" ").slice(1).join(" ") ||
-              null,
-          };
-          setUserProfile(fallbackProfile);
-        }
-      } catch {
-        if (!mounted) return;
-        setUserProfile(null);
-      } finally {
-        if (mounted) {
-          setProfileLoading(false);
-        }
-      }
-    };
-
-    loadProfile();
-
-    return () => {
-      mounted = false;
-    };
-  }, [user?.id, isAuthenticated, supabase, user]);
 
   const handleSignOut = async () => {
     try {
