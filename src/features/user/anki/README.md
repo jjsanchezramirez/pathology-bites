@@ -254,7 +254,7 @@ import { AnkomaViewer } from "@/features/anki";
 
 ## Ankoma.json Structure
 
-The `ankoma.json` file is expected to be located at `json/anki/ankoma.json` and follows this structure:
+The deck lives in the public R2 data bucket. `anki/manifest.json` (short TTL) points at the current immutable, content-addressed object `anki/ankoma-<hash>.json.br` (brotli, served with `Content-Encoding: br`), so a republish needs no redeploy. URLs and the resolver are in `src/shared/config/ankoma.ts`. It follows this structure:
 
 ```json
 {
@@ -283,10 +283,10 @@ The `ankoma.json` file is expected to be located at `json/anki/ankoma.json` and 
 }
 ```
 
-## Demo Pages
+## Where it's used
 
-- `/demo/anki-viewer` - Full-featured demo with Ankoma integration and sample cards
-- `/tools/anki-viewer` - Production Ankoma deck viewer
+- `/dashboard/anki` - the signed-in deck viewer (`src/app/(dashboard)/dashboard/anki/`). It loads a small section index first, then each section's cards on demand, all from R2.
+- The iOS app (`pathology-bites-mobile`) reads the same manifest and deck straight from R2. There is no API route in between.
 
 ## Future Enhancements
 
