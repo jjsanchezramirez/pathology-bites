@@ -1,6 +1,7 @@
 // src/lib/supabase/client.ts
 import { createBrowserClient } from "@supabase/ssr";
 import type { Database } from "@/shared/types/supabase";
+import { boundedLock } from "./auth-guards";
 
 export function createClient() {
   // Use environment variables directly for client-side
@@ -11,5 +12,6 @@ export function createClient() {
     throw new Error("Missing Supabase environment variables");
   }
 
-  return createBrowserClient<Database>(url, anonKey);
+  // boundedLock: one stalled tab must not hang session reads in every tab (auth-guards.ts).
+  return createBrowserClient<Database>(url, anonKey, { auth: { lock: boundedLock } });
 }
