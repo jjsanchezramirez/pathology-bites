@@ -57,6 +57,8 @@ export const SEARCH_LIMIT = 3;
 export const ANSWER_MAX_TOKENS = 360;
 /** Tables and marker profiles get more room: a three-way IHC table legitimately ran past 360. */
 export const TABLE_MAX_TOKENS = 600;
+/** Marker profiles: up to four groups of up to 12 cited bullets. */
+export const MARKER_MAX_TOKENS = 800;
 
 /**
  * Zero-token source guess for when the planner call fails. Only strong
@@ -169,13 +171,37 @@ export function hitTokenCap(
 }
 
 /**
+ * A cut-off answer worth keeping: drop the partial last line (and any
+ * dangling label) and return it if 3+ bullets or a table row remain; null when
+ * nothing usable is left. Pure.
+ */
+export function keepCutOff(text: string): string | null {
+  const lines = text.split("\n");
+  lines.pop(); // the line the cap cut through
+  while (lines.length && /^\s*(\*\*[^*]+\*\*:?|#+ .*)?\s*$/.test(lines[lines.length - 1]))
+    lines.pop();
+  const bullets = lines.filter((l) => /^\s*[-*•]\s+\S/.test(l)).length;
+  const rows = lines.filter(
+    (l) => /^\|.*\|$/.test(l.trim()) && !/^\|[\s:|-]+\|$/.test(l.trim())
+  ).length;
+  return bullets >= 3 || rows >= 2 ? lines.join("\n").trim() : null;
+}
+
+/**
  * Collapse runs of spaces the model uses to align table columns (they cost
- * tokens and render as nothing), and trailing whitespace on each line.
+ * tokens and render as nothing), a colon left before a bare citation, and
+ * trailing whitespace on each line.
  */
 export function tidyAnswer(text: string): string {
   return text
     .split("\n")
-    .map((l) => l.replace(/[ \t]{2,}/g, " ").trimEnd())
+    .map((l) =>
+      l
+        .replace(/[ \t]{2,}/g, " ")
+        // "- Myeloid sarcoma: [4]" — a label colon with no detail after it.
+        .replace(/(\S):\s*(\[\d+\](?:,?\s*\[\d+\])*)\s*$/, "$1 $2")
+        .trimEnd()
+    )
     .join("\n")
     .trim();
 }

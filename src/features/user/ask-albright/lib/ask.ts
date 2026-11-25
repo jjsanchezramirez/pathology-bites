@@ -7,6 +7,8 @@ import { log } from "@/shared/utils/logging";
 import {
   ANSWER_MAX_TOKENS,
   TABLE_MAX_TOKENS,
+  MARKER_MAX_TOKENS,
+  keepCutOff,
   ANSWER_MODEL,
   type AskSource,
   PASSAGES,
@@ -47,7 +49,14 @@ import {
 import { type Page, mergeByHref, rankPages, keyTerms, type SourcedHit } from "./rank";
 import { rerankScores } from "./rerank";
 import { lookupMarkerAliases } from "./marker-aliases";
-import { aliasPattern, sameMarkerNote, termAlternatives } from "./synonyms";
+import { markerProfile } from "./kb-marker";
+import {
+  type AliasGroup,
+  aliasPattern,
+  compactTerm,
+  sameMarkerNote,
+  termAlternatives,
+} from "./synonyms";
 
 export interface AskCitation {
   n: number;
@@ -203,7 +212,7 @@ async function searchCorpus(
  */
 function subjectsOf(question: string, aliasGroups: Array<{ aliases: string[] }>): string[][] {
   const known = new Set(aliasGroups.flatMap((g) => g.aliases.map((a) => a.toLowerCase())));
-  return (question.match(/[A-Za-z0-9][A-Za-z0-9-]*/g) ?? [])
+  return (question.match(/[A-Za-z0-9][A-Za-z0-9-]*/g) ?? ([] as string[]))
     .filter(
       (w) => (/[a-z]/i.test(w) && /\d/.test(w) && w.length >= 3) || known.has(w.toLowerCase())
     )
@@ -233,13 +242,29 @@ const ITEM_STOP = new Set(["the", "and", "with", "type", "not", "otherwise", "sp
  * names NLPHL in its differential, which would wrongly count as covering it.
  */
 export function coversItem(title: string, item: string): boolean {
-  const words = (item.toLowerCase().match(/[a-z0-9]+/g) ?? []).filter(
+  const words = (item.toLowerCase().match(/[a-z0-9]+/g) ?? ([] as string[])).filter(
     (w) => w.length >= 3 && !ITEM_STOP.has(w)
   );
   if (words.length === 0) return false;
   const t = title.toLowerCase();
   const hit = words.filter((w) => new RegExp(`(^|[^a-z0-9])${w}`).test(t)).length;
   return hit / words.length >= 0.7;
+}
+
+function maxTokensFor(format: AnswerFormat): number {
+  if (format === "marker") return MARKER_MAX_TOKENS;
+  return format === "table" ? TABLE_MAX_TOKENS : ANSWER_MAX_TOKENS;
+}
+
+/** The knowledge-base profile of the marker the question names (first match with an id). */
+function markerProfileFor(question: string, aliasGroups: AliasGroup[], apiKey: string) {
+  const words = new Set(
+    (question.match(/[A-Za-z0-9][A-Za-z0-9-]*/g) ?? []).map((w) => compactTerm(w))
+  );
+  const marker =
+    aliasGroups.find((g) => g.id && g.aliases.some((a) => words.has(compactTerm(a)))) ??
+    aliasGroups.find((g) => g.id);
+  return marker ? markerProfile(marker, apiKey) : Promise.resolve(null);
 }
 
 function missesSubject(candidates: Candidate[], subjects: string[][]): boolean {
@@ -286,12 +311,20 @@ export async function askAlbright(
 
   // Marker synonyms from the knowledge base (CD117 = KIT…): added to the
   // search, matched when ranking and excerpting, and stated to the model.
-  const aliasWords = [...new Set(aliasGroups.flatMap((g) => g.aliases))];
-  const searchQuery = aliasGroups.length
-    ? `${plan.query} (${aliasGroups.map((g) => g.aliases.join(" / ")).join("; ")})`
+  // Marker questions also get the knowledge base's IHC profile for the marker
+  // named, fetched alongside the search (PathTalk has no stain pages).
+  const profilePromise =
+    plan.format === "marker"
+      ? markerProfileFor(question, aliasGroups, apiKey)
+      : Promise.resolve(null);
+  // Synonyms only where there is more than one name.
+  const synonymGroups = aliasGroups.filter((g) => g.aliases.length > 1);
+  const aliasWords = [...new Set(synonymGroups.flatMap((g) => g.aliases))];
+  const searchQuery = synonymGroups.length
+    ? `${plan.query} (${synonymGroups.map((g) => g.aliases.join(" / ")).join("; ")})`
     : plan.query;
   const expanded = `${question} ${plan.focus} ${aliasWords.join(" ")}`;
-  const alternatives = termAlternatives(keyTerms(question), aliasGroups);
+  const alternatives = termAlternatives(keyTerms(question), synonymGroups);
 
   // 2. One search in the planned corpus; the fallback corpus only when nothing
   // there reads as relevant (each search costs the user ~1 s).
@@ -383,11 +416,13 @@ export async function askAlbright(
   });
 
   // 4. Answer in the planned format, told what to look for.
-  const prompt = buildAnswerPrompt(question, passages, sameMarkerNote(aliasGroups), plan.focus);
+  const profile = await profilePromise;
+  if (profile) passages.push({ title: profile.title, text: profile.text });
+  const prompt = buildAnswerPrompt(question, passages, sameMarkerNote(synonymGroups), plan.focus);
   const answerOnce = (format: AnswerFormat) =>
     callOpenAICompatText("cloudflare", ANSWER_MODEL, apiKey, prompt, {
       system: answerSystem(format),
-      maxTokens: format === "table" || format === "marker" ? TABLE_MAX_TOKENS : ANSWER_MAX_TOKENS,
+      maxTokens: maxTokensFor(format),
       // 0: the same question gives the same answer (graded answers differed
       // from the owner's reruns at 0.2).
       temperature: 0,
@@ -396,37 +431,59 @@ export async function askAlbright(
   let res = await answerOnce(plan.format);
   let answerTokens = res.tokenUsage?.total_tokens ?? 0;
   let format = plan.format;
-  // An answer that used its whole budget was cut off. Seen with tables: the
-  // model padded the header with spaces until the cap and never wrote a row
-  // ("Endometrial carcinoma vs endocervical adenocarcinoma"). Retry once as a
-  // paragraph rather than show a fragment; this costs only on the rare miss.
-  const cap = format === "table" || format === "marker" ? TABLE_MAX_TOKENS : ANSWER_MAX_TOKENS;
-  if (hitTokenCap(res.tokenUsage?.completion_tokens, cap) && format !== "paragraph") {
-    log.warn(`[ask-albright] ${format} answer hit the token cap; retrying as a paragraph`);
-    res = await answerOnce("paragraph");
-    answerTokens += res.tokenUsage?.total_tokens ?? 0;
-    format = "paragraph";
+  // An answer that used its whole budget was cut off. A cut list or table is
+  // mostly fine — keep it minus the partial last line. Only when nothing
+  // usable came back (the model once padded a table header with spaces to the
+  // cap and wrote no row) retry once as a paragraph.
+  let content = res.content;
+  if (
+    hitTokenCap(res.tokenUsage?.completion_tokens, maxTokensFor(format)) &&
+    format !== "paragraph"
+  ) {
+    const kept = keepCutOff(tidyAnswer(content));
+    if (kept) {
+      log.warn(`[ask-albright] ${format} answer hit the token cap; kept it minus the last line`);
+      content = kept;
+    } else {
+      log.warn(`[ask-albright] ${format} answer hit the token cap with nothing usable; retrying`);
+      res = await answerOnce("paragraph");
+      answerTokens += res.tokenUsage?.total_tokens ?? 0;
+      content = res.content;
+      format = "paragraph";
+    }
   }
 
   log.info(
-    `[ask-albright] plan ${plan.source}/${plan.format} q="${plan.query}" items=${plan.items.join("|") || "-"} searched=${searched.join("+")} top=${chosen[0]?.score.toFixed(2)} markers=${aliasGroups.map((g) => g.name).join(",") || "none"}`
+    `[ask-albright] plan ${plan.source}/${plan.format} q="${plan.query}" items=${plan.items.join("|") || "-"} searched=${searched.join("+")} top=${chosen[0]?.score.toFixed(2)} markers=${aliasGroups.map((g) => g.name).join(",") || "none"} kb=${profile ? "yes" : "no"}`
   );
 
   const result: AskResult = {
     ...(({ answer, followUps }) => ({ answer: dropUnaskedGaps(answer), followUps }))(
-      splitFollowUps(tidyAnswer(res.content))
+      splitFollowUps(tidyAnswer(content))
     ),
     source: hits[0].source,
     sourceLabel: SOURCE_LABEL[hits[0].source],
     // Links come from retrieval, never from the model, so they cannot be invented.
-    citations: hits.map((h, i) => ({
-      n: i + 1,
-      title: h.title,
-      href: h.href,
-      sourceLabel: SOURCE_LABEL[h.source],
-    })),
+    citations: [
+      ...hits.map((h, i) => ({
+        n: i + 1,
+        title: h.title,
+        href: h.href,
+        sourceLabel: SOURCE_LABEL[h.source],
+      })),
+      ...(profile
+        ? [
+            {
+              n: hits.length + 1,
+              title: profile.title,
+              href: profile.href,
+              sourceLabel: "Knowledge base",
+            },
+          ]
+        : []),
+    ],
     tables,
-    tokens: planTokens + answerTokens,
+    tokens: planTokens + answerTokens + (profile?.tokens ?? 0),
     cached: false,
     format,
   };

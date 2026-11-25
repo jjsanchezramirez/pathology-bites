@@ -53,7 +53,7 @@ const YES_NO = /^\s*(is|are|does|do|can|could|should|was|were|has|have)\b/i;
 
 /** A marker name in the question: CD99, TTF-1, S100, p63, SOX10… or desmin, calretinin. */
 export function namesMarker(question: string): boolean {
-  return (question.match(/[A-Za-z0-9][A-Za-z0-9-]*/g) ?? []).some(
+  return (question.match(/[A-Za-z0-9][A-Za-z0-9-]*/g) ?? ([] as string[])).some(
     (w) => (/[a-z]/i.test(w) && /\d/.test(w)) || KNOWN_STAINS.has(w.toLowerCase())
   );
 }
@@ -152,7 +152,7 @@ export const FORMAT_INSTRUCTION: Record<AnswerFormat, string> = {
   // PathologyOutlines' stain pages use): asked "TTF-1 positive tumors", the
   // answer had wandered through thymic carcinoma and mucicarmine instead.
   marker:
-    'Answer as short bullets ("- ") under these bold labels, in this order, each on its own line: "**Positive — normal tissue:**", "**Negative — normal tissue:**", "**Positive — tumors:**", "**Negative — tumors:**". One tissue or tumor per bullet with its key detail (pattern, % if given). Omit a label the sources say nothing about. No other labels, no tables.',
+    'Answer as short bullets ("- ") under these bold labels, in this order, each on its own line: "**Positive — normal tissue:**", "**Negative — normal tissue:**", "**Positive — tumors:**", "**Negative — tumors:**". One tissue or tumor per bullet with its key detail (pattern, % if given), and cite every bullet. At most 12 bullets per label, the tumors most often met in practice first. Omit a label the sources say nothing about. No other labels, no tables.',
   table:
     "Answer as a compact Markdown table: at most 5 columns and 8 rows, cells under 10 words, no padding or alignment spaces (rows = items, columns = features). Cite in the cells too; write 'not stated' in any cell the sources do not cover, and in every cell for an item no source covers. Then one sentence that answers the question directly.",
 };

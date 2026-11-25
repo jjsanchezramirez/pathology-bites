@@ -469,7 +469,7 @@ export function AskAlbrightLauncher() {
         onClick={() => (open ? close() : void newQuestion())}
         aria-label={open ? "Close Ask Dr. Albright" : "Ask Dr. Albright"}
         className={cn(
-          "relative z-0 -mb-[10px] transition-[margin,transform] duration-300 ease-out focus-visible:outline-none",
+          "relative z-[2] -mb-[10px] transition-[margin,transform] duration-300 ease-out focus-visible:outline-none",
           open ? "mr-8" : "mr-[44px]" // (160 pill - 72 avatar) / 2: centred
         )}
       >
@@ -479,193 +479,204 @@ export function AskAlbrightLauncher() {
         />
       </button>
 
-      <div
-        role="dialog"
-        aria-label="Ask Dr. Albright"
-        className={cn(
-          "relative z-10 overflow-hidden rounded-[28px] border bg-background shadow-xl transition-[width] duration-300 ease-out",
-          !open
-            ? "w-[160px]"
-            : hasTable
-              ? "w-[min(600px,calc(100vw-2rem))]"
-              : "w-[min(400px,calc(100vw-2rem))]"
-        )}
-      >
-        {/* Body: grid-rows 0fr→1fr animates height without measuring it. */}
+      {/* A cutout look: a background-coloured outline (ring) and a ~12px
+          feathered blur of the page around the card, so it reads on busy
+          pages. The halo sits under the avatar (z-[2]) so his feet stay sharp. */}
+      <div className="relative">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -inset-3 z-[1] rounded-[40px] backdrop-blur-[6px] [-webkit-mask-composite:source-in] [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent,#000_12px,#000_calc(100%-12px),transparent),linear-gradient(to_bottom,transparent,#000_12px,#000_calc(100%-12px),transparent)]"
+        />
         <div
+          role="dialog"
+          aria-label="Ask Dr. Albright"
           className={cn(
-            "grid transition-[grid-template-rows,opacity] duration-300 ease-out",
-            open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+            "relative z-10 overflow-hidden rounded-[28px] border bg-background shadow-xl ring-[3px] ring-background transition-[width] duration-300 ease-out",
+            !open
+              ? "w-[160px]"
+              : hasTable
+                ? "w-[min(600px,calc(100vw-2rem))]"
+                : "w-[min(400px,calc(100vw-2rem))]"
           )}
-          aria-hidden={!open}
-          inert={!open}
         >
-          <div className="min-h-0 overflow-hidden">
-            <div className="flex max-h-[min(70vh,640px)] flex-col gap-3 overflow-y-auto px-4 pb-2 pt-6">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="text-sm font-semibold">Ask Dr. Albright</p>
-                  <p className="text-xs text-muted-foreground">
-                    Short, cited answers from PathologyOutlines, PubMed or WHO.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={close}
-                  aria-label="Close"
-                  className="rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void ask();
-                }}
-                className="relative"
-              >
-                <textarea
-                  ref={inputRef}
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value.slice(0, MAX_QUESTION_CHARS))}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      void ask();
-                    }
-                  }}
-                  placeholder="Which stains separate chromophobe RCC from oncocytoma?"
-                  rows={2}
-                  maxLength={MAX_QUESTION_CHARS}
-                  aria-label="Your question"
-                  className="w-full resize-none rounded-2xl border bg-muted/40 py-2.5 pl-3 pr-11 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-                />
-                <button
-                  type="submit"
-                  disabled={loading || question.trim().length < 5 || isShowing(question)}
-                  aria-label="Ask"
-                  className="absolute bottom-3 right-2 rounded-full bg-primary p-1.5 text-primary-foreground transition-opacity disabled:opacity-40"
-                >
-                  {loading ? (
-                    <LoaderCircle className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <SendHorizontal className="h-4 w-4" />
-                  )}
-                </button>
-              </form>
-
-              {error && <p className="text-sm text-destructive">{error}</p>}
-
-              {!result && !loading && !error && history && (
-                <RecentQuestions
-                  entries={history}
-                  onPick={(e) => {
-                    setQuestion(e.question);
-                    setAnsweredQuestion(e.question);
-                    setResult(e.result);
-                  }}
-                  onClear={() => void clearAll()}
-                />
-              )}
-
-              {result && (
-                <div className="space-y-2.5">
-                  {result.repeated && (
+          {/* Body: grid-rows 0fr→1fr animates height without measuring it. */}
+          <div
+            className={cn(
+              "grid transition-[grid-template-rows,opacity] duration-300 ease-out",
+              open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+            )}
+            aria-hidden={!open}
+            inert={!open}
+          >
+            <div className="min-h-0 overflow-hidden">
+              <div className="flex max-h-[min(70vh,640px)] flex-col gap-3 overflow-y-auto px-4 pb-2 pt-6">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold">Ask Dr. Albright</p>
                     <p className="text-xs text-muted-foreground">
-                      You asked this before — here&apos;s the saved answer.
+                      Short, cited answers from PathologyOutlines, PubMed or WHO.
                     </p>
-                  )}
-                  <AnswerText text={result.answer} citations={result.citations} />
-                  {result.tables?.map((t) => {
-                    const src = result.citations.find((c) => c.n === t.n);
-                    return (
-                      <GridTable
-                        key={`${t.n}-${t.headers.join()}`}
-                        caption={
-                          <>
-                            Full IHC panel from{" "}
-                            <a
-                              href={src?.href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:underline"
-                            >
-                              source {t.n} ({src?.sourceLabel ?? "source"}
-                              {src ? ` · ${src.title}` : ""})
-                            </a>{" "}
-                            — rebuilt from the page text; check against the original
-                          </>
-                        }
-                        header={["", ...t.headers]}
-                        rows={t.rows.map((r) => [r.name, ...r.cells])}
-                        focus={t.focusRows}
-                        citations={result.citations}
-                      />
-                    );
-                  })}
-                  {(result.followUps?.length ?? 0) > 0 && (
-                    <div
-                      className="flex flex-wrap gap-1.5"
-                      aria-label="Suggested follow-up questions"
-                    >
-                      {result.followUps!.map((f) => (
-                        <button
-                          key={f}
-                          type="button"
-                          onClick={() => void ask(f)}
-                          className="rounded-full border bg-background px-2.5 py-1 text-left text-xs text-foreground/80 transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-foreground"
-                        >
-                          {f}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {result.citations.length > 0 && (
-                    <>
-                      <p className="pt-1 text-[11px] font-medium text-muted-foreground">Sources</p>
-                      <ol className="-mt-1.5 space-y-1">
-                        {result.citations.map((c) => (
-                          <li key={c.n} className="text-xs">
-                            <a
-                              href={c.href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-start gap-1 text-muted-foreground hover:text-primary hover:underline"
-                            >
-                              <span className="font-medium tabular-nums">{c.n}.</span>
-                              <span className="line-clamp-1">
-                                {c.sourceLabel && (
-                                  <span className="text-foreground/70">{c.sourceLabel} · </span>
-                                )}
-                                {c.title}
-                              </span>
-                              <ExternalLink className="mt-0.5 h-3 w-3 shrink-0" />
-                            </a>
-                          </li>
-                        ))}
-                      </ol>
-                    </>
-                  )}
-                  <p className="mt-3 border-t pt-2.5 text-center text-[11px] text-muted-foreground">
-                    Dr. Albright can make mistakes. Check the sources; not for diagnostic use.
-                  </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={close}
+                    aria-label="Close"
+                    className="rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
-              )}
+
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void ask();
+                  }}
+                  className="relative"
+                >
+                  <textarea
+                    ref={inputRef}
+                    value={question}
+                    onChange={(e) => setQuestion(e.target.value.slice(0, MAX_QUESTION_CHARS))}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        void ask();
+                      }
+                    }}
+                    placeholder="Which stains separate chromophobe RCC from oncocytoma?"
+                    rows={2}
+                    maxLength={MAX_QUESTION_CHARS}
+                    aria-label="Your question"
+                    className="w-full resize-none rounded-2xl border bg-muted/40 py-2.5 pl-3 pr-11 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  />
+                  <button
+                    type="submit"
+                    disabled={loading || question.trim().length < 5 || isShowing(question)}
+                    aria-label="Ask"
+                    className="absolute bottom-3 right-2 rounded-full bg-primary p-1.5 text-primary-foreground transition-opacity disabled:opacity-40"
+                  >
+                    {loading ? (
+                      <LoaderCircle className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <SendHorizontal className="h-4 w-4" />
+                    )}
+                  </button>
+                </form>
+
+                {error && <p className="text-sm text-destructive">{error}</p>}
+
+                {!result && !loading && !error && history && (
+                  <RecentQuestions
+                    entries={history}
+                    onPick={(e) => {
+                      setQuestion(e.question);
+                      setAnsweredQuestion(e.question);
+                      setResult(e.result);
+                    }}
+                    onClear={() => void clearAll()}
+                  />
+                )}
+
+                {result && (
+                  <div className="space-y-2.5">
+                    {result.repeated && (
+                      <p className="text-xs text-muted-foreground">
+                        You asked this before — here&apos;s the saved answer.
+                      </p>
+                    )}
+                    <AnswerText text={result.answer} citations={result.citations} />
+                    {result.tables?.map((t) => {
+                      const src = result.citations.find((c) => c.n === t.n);
+                      return (
+                        <GridTable
+                          key={`${t.n}-${t.headers.join()}`}
+                          caption={
+                            <>
+                              Full IHC panel from{" "}
+                              <a
+                                href={src?.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:underline"
+                              >
+                                source {t.n} ({src?.sourceLabel ?? "source"}
+                                {src ? ` · ${src.title}` : ""})
+                              </a>{" "}
+                              — rebuilt from the page text; check against the original
+                            </>
+                          }
+                          header={["", ...t.headers]}
+                          rows={t.rows.map((r) => [r.name, ...r.cells])}
+                          focus={t.focusRows}
+                          citations={result.citations}
+                        />
+                      );
+                    })}
+                    {(result.followUps?.length ?? 0) > 0 && (
+                      <div
+                        className="flex flex-wrap gap-1.5"
+                        aria-label="Suggested follow-up questions"
+                      >
+                        {result.followUps!.map((f) => (
+                          <button
+                            key={f}
+                            type="button"
+                            onClick={() => void ask(f)}
+                            className="rounded-full border bg-background px-2.5 py-1 text-left text-xs text-foreground/80 transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-foreground"
+                          >
+                            {f}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {result.citations.length > 0 && (
+                      <>
+                        <p className="pt-1 text-[11px] font-medium text-muted-foreground">
+                          Sources
+                        </p>
+                        <ol className="-mt-1.5 space-y-1">
+                          {result.citations.map((c) => (
+                            <li key={c.n} className="text-xs">
+                              <a
+                                href={c.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-start gap-1 text-muted-foreground hover:text-primary hover:underline"
+                              >
+                                <span className="font-medium tabular-nums">{c.n}.</span>
+                                <span className="line-clamp-1">
+                                  {c.sourceLabel && (
+                                    <span className="text-foreground/70">{c.sourceLabel} · </span>
+                                  )}
+                                  {c.title}
+                                </span>
+                                <ExternalLink className="mt-0.5 h-3 w-3 shrink-0" />
+                              </a>
+                            </li>
+                          ))}
+                        </ol>
+                      </>
+                    )}
+                    <p className="mt-3 border-t pt-2.5 text-center text-[11px] text-muted-foreground">
+                      Dr. Albright can make mistakes. Check the sources; not for diagnostic use.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* The pill: always visible, becomes the card's footer when open. */}
-        <div className={cn("flex h-14 items-center", open && "border-t")}>
-          <button
-            type="button"
-            onClick={() => void newQuestion()}
-            className={cn(barButton, "text-sm font-medium")}
-          >
-            {open && (result || error) ? "New question" : "Ask a question"}
-          </button>
+          {/* The pill: always visible, becomes the card's footer when open. */}
+          <div className={cn("flex h-14 items-center", open && "border-t")}>
+            <button
+              type="button"
+              onClick={() => void newQuestion()}
+              className={cn(barButton, "text-sm font-medium")}
+            >
+              {open && (result || error) ? "New question" : "Ask a question"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

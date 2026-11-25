@@ -6,12 +6,13 @@ import { type AliasGroup, aliasGroup, markerCandidates } from "./synonyms";
 
 type MarkerRow = {
   id: string;
+  slug: string;
   name: string;
   gene_symbols: string[] | null;
   marker_synonyms: Array<{ term: string }> | null;
 };
 
-const SELECT = "id, name, gene_symbols, marker_synonyms(term)";
+const SELECT = "id, slug, name, gene_symbols, marker_synonyms(term)";
 const MAX_GROUPS = 6;
 /**
  * Synonyms are a nicety: never let them hold a question. Without a limit, a
@@ -79,7 +80,8 @@ export async function lookupMarkerAliases(question: string): Promise<AliasGroup[
 
     const groups = [...rows.values()]
       .map(aliasGroup)
-      .filter((g) => g.aliases.length > 1)
+      // Single-name markers are kept too: marker questions need their id for
+      // the knowledge-base profile (callers filter to >1 name for synonyms).
       .slice(0, MAX_GROUPS);
     if (cache.size >= CACHE_MAX) cache.delete(cache.keys().next().value as string);
     cache.set(key, groups);
