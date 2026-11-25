@@ -30,6 +30,9 @@ export interface AliasGroup {
   name: string;
   /** Every short name it goes by, including `name`, de-duplicated. */
   aliases: string[];
+  /** Knowledge-base marker id and slug (for its IHC profile and /m page). */
+  id?: string;
+  slug?: string;
 }
 
 const NOT_A_NAME =
@@ -47,6 +50,8 @@ export function namesFromTerm(term: string): string[] {
 }
 
 export function aliasGroup(row: {
+  id?: string;
+  slug?: string;
   name: string;
   gene_symbols?: string[] | null;
   marker_synonyms?: Array<{ term: string }> | null;
@@ -60,7 +65,7 @@ export function aliasGroup(row: {
     const key = compactTerm(n);
     if (key && !seen.has(key)) seen.set(key, n);
   }
-  return { name: row.name, aliases: [...seen.values()] };
+  return { name: row.name, aliases: [...seen.values()], id: row.id, slug: row.slug };
 }
 
 /** Candidate marker words in a question: "CD117", "TTF-1", "D2-40", "podoplanin"… */

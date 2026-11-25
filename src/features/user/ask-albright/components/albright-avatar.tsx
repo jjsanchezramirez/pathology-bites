@@ -111,7 +111,17 @@ export function AlbrightAvatar({ mood, hovered }: { mood: AlbrightMood; hovered:
         thinking && "alb-thinking"
       )}
     >
-      <DrAlbrightFigure className="h-full w-full overflow-visible" />
+      {/* Halo: a feathered blur of the page around him (an ellipse; CSS can't
+          dilate a silhouette). On the figure, not the root: a filter on an
+          ancestor would make it the backdrop root and the blur would see
+          nothing. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -inset-x-3 -top-3 bottom-1 -z-10 backdrop-blur-[6px] [mask-image:radial-gradient(closest-side,#000_70%,transparent)]"
+      />
+      {/* Cutout outline: four 1.5px background-coloured drop-shadows stack
+          into a stroke that follows the silhouette. */}
+      <DrAlbrightFigure className="h-full w-full overflow-visible [filter:drop-shadow(1.5px_0_0_var(--background))_drop-shadow(-1.5px_0_0_var(--background))_drop-shadow(0_1.5px_0_var(--background))_drop-shadow(0_-1.5px_0_var(--background))]" />
 
       {/* Pipe smoke from the bowl (≈ 5px, 124px at this size): a slow drift
           always, faster while thinking. Negative delays stagger the puffs from
