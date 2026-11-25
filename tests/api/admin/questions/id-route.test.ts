@@ -1,17 +1,12 @@
 /**
- * Admin Question Detail API Tests
+ * Admin Question Detail API Tests: GET and PATCH /api/admin/questions/[id]
  *
- * Characterization tests for GET/PATCH /api/admin/questions/[id]
- *
- * The PATCH permission matrix (derived from the handler). "writer" holds
- * create_questions, "reviewer" holds review_questions (x-user-permissions):
- *
- * | Question status      | admin | writer (own)                 | writer (other's)        | reviewer (assigned)   | reviewer (other)      | user |
- * |----------------------|-------|------------------------------|-------------------------|-----------------------|-----------------------|------|
- * | draft / rejected     | allow | allow                        | 403                     | 403                   | 403                   | 403  |
- * | pending_review       | allow | allow                        | 403                     | allow                 | 403                   | 403  |
- * | published, patch     | allow | allow                        | 403                     | allow (any published) | allow (any published) | 403  |
- * | published, non-patch | allow | allow (minor/major req. rev) | allow (permission-only) | 403                   | 403                   | 403  |
+ * PATCH now hands the edit to the save_question database function (permissions,
+ * completeness, versioning and the snapshot are checked and tested there, in
+ * supabase/tests/question-save-path). These tests pin the route's own job: turning the
+ * edit form's body into the function's payload, choosing the update type for live
+ * questions, turning a requested status change into a review action, and mapping
+ * refusals to HTTP codes.
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -28,6 +23,16 @@ vi.mock("@/shared/utils/api/revalidation", () => ({
   revalidateQuestions: vi.fn(),
 }));
 
+vi.mock("@/features/admin/questions/services/question-service", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/features/admin/questions/services/question-service")>();
+  return { ...actual, saveQuestion: vi.fn(), transitionQuestion: vi.fn() };
+});
+
+vi.mock("@/features/admin/questions/services/question-notifications", () => ({
+  notifyTransition: vi.fn(),
+}));
+
 vi.mock("@/shared/utils/logging", () => ({
   log: {
     debug: vi.fn(),
@@ -39,6 +44,13 @@ vi.mock("@/shared/utils/logging", () => ({
 
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
+import {
+  QuestionWriteError,
+  saveQuestion,
+  transitionQuestion,
+  type SaveResult,
+} from "@/features/admin/questions/services/question-service";
+import { notifyTransition } from "@/features/admin/questions/services/question-notifications";
 
 // ---------------------------------------------------------------------------
 // Supabase mock: every from(table) call pops the next queued result for that
@@ -112,7 +124,6 @@ const ADMIN_ID = "admin-user";
 const CREATOR_ID = "creator-user";
 const OTHER_CREATOR_ID = "other-creator";
 const REVIEWER_ID = "reviewer-user";
-const PLAIN_USER_ID = "plain-user";
 
 function makeRequest(options: {
   method?: string;
@@ -135,1023 +146,237 @@ function makeRequest(options: {
 
 const routeParams = { params: Promise.resolve({ id: QUESTION_ID }) };
 
-function makeQuestionRow(overrides: Record<string, any> = {}) {
-  return {
-    id: QUESTION_ID,
-    status: "draft",
-    created_by: CREATOR_ID,
-    reviewer_id: null,
-    version_major: 1,
-    version_minor: 0,
-    version_patch: 0,
-    title: "Existing title",
-    stem: "Existing stem",
-    difficulty: "medium",
-    teaching_point: "Existing teaching point",
-    question_references: null,
-    question_set_id: null,
-    category_id: null,
-    lesson: null,
-    topic: null,
-    anki_card_id: null,
-    anki_deck_name: null,
-    ...overrides,
-  };
-}
-
-function makeUpdatedRow(overrides: Record<string, any> = {}) {
-  return {
-    id: QUESTION_ID,
-    version_major: 1,
-    version_minor: 0,
-    version_patch: 0,
-    updated_at: "2026-07-02T00:00:00Z",
-    status: "draft",
-    ...overrides,
-  };
-}
-
 const MINIMAL_BODY = { questionData: { title: "Updated title" } };
 
 describe("PATCH /api/admin/questions/[id]", () => {
   let supabase: ReturnType<typeof createSupabaseMock>;
+  const save = saveQuestion as unknown as ReturnType<typeof vi.fn>;
+  const transition = transitionQuestion as unknown as ReturnType<typeof vi.fn>;
+
+  function saved(overrides: Partial<SaveResult> = {}): SaveResult {
+    return {
+      question_id: QUESTION_ID,
+      status: "draft",
+      reviewer_id: null,
+      created_by: CREATOR_ID,
+      title: "Updated title",
+      update_type: "edit",
+      version: { major: 1, minor: 0, patch: 0 },
+      version_id: "version-1",
+      ...overrides,
+    };
+  }
+
+  function withCurrent(status: string, reviewer_id: string | null = null) {
+    supabase.enqueue("questions", { data: { id: QUESTION_ID, status, reviewer_id }, error: null });
+  }
+
+  const writer = { userId: CREATOR_ID, role: "user", permissions: "create_questions" };
 
   beforeEach(() => {
     vi.clearAllMocks();
     supabase = createSupabaseMock();
     (createServiceRoleClient as any).mockReturnValue(supabase.client);
+    save.mockResolvedValue(saved());
   });
 
-  /** Queue the current-question fetch, main update, and final refetch. */
-  function enqueueMinimalHappyPath(
-    questionRow: Record<string, any>,
-    updatedRow: Record<string, any> = makeUpdatedRow({ status: questionRow.status })
-  ) {
-    supabase.enqueue(
-      "questions",
-      { data: questionRow, error: null }, // current question fetch
-      { error: null }, // main update
-      { data: updatedRow, error: null } // final refetch
-    );
-  }
-
-  describe("Authentication", () => {
-    it("returns 401 when x-user-id header is missing", async () => {
-      const request = makeRequest({ userId: null, role: null, body: MINIMAL_BODY });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(401);
-      expect(json.error).toBe("Unauthorized");
-    });
-
-    it("returns 404 when the question does not exist", async () => {
-      supabase.enqueue("questions", { data: null, error: { message: "Row not found" } });
-      const request = makeRequest({ userId: ADMIN_ID, role: "admin", body: MINIMAL_BODY });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(404);
-      expect(json.error).toBe("Question not found");
-    });
+  it("requires a signed-in user", async () => {
+    const res = await PATCH(makeRequest({ userId: null, body: MINIMAL_BODY }), routeParams);
+    expect(res.status).toBe(401);
+    expect(save).not.toHaveBeenCalled();
   });
 
-  describe("Permission matrix: draft/rejected questions", () => {
-    it("allows admin to edit any draft question", async () => {
-      enqueueMinimalHappyPath(makeQuestionRow({ status: "draft", created_by: CREATOR_ID }));
-      const request = makeRequest({ userId: ADMIN_ID, role: "admin", body: MINIMAL_BODY });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(200);
-      expect(json.success).toBe(true);
-      expect(json.message).toBe("Question updated successfully");
-      expect(json.versionId).toBeNull();
-    });
-
-    it("allows creator to edit own draft question", async () => {
-      enqueueMinimalHappyPath(makeQuestionRow({ status: "draft", created_by: CREATOR_ID }));
-      const request = makeRequest({
-        userId: CREATOR_ID,
-        role: "user",
-        permissions: "create_questions",
-        body: MINIMAL_BODY,
-      });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(200);
-      expect(json.success).toBe(true);
-    });
-
-    it("allows creator to edit own rejected question", async () => {
-      enqueueMinimalHappyPath(makeQuestionRow({ status: "rejected", created_by: CREATOR_ID }));
-      const request = makeRequest({
-        userId: CREATOR_ID,
-        role: "user",
-        permissions: "create_questions",
-        body: MINIMAL_BODY,
-      });
-
-      const response = await PATCH(request, routeParams);
-
-      expect(response.status).toBe(200);
-    });
-
-    it("rejects creator editing another creator's draft question", async () => {
-      supabase.enqueue("questions", {
-        data: makeQuestionRow({ status: "draft", created_by: OTHER_CREATOR_ID }),
-        error: null,
-      });
-      const request = makeRequest({
-        userId: CREATOR_ID,
-        role: "user",
-        permissions: "create_questions",
-        body: MINIMAL_BODY,
-      });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(403);
-      expect(json.error).toBe("Insufficient permissions");
-      expect(json.message).toBe("You can only edit questions you created.");
-    });
-
-    it("rejects reviewer editing a draft question (even one they created)", async () => {
-      supabase.enqueue("questions", {
-        data: makeQuestionRow({ status: "draft", created_by: REVIEWER_ID }),
-        error: null,
-      });
-      const request = makeRequest({
-        userId: REVIEWER_ID,
-        role: "user",
-        permissions: "review_questions",
-        body: MINIMAL_BODY,
-      });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(403);
-      expect(json.error).toBe("Insufficient permissions");
-    });
-
-    it("rejects plain user editing a draft question", async () => {
-      supabase.enqueue("questions", {
-        data: makeQuestionRow({ status: "draft" }),
-        error: null,
-      });
-      const request = makeRequest({ userId: PLAIN_USER_ID, role: "user", body: MINIMAL_BODY });
-
-      const response = await PATCH(request, routeParams);
-
-      expect(response.status).toBe(403);
-    });
+  it("404s when the question does not exist", async () => {
+    supabase.enqueue("questions", { data: null, error: null });
+    const res = await PATCH(makeRequest({ ...writer, body: MINIMAL_BODY }), routeParams);
+    expect(res.status).toBe(404);
+    expect(save).not.toHaveBeenCalled();
   });
 
-  describe("Permission matrix: pending_review questions", () => {
-    it("allows assigned reviewer to edit a pending_review question", async () => {
-      enqueueMinimalHappyPath(
-        makeQuestionRow({
-          status: "pending_review",
-          created_by: CREATOR_ID,
-          reviewer_id: REVIEWER_ID,
-        }),
-        makeUpdatedRow({ status: "pending_review" })
-      );
-      const request = makeRequest({
-        userId: REVIEWER_ID,
-        role: "user",
-        permissions: "review_questions",
-        body: MINIMAL_BODY,
-      });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(200);
-      expect(json.success).toBe(true);
-    });
-
-    it("rejects non-assigned reviewer editing a pending_review question", async () => {
-      supabase.enqueue("questions", {
-        data: makeQuestionRow({
-          status: "pending_review",
-          created_by: CREATOR_ID,
-          reviewer_id: "some-other-reviewer",
-        }),
-        error: null,
-      });
-      const request = makeRequest({
-        userId: REVIEWER_ID,
-        role: "user",
-        permissions: "review_questions",
-        body: MINIMAL_BODY,
-      });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(403);
-      expect(json.error).toBe("Insufficient permissions");
-      expect(json.message).toBe(
-        "You can only edit questions you created or are assigned to review."
-      );
-    });
-
-    it("allows creator to edit own pending_review question", async () => {
-      enqueueMinimalHappyPath(
-        makeQuestionRow({
-          status: "pending_review",
-          created_by: CREATOR_ID,
-          reviewer_id: REVIEWER_ID,
-        }),
-        makeUpdatedRow({ status: "pending_review" })
-      );
-      const request = makeRequest({
-        userId: CREATOR_ID,
-        role: "user",
-        permissions: "create_questions",
-        body: MINIMAL_BODY,
-      });
-
-      const response = await PATCH(request, routeParams);
-
-      expect(response.status).toBe(200);
-    });
-
-    it("rejects creator editing another creator's pending_review question", async () => {
-      supabase.enqueue("questions", {
-        data: makeQuestionRow({
-          status: "pending_review",
-          created_by: OTHER_CREATOR_ID,
-          reviewer_id: REVIEWER_ID,
-        }),
-        error: null,
-      });
-      const request = makeRequest({
-        userId: CREATOR_ID,
-        role: "user",
-        permissions: "create_questions",
-        body: MINIMAL_BODY,
-      });
-
-      const response = await PATCH(request, routeParams);
-
-      expect(response.status).toBe(403);
-    });
-
-    it("allows admin to edit a pending_review question", async () => {
-      enqueueMinimalHappyPath(
-        makeQuestionRow({
-          status: "pending_review",
-          created_by: CREATOR_ID,
-          reviewer_id: REVIEWER_ID,
-        }),
-        makeUpdatedRow({ status: "pending_review" })
-      );
-      const request = makeRequest({ userId: ADMIN_ID, role: "admin", body: MINIMAL_BODY });
-
-      const response = await PATCH(request, routeParams);
-
-      expect(response.status).toBe(200);
-    });
-  });
-
-  describe("Permission matrix: published questions", () => {
-    /** Queue the published patch-edit path: fetch, main update, version bump, version insert, refetch. */
-    function enqueuePublishedPatchEditPath(questionRow: Record<string, any>) {
-      supabase.enqueue(
-        "questions",
-        { data: questionRow, error: null }, // current question fetch
-        { error: null }, // main update
-        { error: null }, // patch version bump
-        {
-          data: makeUpdatedRow({
-            status: "published",
-            version_major: questionRow.version_major,
-            version_minor: questionRow.version_minor,
-            version_patch: questionRow.version_patch + 1,
-          }),
-          error: null,
-        } // final refetch
-      );
-      supabase.enqueue(
-        "question_versions",
-        { data: null, error: null, count: 1 }, // has-existing-history count check
-        { data: { id: "version-1" }, error: null } // insert
-      );
-    }
-
-    it("allows creator patch edit on own published question", async () => {
-      enqueuePublishedPatchEditPath(
-        makeQuestionRow({ status: "published", created_by: CREATOR_ID })
-      );
-      const request = makeRequest({
-        userId: CREATOR_ID,
-        role: "user",
-        permissions: "create_questions",
-        body: { ...MINIMAL_BODY, isPatchEdit: true, patchEditReason: "Fixed typo" },
-      });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(200);
-      expect(json.success).toBe(true);
-      expect(json.versionId).toBe("version-1");
-    });
-
-    it("rejects creator patch edit on another creator's published question", async () => {
-      supabase.enqueue("questions", {
-        data: makeQuestionRow({ status: "published", created_by: OTHER_CREATOR_ID }),
-        error: null,
-      });
-      const request = makeRequest({
-        userId: CREATOR_ID,
-        role: "user",
-        permissions: "create_questions",
-        body: { ...MINIMAL_BODY, isPatchEdit: true },
-      });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(403);
-      expect(json.error).toBe("Insufficient permissions for patch edit");
-    });
-
-    it("allows reviewer patch edit on any published question", async () => {
-      enqueuePublishedPatchEditPath(
-        makeQuestionRow({ status: "published", created_by: CREATOR_ID })
-      );
-      const request = makeRequest({
-        userId: REVIEWER_ID,
-        role: "user",
-        permissions: "review_questions",
-        body: { ...MINIMAL_BODY, isPatchEdit: true },
-      });
-
-      const response = await PATCH(request, routeParams);
-
-      expect(response.status).toBe(200);
-    });
-
-    it("rejects plain user patch edit on a published question", async () => {
-      supabase.enqueue("questions", {
-        data: makeQuestionRow({ status: "published" }),
-        error: null,
-      });
-      const request = makeRequest({
-        userId: PLAIN_USER_ID,
-        role: "user",
-        body: { ...MINIMAL_BODY, isPatchEdit: true },
-      });
-
-      const response = await PATCH(request, routeParams);
-
-      expect(response.status).toBe(403);
-    });
-
-    it("rejects reviewer non-patch edit on a published question", async () => {
-      supabase.enqueue("questions", {
-        data: makeQuestionRow({ status: "published" }),
-        error: null,
-      });
-      const request = makeRequest({
-        userId: REVIEWER_ID,
-        role: "user",
-        permissions: "review_questions",
-        body: MINIMAL_BODY,
-      });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(403);
-      expect(json.error).toBe("Cannot edit published questions");
-    });
-
-    it("rejects plain user non-patch edit on a published question", async () => {
-      supabase.enqueue("questions", {
-        data: makeQuestionRow({ status: "published" }),
-        error: null,
-      });
-      const request = makeRequest({ userId: PLAIN_USER_ID, role: "user", body: MINIMAL_BODY });
-
-      const response = await PATCH(request, routeParams);
-
-      expect(response.status).toBe(403);
-    });
-
-    it("allows creator non-patch edit on another creator's published question (role-only check)", async () => {
-      // Characterizes current behavior: the non-patch published branch only
-      // checks role (admin/creator), not ownership. With no updateType the
-      // status is unchanged and no version is created.
-      enqueueMinimalHappyPath(
-        makeQuestionRow({ status: "published", created_by: OTHER_CREATOR_ID }),
-        makeUpdatedRow({ status: "published" })
-      );
-      const request = makeRequest({
-        userId: CREATOR_ID,
-        role: "user",
-        permissions: "create_questions",
-        body: MINIMAL_BODY,
-      });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(200);
-      expect(json.versionId).toBeNull();
-    });
-
-    it("returns 500 when creator makes a minor edit to published question without a reviewer", async () => {
-      supabase.enqueue("questions", {
-        data: makeQuestionRow({ status: "published", created_by: CREATOR_ID, reviewer_id: null }),
-        error: null,
-      });
-      const request = makeRequest({
-        userId: CREATOR_ID,
-        role: "user",
-        permissions: "create_questions",
-        body: { ...MINIMAL_BODY, updateType: "minor" },
-      });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(500);
-      expect(json.error).toContain("This minor edit requires review, but no reviewer is assigned");
-    });
-  });
-
-  describe("Status transition rules", () => {
-    it("returns 500 when transitioning to pending_review without a reviewer", async () => {
-      supabase.enqueue("questions", {
-        data: makeQuestionRow({ status: "draft", created_by: CREATOR_ID, reviewer_id: null }),
-        error: null,
-      });
-      const request = makeRequest({
-        userId: CREATOR_ID,
-        role: "user",
-        permissions: "create_questions",
-        body: { questionData: { title: "Updated", status: "pending_review" } },
-      });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(500);
-      expect(json.error).toContain("Cannot set status to pending_review without a reviewer");
-    });
-
-    it("moves published question to pending_review on minor edit when a reviewer is assigned", async () => {
-      supabase.enqueue(
-        "questions",
-        {
-          data: makeQuestionRow({
-            status: "published",
-            created_by: CREATOR_ID,
-            reviewer_id: null,
-            version_major: 2,
-            version_minor: 3,
-            version_patch: 1,
-          }),
-          error: null,
-        },
-        { error: null }, // main update
-        { error: null }, // minor version bump
-        {
-          data: makeUpdatedRow({
-            status: "pending_review",
-            version_major: 2,
-            version_minor: 4,
-            version_patch: 0,
-          }),
-          error: null,
-        }
-      );
-      supabase.enqueue(
-        "question_versions",
-        { data: null, error: null, count: 1 }, // has-existing-history count check
-        { data: { id: "version-minor-1" }, error: null } // insert
-      );
-
-      const request = makeRequest({
-        userId: CREATOR_ID,
-        role: "user",
-        permissions: "create_questions",
-        body: { ...MINIMAL_BODY, updateType: "minor", reviewerId: REVIEWER_ID },
-      });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(200);
-      expect(json.versionId).toBe("version-minor-1");
-      expect(json.message).toBe("Question updated to version 2.4.0");
-
-      // Main update must set status pending_review and the reviewer.
-      const questionsUpdates = supabase
-        .callsFor("questions")
-        .filter((c) => c.builder.update.mock.calls.length > 0);
-      const mainUpdatePayload = questionsUpdates[0].builder.update.mock.calls[0][0];
-      expect(mainUpdatePayload.status).toBe("pending_review");
-      expect(mainUpdatePayload.reviewer_id).toBe(REVIEWER_ID);
-
-      // Minor bump: version_minor +1, patch reset to 0.
-      const versionBumpPayload = questionsUpdates[1].builder.update.mock.calls[0][0];
-      expect(versionBumpPayload).toMatchObject({
-        version_major: 2,
-        version_minor: 4,
-        version_patch: 0,
-      });
-
-      // Version history entry recorded as minor update (index 1: index 0 is
-      // the has-existing-history count check).
-      const versionInsert = supabase.callsFor("question_versions")[1];
-      expect(versionInsert.builder.insert.mock.calls[0][0]).toMatchObject({
-        question_id: QUESTION_ID,
-        version_major: 2,
-        version_minor: 4,
-        version_patch: 0,
-        update_type: "minor",
-        changed_by: CREATOR_ID,
-      });
-    });
-  });
-
-  describe("Full update orchestration", () => {
-    it("updates question fields, answer options, images, tags, and category together", async () => {
-      const currentQuestion = makeQuestionRow({ status: "draft", created_by: CREATOR_ID });
-      supabase.enqueue(
-        "questions",
-        { data: currentQuestion, error: null }, // current fetch
-        { error: null }, // main update
-        { error: null }, // category update
-        { data: makeUpdatedRow(), error: null } // final refetch
-      );
-      supabase.enqueue(
-        "question_options",
-        {
-          data: [
-            { id: "opt-1", text: "Old A", is_correct: true, explanation: null, order_index: 0 },
-            { id: "opt-2", text: "Old B", is_correct: false, explanation: null, order_index: 1 },
-          ],
-          error: null,
-        }, // existing options fetch
-        { error: null }, // update existing option opt-1
-        { error: null }, // insert new option
-        { error: null } // delete removed option opt-2
-      );
-      supabase.enqueue("quiz_attempts", { data: [], error: null }); // no referenced options
-      supabase.enqueue(
-        "question_images",
-        { error: null }, // delete existing
-        { error: null } // insert new
-      );
-      supabase.enqueue(
-        "question_tags",
-        { error: null }, // delete existing
-        { error: null } // insert new
-      );
-
-      const request = makeRequest({
-        userId: CREATOR_ID,
-        role: "user",
-        permissions: "create_questions",
+  it("maps the edit form body to the save payload", async () => {
+    withCurrent("draft");
+    const res = await PATCH(
+      makeRequest({
+        ...writer,
         body: {
           questionData: {
             title: "New title",
-            stem: "New stem",
-            difficulty: "hard",
-            teaching_point: "New teaching point",
-            question_references: "Ref 1",
-            lesson: "Lesson 1",
-            topic: "Topic 1",
-            anki_card_id: 1234567890,
-            anki_deck_name: "Deck",
+            stem: "",
+            teaching_point: "TP",
+            question_references: null,
+            anki_card_id: 123,
+            question_set_id: "set-1",
           },
-          answerOptions: [
-            { id: "opt-1", text: "Updated A", is_correct: false, explanation: "Nope" },
-            { text: "Brand new B", is_correct: true, explanation: "Yes" },
-          ],
-          questionImages: [{ image_id: "img-1", question_section: "stem" }],
-          tagIds: ["tag-1", "tag-2", null, ""],
           categoryId: "cat-1",
-        },
-      });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(200);
-      expect(json.success).toBe(true);
-      expect(json.message).toBe("Question updated successfully");
-      expect(revalidateQuestions).toHaveBeenCalledWith({
-        questionId: QUESTION_ID,
-        includeDashboard: true,
-      });
-
-      // Main question update payload.
-      const questionsCalls = supabase.callsFor("questions");
-      const mainUpdatePayload = questionsCalls[1].builder.update.mock.calls[0][0];
-      expect(mainUpdatePayload).toMatchObject({
-        title: "New title",
-        stem: "New stem",
-        difficulty: "hard",
-        teaching_point: "New teaching point",
-        question_references: "Ref 1",
-        lesson: "Lesson 1",
-        topic: "Topic 1",
-        anki_card_id: "1234567890", // number coerced to string for the text column
-        anki_deck_name: "Deck",
-        updated_by: CREATOR_ID,
-      });
-      expect(mainUpdatePayload.status).toBeUndefined();
-      expect(questionsCalls[1].builder.eq).toHaveBeenCalledWith("id", QUESTION_ID);
-
-      // Answer options: update existing, insert new, delete removed.
-      const optionCalls = supabase.callsFor("question_options");
-      expect(optionCalls[1].builder.update.mock.calls[0][0]).toMatchObject({
-        text: "Updated A",
-        is_correct: false,
-        explanation: "Nope",
-        order_index: 0,
-      });
-      expect(optionCalls[1].builder.eq).toHaveBeenCalledWith("id", "opt-1");
-      expect(optionCalls[2].builder.insert.mock.calls[0][0]).toEqual([
-        {
-          question_id: QUESTION_ID,
-          text: "Brand new B",
-          is_correct: true,
-          explanation: "Yes",
-          order_index: 1,
-        },
-      ]);
-      expect(optionCalls[3].builder.delete).toHaveBeenCalled();
-      expect(optionCalls[3].builder.in).toHaveBeenCalledWith("id", ["opt-2"]);
-
-      // Images: delete-all then insert with order index.
-      const imageCalls = supabase.callsFor("question_images");
-      expect(imageCalls[0].builder.delete).toHaveBeenCalled();
-      expect(imageCalls[0].builder.eq).toHaveBeenCalledWith("question_id", QUESTION_ID);
-      expect(imageCalls[1].builder.insert.mock.calls[0][0]).toEqual([
-        {
-          question_id: QUESTION_ID,
-          image_id: "img-1",
-          question_section: "stem",
-          order_index: 0,
-        },
-      ]);
-
-      // Tags: delete-all then insert only valid ids (null/empty filtered).
-      const tagCalls = supabase.callsFor("question_tags");
-      expect(tagCalls[0].builder.delete).toHaveBeenCalled();
-      expect(tagCalls[1].builder.insert.mock.calls[0][0]).toEqual([
-        { question_id: QUESTION_ID, tag_id: "tag-1" },
-        { question_id: QUESTION_ID, tag_id: "tag-2" },
-      ]);
-
-      // Category: separate update on questions.
-      const categoryUpdatePayload = questionsCalls[2].builder.update.mock.calls[0][0];
-      expect(categoryUpdatePayload).toEqual({ category_id: "cat-1" });
-    });
-
-    it("keeps answer options that are referenced by quiz attempts instead of deleting them", async () => {
-      supabase.enqueue(
-        "questions",
-        { data: makeQuestionRow(), error: null },
-        { error: null },
-        { data: makeUpdatedRow(), error: null }
-      );
-      supabase.enqueue(
-        "question_options",
-        {
-          data: [
-            { id: "opt-1", text: "A", is_correct: true, explanation: null, order_index: 0 },
-            { id: "opt-2", text: "B", is_correct: false, explanation: null, order_index: 1 },
+          answerOptions: [
+            { id: "opt-1", text: "A", is_correct: true, explanation: "" },
+            { text: "B", is_correct: false, explanation: "because" },
           ],
-          error: null,
+          questionImages: [{ image_id: "img-1", question_section: "stem", order_index: 3 }],
+          tagIds: ["tag-1", null, ""],
+          changeSummary: "tidied",
         },
-        { error: null } // update for opt-1; no insert, no delete expected
-      );
-      supabase.enqueue("quiz_attempts", {
-        data: [{ selected_answer_id: "opt-2" }],
-        error: null,
-      });
-
-      const request = makeRequest({
-        userId: ADMIN_ID,
-        role: "admin",
-        body: {
-          answerOptions: [{ id: "opt-1", text: "A2", is_correct: true }],
-        },
-      });
-
-      const response = await PATCH(request, routeParams);
-
-      expect(response.status).toBe(200);
-      // opt-2 is referenced by a quiz attempt: no delete call should be issued.
-      const optionCalls = supabase.callsFor("question_options");
-      const deleteCalls = optionCalls.filter((c) => c.builder.delete.mock.calls.length > 0);
-      expect(deleteCalls).toHaveLength(0);
+      }),
+      routeParams
+    );
+    expect(res.status).toBe(200);
+    expect(save).toHaveBeenCalledWith({
+      actor: CREATOR_ID,
+      questionId: QUESTION_ID,
+      payload: {
+        title: "New title",
+        teaching_point: "TP",
+        question_references: null,
+        question_set_id: "set-1",
+        anki_card_id: "123",
+        category_id: "cat-1",
+        options: [
+          { id: "opt-1", text: "A", is_correct: true, explanation: null },
+          { text: "B", is_correct: false, explanation: "because" },
+        ],
+        images: [{ image_id: "img-1", question_section: "stem" }],
+        tag_ids: ["tag-1"],
+      },
+      changeSummary: "tidied",
+      updateType: null,
     });
+    expect(transition).not.toHaveBeenCalled();
   });
 
-  describe("Versioning", () => {
-    it("creates a patch version entry on patch edit of a published question", async () => {
-      supabase.enqueue(
-        "questions",
-        {
-          data: makeQuestionRow({
-            status: "published",
-            created_by: CREATOR_ID,
-            version_major: 1,
-            version_minor: 2,
-            version_patch: 3,
-          }),
-          error: null,
-        },
-        { error: null }, // main update
-        { error: null }, // patch version bump
-        {
-          data: makeUpdatedRow({
-            status: "published",
-            version_major: 1,
-            version_minor: 2,
-            version_patch: 4,
-          }),
-          error: null,
-        }
-      );
-      supabase.enqueue(
-        "question_versions",
-        { data: null, error: null, count: 1 }, // has-existing-history count check
-        { data: { id: "version-patch-1" }, error: null } // insert
-      );
-
-      const request = makeRequest({
-        userId: ADMIN_ID,
-        role: "admin",
-        body: {
-          questionData: { title: "Typo fixed" },
-          isPatchEdit: true,
-          patchEditReason: "Fixed a typo",
-        },
-      });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(200);
-      expect(json.versionId).toBe("version-patch-1");
-      expect(json.message).toBe("Question updated to version 1.2.4");
-
-      // Patch bump on the questions row.
-      const questionsCalls = supabase.callsFor("questions");
-      const bumpPayload = questionsCalls[2].builder.update.mock.calls[0][0];
-      expect(bumpPayload.version_patch).toBe(4);
-
-      // Version history entry (index 1: index 0 is the has-existing-history
-      // count check).
-      const versionInsert = supabase.callsFor("question_versions")[1];
-      expect(versionInsert.builder.insert.mock.calls[0][0]).toMatchObject({
-        question_id: QUESTION_ID,
-        version_major: 1,
-        version_minor: 2,
-        version_patch: 4,
-        update_type: "patch",
-        change_summary: "Fixed a typo",
-        changed_by: ADMIN_ID,
-      });
-    });
-
-    it("backfills a missing initial version entry before recording a patch edit on a published question with no history (e.g. published via /approve)", async () => {
-      supabase.enqueue(
-        "questions",
-        {
-          data: makeQuestionRow({
-            status: "published",
-            created_by: CREATOR_ID,
-            version_major: 1,
-            version_minor: 0,
-            version_patch: 0,
-          }),
-          error: null,
-        },
-        { error: null }, // main update
-        { error: null }, // patch version bump
-        {
-          data: makeUpdatedRow({
-            status: "published",
-            version_major: 1,
-            version_minor: 0,
-            version_patch: 1,
-          }),
-          error: null,
-        }
-      );
-      supabase.enqueue(
-        "question_versions",
-        { data: null, error: null, count: 0 }, // no existing history rows
-        { data: { id: "version-initial-backfill" }, error: null }, // backfill insert
-        { data: { id: "version-patch-1" }, error: null } // this edit's patch insert
-      );
-      const snapshotData = { title: "Existing title", question_options: [], question_images: [] };
-      supabase.client.rpc.mockResolvedValueOnce({ data: snapshotData, error: null });
-
-      const request = makeRequest({
-        userId: ADMIN_ID,
-        role: "admin",
-        body: {
-          questionData: { title: "Typo fixed" },
-          isPatchEdit: true,
-          patchEditReason: "Fixed a typo",
-        },
-      });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(200);
-      expect(json.versionId).toBe("version-patch-1");
-
-      // The pre-edit snapshot RPC is called before any mutation, using the
-      // question's own id — not the sync/update calls' payloads.
-      expect(supabase.client.rpc).toHaveBeenCalledWith("get_question_snapshot_data", {
-        question_id_param: QUESTION_ID,
-      });
-
-      const versionCalls = supabase.callsFor("question_versions");
-      // [0] is the has-existing-history count check.
-      const backfillInsert = versionCalls[1];
-      expect(backfillInsert.builder.insert.mock.calls[0][0]).toMatchObject({
-        question_id: QUESTION_ID,
-        version_major: 1,
-        version_minor: 0,
-        version_patch: 0,
-        update_type: "initial",
-        change_summary: "Initial publication (backfilled)",
-        question_data: snapshotData,
-        changed_by: ADMIN_ID,
-      });
-
-      const patchInsert = versionCalls[2];
-      expect(patchInsert.builder.insert.mock.calls[0][0]).toMatchObject({
-        question_id: QUESTION_ID,
-        version_major: 1,
-        version_minor: 0,
-        version_patch: 1,
-        update_type: "patch",
-        changed_by: ADMIN_ID,
-      });
-    });
-
-    it("does not backfill when a published question already has version history", async () => {
-      supabase.enqueue(
-        "questions",
-        {
-          data: makeQuestionRow({
-            status: "published",
-            created_by: CREATOR_ID,
-            version_major: 1,
-            version_minor: 2,
-            version_patch: 3,
-          }),
-          error: null,
-        },
-        { error: null }, // main update
-        { error: null }, // patch version bump
-        {
-          data: makeUpdatedRow({
-            status: "published",
-            version_major: 1,
-            version_minor: 2,
-            version_patch: 4,
-          }),
-          error: null,
-        }
-      );
-      supabase.enqueue(
-        "question_versions",
-        { data: null, error: null, count: 1 }, // has-existing-history count check
-        { data: { id: "version-patch-1" }, error: null } // this edit's patch insert
-      );
-
-      const request = makeRequest({
-        userId: ADMIN_ID,
-        role: "admin",
-        body: { ...MINIMAL_BODY, isPatchEdit: true, patchEditReason: "Fixed typo" },
-      });
-
-      const response = await PATCH(request, routeParams);
-      expect(response.status).toBe(200);
-
-      // Only the count check + this edit's own patch insert — no backfill.
-      expect(supabase.callsFor("question_versions")).toHaveLength(2);
-      expect(supabase.client.rpc).not.toHaveBeenCalledWith(
-        "get_question_snapshot_data",
-        expect.anything()
-      );
-    });
-
-    it("initializes version 1.0.0 and creates an initial version entry on first publish", async () => {
-      supabase.enqueue(
-        "questions",
-        {
-          data: makeQuestionRow({
-            status: "draft",
-            created_by: CREATOR_ID,
-            version_major: 0,
-            version_minor: 0,
-            version_patch: 0,
-          }),
-          error: null,
-        },
-        { error: null }, // main update
-        {
-          data: makeUpdatedRow({
-            status: "published",
-            version_major: 1,
-            version_minor: 0,
-            version_patch: 0,
-          }),
-          error: null,
-        }
-      );
-      supabase.enqueue("question_versions", { data: { id: "version-initial" }, error: null });
-
-      const request = makeRequest({
-        userId: ADMIN_ID,
-        role: "admin",
-        body: { questionData: { title: "Publishing now", status: "published" } },
-      });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(200);
-      expect(json.versionId).toBe("version-initial");
-      expect(json.message).toBe("Question updated to version 1.0.0");
-
-      // Main update sets status and initializes semver to 1.0.0.
-      const questionsCalls = supabase.callsFor("questions");
-      const mainUpdatePayload = questionsCalls[1].builder.update.mock.calls[0][0];
-      expect(mainUpdatePayload).toMatchObject({
+  it("edits of a published question default to a patch", async () => {
+    withCurrent("published", REVIEWER_ID);
+    save.mockResolvedValue(
+      saved({
         status: "published",
-        version_major: 1,
-        version_minor: 0,
-        version_patch: 0,
-      });
-
-      // Initial version history entry.
-      const versionInsert = supabase.callsFor("question_versions")[0];
-      expect(versionInsert.builder.insert.mock.calls[0][0]).toMatchObject({
-        question_id: QUESTION_ID,
-        version_major: 1,
-        version_minor: 0,
-        version_patch: 0,
-        update_type: "initial",
-        change_summary: "Initial publication",
-        changed_by: ADMIN_ID,
-      });
-    });
-
-    it("does not create a version entry for edits to non-published questions", async () => {
-      enqueueMinimalHappyPath(makeQuestionRow({ status: "draft" }));
-      const request = makeRequest({ userId: ADMIN_ID, role: "admin", body: MINIMAL_BODY });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(200);
-      expect(json.versionId).toBeNull();
-      expect(supabase.callsFor("question_versions")).toHaveLength(0);
-    });
+        update_type: "patch",
+        version: { major: 1, minor: 0, patch: 1 },
+      })
+    );
+    const res = await PATCH(makeRequest({ ...writer, body: MINIMAL_BODY }), routeParams);
+    const body = await getResponseJson(res);
+    expect(save.mock.calls[0][0].updateType).toBe("patch");
+    expect(save.mock.calls[0][0].payload.reviewer_id).toBeUndefined();
+    expect(body.message).toBe("Question updated to version 1.0.1");
+    expect(body.question).toMatchObject({ version_patch: 1, status: "published" });
   });
 
-  describe("Error handling", () => {
-    it("returns 500 with the failure message when the main update fails", async () => {
-      supabase.enqueue(
-        "questions",
-        { data: makeQuestionRow(), error: null },
-        { error: { message: "column does not exist" } }
-      );
-      const request = makeRequest({ userId: ADMIN_ID, role: "admin", body: MINIMAL_BODY });
-
-      const response = await PATCH(request, routeParams);
-      const json = await getResponseJson(response);
-
-      expect(response.status).toBe(500);
-      expect(json.error).toBe("Failed to update question: column does not exist");
+  it("a minor edit sends the reviewer and notifies them when it goes back to review", async () => {
+    withCurrent("flagged", REVIEWER_ID);
+    save.mockResolvedValue(
+      saved({
+        status: "pending_review",
+        reviewer_id: REVIEWER_ID,
+        update_type: "minor",
+        version: { major: 1, minor: 1, patch: 0 },
+      })
+    );
+    const res = await PATCH(
+      makeRequest({
+        ...writer,
+        body: { ...MINIMAL_BODY, updateType: "minor", isPatchEdit: false, reviewerId: REVIEWER_ID },
+      }),
+      routeParams
+    );
+    expect(res.status).toBe(200);
+    expect(save.mock.calls[0][0]).toMatchObject({
+      updateType: "minor",
+      payload: { reviewer_id: REVIEWER_ID },
     });
+    expect(transition).not.toHaveBeenCalled();
+    expect(notifyTransition).toHaveBeenCalledWith(
+      expect.objectContaining({ action: "submit", reviewer_id: REVIEWER_ID }),
+      CREATOR_ID
+    );
+  });
+
+  it("isPatchEdit wins over a minor update type", async () => {
+    withCurrent("published");
+    await PATCH(
+      makeRequest({ ...writer, body: { ...MINIMAL_BODY, updateType: "minor", isPatchEdit: true } }),
+      routeParams
+    );
+    expect(save.mock.calls[0][0].updateType).toBe("patch");
+  });
+
+  it.each([
+    ["draft", "pending_review", "submit"],
+    ["draft", "published", "approve"],
+    ["draft", "archived", "archive"],
+    ["archived", "draft", "restore"],
+  ])("a status change from %s to %s runs the %s action after saving", async (from, to, action) => {
+    withCurrent(from, REVIEWER_ID);
+    transition.mockResolvedValue({
+      question_id: QUESTION_ID,
+      action,
+      status: to,
+      version_id: "v2",
+    });
+    const res = await PATCH(
+      makeRequest({ ...writer, body: { questionData: { title: "T", status: to } } }),
+      routeParams
+    );
+    const body = await getResponseJson(res);
+    expect(res.status).toBe(200);
+    expect(transition).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actor: CREATOR_ID,
+        questionId: QUESTION_ID,
+        action,
+        reviewerId: REVIEWER_ID,
+      })
+    );
+    expect(save.mock.invocationCallOrder[0]).toBeLessThan(transition.mock.invocationCallOrder[0]);
+    expect(body.question.status).toBe(to);
+    expect(body.versionId).toBe("v2");
+  });
+
+  it("refuses a status the edit form cannot set, before saving", async () => {
+    withCurrent("draft");
+    const res = await PATCH(
+      makeRequest({ ...writer, body: { questionData: { title: "T", status: "rejected" } } }),
+      routeParams
+    );
+    expect(res.status).toBe(400);
+    expect(save).not.toHaveBeenCalled();
+  });
+
+  it("says the edit was saved when only the status change was refused", async () => {
+    withCurrent("draft");
+    transition.mockRejectedValue(
+      new QuestionWriteError("Question is incomplete: teaching point", 400, "PBV01")
+    );
+    const res = await PATCH(
+      makeRequest({
+        ...writer,
+        body: { questionData: { title: "T", status: "pending_review" }, reviewerId: REVIEWER_ID },
+      }),
+      routeParams
+    );
+    expect(res.status).toBe(400);
+    expect((await getResponseJson(res)).error).toBe(
+      "Your changes were saved, but the status was not changed: Question is incomplete: teaching point"
+    );
+    expect(revalidateQuestions).toHaveBeenCalled();
+  });
+
+  it.each([
+    [403, "PBA01"],
+    [404, "PBN01"],
+    [400, "PBV01"],
+  ])("a refused save returns %i", async (status, code) => {
+    withCurrent("draft");
+    save.mockRejectedValue(new QuestionWriteError("nope", status, code));
+    const res = await PATCH(makeRequest({ ...writer, body: MINIMAL_BODY }), routeParams);
+    expect(res.status).toBe(status);
+    expect(revalidateQuestions).not.toHaveBeenCalled();
+  });
+
+  it("an unexpected failure is a 500 without details", async () => {
+    withCurrent("draft");
+    save.mockRejectedValue(new Error("boom"));
+    const res = await PATCH(makeRequest({ ...writer, body: MINIMAL_BODY }), routeParams);
+    expect(res.status).toBe(500);
+    expect(await getResponseJson(res)).toEqual({ error: "Internal server error" });
   });
 });
 

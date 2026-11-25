@@ -1,11 +1,8 @@
-import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import { requireUser } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
-import { NotificationTriggers } from "@/shared/services/notification-triggers";
-import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
+import { runTransitionRoute } from "@/features/admin/questions/services/transition-route";
+import { z } from "zod";
 
 const rejectQuestionSchema = z.object({
   feedback: z.string().trim().min(1),
@@ -66,118 +63,10 @@ const rejectQuestionSchema = z.object({
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const supabase = await createClient();
     const { id: questionId } = await params;
-
-    // Get current user
-    const auth = requireUser(request);
-    if (auth instanceof NextResponse) return auth;
-    const userId = auth.userId;
-
-    // Parse request body
     const body = await parseBody(request, rejectQuestionSchema);
     if (body instanceof NextResponse) return body;
-    const { feedback } = body;
-
-    // Get the question to verify reviewer assignment
-    const { data: question, error: fetchError } = await supabase
-      .from("questions")
-      .select("id, status, reviewer_id, created_by")
-      .eq("id", questionId)
-      .single();
-
-    if (fetchError || !question) {
-      return NextResponse.json({ error: "Question not found" }, { status: 404 });
-    }
-
-    // Verify question is in pending_review state
-    if (question.status !== "pending_review") {
-      return NextResponse.json(
-        { error: `Cannot reject question with status: ${question.status}` },
-        { status: 400 }
-      );
-    }
-
-    // Admins, or the assigned reviewer holding review_questions (never on their own
-    // question). RLS (questions update WITH CHECK) enforces the same rule.
-    const isAdmin = auth.role === "admin";
-    const isAssignedReviewer =
-      question.reviewer_id === userId &&
-      question.created_by !== userId &&
-      auth.can("review_questions");
-
-    if (!isAdmin && !isAssignedReviewer) {
-      return NextResponse.json(
-        { error: "Only the assigned reviewer or admin can reject this question" },
-        { status: 403 }
-      );
-    }
-
-    // Update question to rejected with feedback
-    const { data: updatedQuestion, error: updateError } = await supabase
-      .from("questions")
-      .update({
-        status: "rejected",
-        reviewer_feedback: feedback.trim(),
-        updated_at: new Date().toISOString(),
-        updated_by: userId,
-      })
-      .eq("id", questionId)
-      // The status check above only short-circuits; this filter is the actual
-      // barrier against a concurrent approve/reject (see CLAUDE.md TOCTOU).
-      .eq("status", "pending_review")
-      .select()
-      .maybeSingle();
-
-    if (updateError) {
-      log.error("Error rejecting question:", updateError);
-      return NextResponse.json(
-        { error: `Failed to reject question: ${updateError.message}` },
-        { status: 500 }
-      );
-    }
-
-    // Zero rows matched: someone else moved it out of pending_review between
-    // our read and our write. Bail before the review record and notification.
-    if (!updatedQuestion) {
-      return NextResponse.json({ error: "Question is no longer pending review" }, { status: 409 });
-    }
-
-    // Record the review action
-    const { error: reviewError } = await supabase.from("question_reviews").insert({
-      question_id: questionId,
-      reviewer_id: userId,
-      action: "rejected",
-      feedback: feedback.trim(),
-    });
-
-    if (reviewError) {
-      log.error("Error recording review:", reviewError);
-      // Don't fail the request if review recording fails
-    }
-
-    // Send notification to creator
-    try {
-      const notificationTriggers = new NotificationTriggers();
-      await notificationTriggers.onQuestionRejected(
-        updatedQuestion.created_by,
-        questionId,
-        updatedQuestion.title,
-        userId,
-        feedback.trim()
-      );
-    } catch (error) {
-      log.error("Error sending rejection notification:", error);
-      // Don't fail the request if notification fails
-    }
-
-    // Revalidate caches to update all admin pages
-    revalidateQuestions({ questionId, includeDashboard: true });
-
-    return NextResponse.json({
-      success: true,
-      question: updatedQuestion,
-    });
+    return await runTransitionRoute(request, questionId, "reject", { feedback: body.feedback });
   } catch (error) {
     log.error("Unexpected error rejecting question:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

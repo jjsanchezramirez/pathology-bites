@@ -101,9 +101,9 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
     if (open && question) {
       setIsInitializing(true);
 
-      // For published questions, default to patch edit
-      const isPublished = question.status === "published";
-      setIsPatchEdit(isPublished);
+      // Live (published or flagged) questions default to a patch edit
+      const isLive = question.status === "published" || question.status === "flagged";
+      setIsPatchEdit(isLive);
 
       form.reset({
         title: question.title || "",
@@ -125,8 +125,8 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
         topic: question.topic || null,
         anki_card_id: question.anki_card_id || null,
         anki_deck_name: question.anki_deck_name || null,
-        updateType: isPublished ? "patch" : "minor",
-        isPatchEdit: isPublished,
+        updateType: isLive ? "patch" : "minor",
+        isPatchEdit: isLive,
         patchEditReason: "",
       });
 

@@ -1,9 +1,9 @@
-import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
-import { NotificationTriggers } from "@/shared/services/notification-triggers";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
+import { runBulkTransition } from "@/features/admin/questions/services/bulk-transition";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
 
@@ -74,7 +74,6 @@ const bulkApproveSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
     const auth = requireUser(request);
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
@@ -83,8 +82,8 @@ export async function POST(request: NextRequest) {
     if (body instanceof NextResponse) return body;
     const { questionIds } = body;
 
-    // Admins, or the assigned reviewer holding review_questions (checked per question)
-    const isAdmin = auth.role === "admin";
+    // Admins, or the assigned reviewer holding review_questions (checked per question in
+    // transition_question, which also refuses an author approving their own question).
     if (!auth.can("review_questions")) {
       return NextResponse.json(
         { error: "Forbidden - requires review_questions permission" },
@@ -92,114 +91,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch all questions to validate
-    const { data: questions, error: fetchError } = await supabase
+    const { data: questions, error: fetchError } = await createServiceRoleClient()
       .from("questions")
-      .select("id, status, reviewer_id, created_by, title")
+      .select("id, status")
       .in("id", questionIds);
 
     if (fetchError) {
-      return NextResponse.json(
-        { error: `Failed to fetch questions: ${fetchError.message}` },
-        { status: 500 }
-      );
+      log.error("Bulk approve: fetching questions failed:", fetchError);
+      return NextResponse.json({ error: "Failed to fetch questions" }, { status: 500 });
     }
 
     if (!questions || questions.length === 0) {
       return NextResponse.json({ error: "No questions found" }, { status: 404 });
     }
 
-    // Validate all questions are pending_review and user has permission
+    // Only questions in review are bulk-approved; drafts are never published from here.
     const errors: { id: string; error: string }[] = [];
-    const validIds: string[] = [];
-
+    const pendingIds: string[] = [];
     for (const question of questions) {
-      if (question.status !== "pending_review") {
+      if (question.status === "pending_review") pendingIds.push(question.id);
+      else
         errors.push({ id: question.id, error: `Status is ${question.status}, not pending_review` });
-      } else if (!isAdmin && question.reviewer_id !== userId) {
-        errors.push({ id: question.id, error: "Not assigned as reviewer" });
-      } else if (!isAdmin && question.created_by === userId) {
-        errors.push({ id: question.id, error: "Cannot approve your own question" });
-      } else {
-        validIds.push(question.id);
-      }
     }
 
-    if (validIds.length === 0) {
+    if (pendingIds.length === 0) {
       return NextResponse.json(
         { error: "No questions eligible for approval", details: errors },
         { status: 400 }
       );
     }
 
-    const now = new Date().toISOString();
+    const outcome = await runBulkTransition(userId, pendingIds, "approve");
+    errors.push(...outcome.errors);
 
-    // Bulk update all valid questions to published. The per-question status
-    // check above only short-circuits; the .eq("status") filter is the actual
-    // barrier against a concurrent approve/reject (see CLAUDE.md TOCTOU), and
-    // the returned ids tell us which rows really flipped.
-    const { data: updatedRows, error: updateError } = await supabase
-      .from("questions")
-      .update({
-        status: "published",
-        published_at: now,
-        updated_at: now,
-        updated_by: userId,
-      })
-      .in("id", validIds)
-      .eq("status", "pending_review")
-      .select("id");
-
-    if (updateError) {
-      return NextResponse.json(
-        { error: `Failed to approve questions: ${updateError.message}` },
-        { status: 500 }
-      );
-    }
-
-    // Anything that lost the race is reported as failed rather than silently
-    // counted as approved — and gets no review record and no notification.
-    const approvedIds = (updatedRows ?? []).map((row) => row.id);
-    for (const id of validIds) {
-      if (!approvedIds.includes(id)) {
-        errors.push({ id, error: "No longer pending_review at write time" });
-      }
-    }
-
-    // Record review actions in bulk
-    const reviewRecords = approvedIds.map((id) => ({
-      question_id: id,
-      reviewer_id: userId,
-      action: "approved",
-      feedback: null,
-    }));
-
-    if (reviewRecords.length > 0) {
-      const { error: reviewError } = await supabase.from("question_reviews").insert(reviewRecords);
-
-      if (reviewError) {
-        log.error("Error recording bulk reviews:", reviewError);
-      }
-    }
-
-    // Send notifications (non-blocking)
-    const approvedQuestions = questions.filter((q) => approvedIds.includes(q.id));
-    try {
-      const notificationTriggers = new NotificationTriggers();
-      await Promise.allSettled(
-        approvedQuestions.map((q) =>
-          notificationTriggers.onQuestionApproved(q.created_by, q.id, q.title, userId)
-        )
-      );
-    } catch (error) {
-      log.error("Error sending bulk approval notifications:", error);
-    }
-
-    revalidateQuestions({ includeDashboard: true });
+    if (outcome.done.length > 0) revalidateQuestions({ includeDashboard: true });
 
     return NextResponse.json({
       success: true,
-      approved: approvedIds.length,
+      approved: outcome.done.length,
       failed: errors.length,
       errors: errors.length > 0 ? errors : undefined,
     });

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/shared/utils/api/api-guard";
-import { hasPermission, parsePermissions } from "@/shared/utils/auth/permissions";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
-import { NotificationTriggers } from "@/shared/services/notification-triggers";
+import { runBulkTransition } from "@/features/admin/questions/services/bulk-transition";
+import type { QuestionAction } from "@/features/admin/questions/services/question-service";
 
 const bulkQuestionsSchema = z
   .object({
@@ -33,8 +33,35 @@ const ACTION_PAST_TENSE: Record<z.infer<typeof bulkQuestionsSchema>["action"], s
   submit_for_review: "submitted for review",
   approve: "approved",
   reject: "rejected",
-  delete: "deleted",
+  delete: "archived",
   export: "exported",
+};
+
+// "delete" archives: questions are retired, never deleted (history and attempts are kept).
+const BULK_ACTIONS: Record<
+  Exclude<z.infer<typeof bulkQuestionsSchema>["action"], "export">,
+  { action: QuestionAction; from: string[]; noneEligible: string }
+> = {
+  submit_for_review: {
+    action: "submit",
+    from: ["draft", "rejected"],
+    noneEligible: "No eligible draft questions found for submission",
+  },
+  approve: {
+    action: "approve",
+    from: ["pending_review"],
+    noneEligible: "No pending questions found for approval",
+  },
+  reject: {
+    action: "reject",
+    from: ["pending_review", "published", "flagged"],
+    noneEligible: "No questions found that can be rejected",
+  },
+  delete: {
+    action: "archive",
+    from: ["draft", "rejected"],
+    noneEligible: "No eligible draft questions found to archive",
+  },
 };
 
 /**
@@ -121,12 +148,6 @@ export async function POST(request: NextRequest) {
 
     const supabase = createServiceRoleClient();
 
-    const userRole = auth.role ?? "user";
-    // Authors may act on their own drafts only while they hold create_questions.
-    const ownsDraft = (q: { status: string; created_by: string }) =>
-      q.status === "draft" &&
-      (userRole === "admin" || (q.created_by === userId && auth.can("create_questions")));
-
     // Fetch questions to validate permissions
     const { data: questions, error: fetchError } = await supabase
       .from("questions")
@@ -151,251 +172,79 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let result;
-    let affectedCount = 0;
-    // Review notifications to send once the update has succeeded (same triggers as the
-    // single-question routes).
-    let notify: (() => Promise<unknown>) | null = null;
-    const triggers = new NotificationTriggers();
-
-    switch (action) {
-      case "submit_for_review":
-        // Only allow submitting own draft questions or admin can submit any draft
-        const draftQuestions = questions?.filter(ownsDraft) || [];
-
-        if (draftQuestions.length === 0) {
-          return NextResponse.json(
-            { error: "No eligible draft questions found for submission" },
-            { status: 400 }
-          );
-        }
-
-        // Same reviewer check as the single submit route.
-        const { data: reviewer } = await supabase
-          .from("users")
-          .select("id, role, permissions")
-          .eq("id", reviewer_id!)
-          .maybeSingle();
-        if (
-          !reviewer ||
-          reviewer.id === userId ||
-          !hasPermission(reviewer.role, parsePermissions(reviewer.permissions), "review_questions")
-        ) {
-          return NextResponse.json(
-            { error: "Selected user is not a reviewer or admin" },
-            { status: 400 }
-          );
-        }
-
-        result = await supabase
-          .from("questions")
-          .update({
-            status: "pending_review",
-            reviewer_id: reviewer_id!,
-            reviewer_feedback: null, // clear feedback from an earlier rejection
-            updated_at: new Date().toISOString(),
-            updated_by: userId,
-          })
-          .in(
-            "id",
-            draftQuestions.map((q) => q.id)
-          );
-
-        affectedCount = draftQuestions.length;
-        notify = () =>
-          Promise.allSettled(
-            draftQuestions.map((q) =>
-              triggers.onQuestionSubmittedForReview(reviewer_id!, q.id, "", userId)
-            )
-          );
-        break;
-
-      case "approve":
-        // Only admins can approve questions
-        if (userRole !== "admin") {
-          return NextResponse.json({ error: "Only admins can approve questions" }, { status: 403 });
-        }
-
-        const pendingQuestions = questions?.filter((q) => q.status === "pending_review") || [];
-
-        if (pendingQuestions.length === 0) {
-          return NextResponse.json(
-            { error: "No pending questions found for approval" },
-            { status: 400 }
-          );
-        }
-
-        result = await supabase
-          .from("questions")
-          .update({
-            status: "published",
-            published_at: new Date().toISOString(),
-            updated_by: userId,
-          })
-          .in(
-            "id",
-            pendingQuestions.map((q) => q.id)
-          );
-
-        affectedCount = pendingQuestions.length;
-        notify = () =>
-          Promise.allSettled(
-            pendingQuestions.map((q) => triggers.onQuestionApproved(q.created_by, q.id, "", userId))
-          );
-        break;
-
-      case "reject":
-        // Only admins can reject questions
-        if (userRole !== "admin") {
-          return NextResponse.json({ error: "Only admins can reject questions" }, { status: 403 });
-        }
-
-        const rejectableQuestions =
-          questions?.filter((q) => ["pending_review", "published"].includes(q.status)) || [];
-
-        if (rejectableQuestions.length === 0) {
-          return NextResponse.json(
-            { error: "No questions found that can be rejected" },
-            { status: 400 }
-          );
-        }
-
-        result = await supabase
-          .from("questions")
-          .update({
-            status: "rejected",
-            reviewer_feedback: feedback!,
-            updated_at: new Date().toISOString(),
-            updated_by: userId,
-          })
-          .in(
-            "id",
-            rejectableQuestions.map((q) => q.id)
-          );
-
-        if (!result.error) {
-          // One review record per question, as the single reject route writes.
-          const { error: reviewError } = await supabase.from("question_reviews").insert(
-            rejectableQuestions.map((q) => ({
-              question_id: q.id,
-              reviewer_id: userId,
-              action: "rejected",
-              feedback: feedback!,
-            }))
-          );
-          if (reviewError) log.error("Error recording bulk rejection reviews:", reviewError);
-        }
-
-        affectedCount = rejectableQuestions.length;
-        notify = () =>
-          Promise.allSettled(
-            rejectableQuestions.map((q) =>
-              triggers.onQuestionRejected(q.created_by, q.id, "", userId, feedback!)
-            )
-          );
-        break;
-
-      case "delete":
-        // Only allow deleting own draft questions or admin can delete any draft
-        const deletableQuestions = questions?.filter(ownsDraft) || [];
-
-        if (deletableQuestions.length === 0) {
-          return NextResponse.json(
-            { error: "No eligible draft questions found for deletion" },
-            { status: 400 }
-          );
-        }
-
-        // Delete related data first (due to foreign key constraints)
-        await supabase
-          .from("question_options")
-          .delete()
-          .in(
-            "question_id",
-            deletableQuestions.map((q) => q.id)
-          );
-        await supabase
-          .from("question_images")
-          .delete()
-          .in(
-            "question_id",
-            deletableQuestions.map((q) => q.id)
-          );
-        await supabase
-          .from("question_tags")
-          .delete()
-          .in(
-            "question_id",
-            deletableQuestions.map((q) => q.id)
-          );
-
-        result = await supabase
-          .from("questions")
-          .delete()
-          .in(
-            "id",
-            deletableQuestions.map((q) => q.id)
-          );
-
-        affectedCount = deletableQuestions.length;
-        break;
-
-      case "export":
-        // Fetch full question data for export
-        const { data: exportData, error: exportError } = await supabase
-          .from("questions")
-          .select(
-            `
-            *,
-            question_options(*),
-            question_images(*),
-            question_tags(tag_id)
+    if (action === "export") {
+      // Fetch full question data for export
+      const { data: exportData, error: exportError } = await supabase
+        .from("questions")
+        .select(
           `
-          )
-          .in("id", questionIds);
+          *,
+          question_options(*),
+          question_images(*),
+          question_tags(tag_id)
+        `
+        )
+        .in("id", questionIds);
 
-        if (exportError) {
-          return NextResponse.json({ error: "Failed to export questions" }, { status: 500 });
-        }
+      if (exportError) {
+        return NextResponse.json({ error: "Failed to export questions" }, { status: 500 });
+      }
 
-        return NextResponse.json({
-          success: true,
-          action: "export",
-          data: exportData,
-          count: exportData?.length || 0,
-        });
-
-      default:
-        return NextResponse.json(
-          {
-            error: "Invalid action. Supported: submit_for_review, approve, reject, delete, export",
-          },
-          { status: 400 }
-        );
+      return NextResponse.json({
+        success: true,
+        action: "export",
+        data: exportData,
+        count: exportData?.length || 0,
+      });
     }
 
-    if (result?.error) {
-      log.error(`Bulk ${action} error:`, result.error);
-      return NextResponse.json({ error: `Failed to ${action} questions` }, { status: 500 });
+    // Which statuses each bulk action applies to; the rest are skipped and reported. Permission
+    // and state checks are repeated per question inside transition_question.
+    const plan = BULK_ACTIONS[action];
+    const eligible = (questions ?? []).filter((q) => plan.from.includes(q.status));
+    const skipped = (questions ?? [])
+      .filter((q) => !plan.from.includes(q.status))
+      .map((q) => ({ id: q.id, error: `Status is ${q.status}` }));
+
+    if (eligible.length === 0) {
+      return NextResponse.json(
+        { error: plan.noneEligible, errors: skipped.length > 0 ? skipped : undefined },
+        { status: 400 }
+      );
     }
 
-    // Revalidate caches to update all admin pages (for mutation operations).
-    // The export action returns early inside the switch, so this only runs for mutations.
-    revalidateQuestions({ includeDashboard: true });
-    if (notify) await notify();
+    const { done, errors } = await runBulkTransition(
+      userId,
+      eligible.map((q) => q.id),
+      plan.action,
+      { reviewerId: reviewer_id ?? null, feedback: feedback ?? null }
+    );
+    const failed = [...skipped, ...errors];
+
+    if (done.length > 0) revalidateQuestions({ includeDashboard: true });
+
+    if (done.length === 0) {
+      return NextResponse.json(
+        { error: errors[0]?.error ?? plan.noneEligible, errors: failed },
+        { status: 400 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
       action,
-      affectedCount,
-      message: `Successfully ${ACTION_PAST_TENSE[action]} ${affectedCount} question(s)`,
+      affectedCount: done.length,
+      failed: failed.length,
+      errors: failed.length > 0 ? failed : undefined,
+      message:
+        `Successfully ${ACTION_PAST_TENSE[action]} ${done.length} question(s)` +
+        (failed.length > 0 ? `; ${failed.length} skipped` : ""),
     });
   } catch (error) {
     log.error("Bulk questions operation error:", error);
     return NextResponse.json(
       {
         error: "Bulk operation failed",
-        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

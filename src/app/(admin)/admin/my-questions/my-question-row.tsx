@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import {
+  Archive,
   Eye,
   Edit3,
   Send,
@@ -23,7 +24,6 @@ import {
   Flag,
   AlertTriangle,
   MoreVertical,
-  Trash2,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { FLAG_TYPE_CONFIG } from "@/shared/types/questions";
@@ -249,8 +249,8 @@ export function MyQuestionRow({
                     onClick={() => onDelete([question.id])}
                     className="text-destructive focus:text-destructive"
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
+                    <Archive className="h-4 w-4 mr-2" />
+                    Archive
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

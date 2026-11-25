@@ -5,17 +5,19 @@ import { parseBody } from "@/shared/utils/api/parse-body";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { formatVersion } from "@/shared/utils/version";
 import { log } from "@/shared/utils/logging";
-import { canEditQuestion } from "@/features/admin/questions/services/can-edit-question";
-import { questionUpdateBodySchema } from "@/features/admin/questions/services/question-update-schema";
-import { resolveQuestionUpdate } from "@/features/admin/questions/services/resolve-question-update";
-import { syncAnswerOptions } from "@/features/admin/questions/services/sync-answer-options";
 import {
-  syncQuestionImages,
-  syncQuestionTags,
-  updateQuestionCategory,
-} from "@/features/admin/questions/services/sync-question-relations";
-import { applyQuestionVersioning } from "@/features/admin/questions/services/question-versioning";
-import type { Json } from "@/shared/types/supabase";
+  questionUpdateBodySchema,
+  type QuestionUpdateBody,
+} from "@/features/admin/questions/services/question-update-schema";
+import {
+  saveQuestion,
+  transitionQuestion,
+  writeErrorResponse,
+  type LiveUpdateType,
+  type QuestionAction,
+  type QuestionPayload,
+} from "@/features/admin/questions/services/question-service";
+import { notifyTransition } from "@/features/admin/questions/services/question-notifications";
 
 /**
  * @swagger
@@ -221,312 +223,182 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
+/** Maps the edit form's body onto the save_question payload (same field rules as before). */
+function toPayload(body: QuestionUpdateBody, isLiveMinorOrMajor: boolean): QuestionPayload {
+  const q = body.questionData ?? {};
+  const payload: QuestionPayload = {
+    // Empty title, stem, difficulty or teaching point are left unchanged, as before.
+    ...(q.title && { title: q.title }),
+    ...(q.stem && { stem: q.stem }),
+    ...(q.difficulty && { difficulty: q.difficulty }),
+    ...(q.teaching_point && { teaching_point: q.teaching_point }),
+    ...(q.question_references !== undefined && { question_references: q.question_references }),
+    ...(q.lesson !== undefined && { lesson: q.lesson }),
+    ...(q.topic !== undefined && { topic: q.topic }),
+    ...(q.question_set_id !== undefined && { question_set_id: q.question_set_id }),
+    ...(q.anki_card_id !== undefined && {
+      anki_card_id: q.anki_card_id === null ? null : String(q.anki_card_id),
+    }),
+    ...(q.anki_deck_name !== undefined && { anki_deck_name: q.anki_deck_name }),
+    ...(body.categoryId !== undefined && { category_id: body.categoryId }),
+  };
+  if (body.answerOptions) {
+    payload.options = body.answerOptions.map((o) => ({
+      ...(o.id && { id: o.id }),
+      text: o.text,
+      is_correct: o.is_correct,
+      explanation: o.explanation || null,
+    }));
+  }
+  if (body.questionImages) {
+    payload.images = body.questionImages.map((img) => ({
+      image_id: img.image_id,
+      question_section: img.question_section,
+    }));
+  }
+  if (body.tagIds !== undefined) {
+    payload.tag_ids = (body.tagIds ?? []).filter((id): id is string => !!id);
+  }
+  const reviewer = body.reviewerId || q.reviewer_id;
+  if (isLiveMinorOrMajor && reviewer) payload.reviewer_id = reviewer;
+  return payload;
+}
+
+/** A status change requested through the edit form becomes the matching review action. */
+function statusChangeAction(from: string, to: string): QuestionAction | "invalid" | null {
+  if (!to || to === from) return null;
+  if (to === "pending_review") return "submit";
+  if (to === "published") return "approve";
+  if (to === "archived") return "archive";
+  if (to === "draft" && from === "archived") return "restore";
+  return "invalid";
+}
+
 /**
  * @swagger
  * /api/admin/questions/{id}:
  *   patch:
- *     summary: Update a question
- *     description: |
- *       Update question with permission-based access and versioning.
- *
- *       Permission Rules:
- *       - Admins: Can edit any question
- *       - create_questions: Can edit own draft/rejected/pending questions
- *       - review_questions: Can edit assigned pending questions; patch edits on published
- *
- *       Versioning:
- *       - Published questions create version history
- *       - Supports patch (typos), minor (updates), and major (breaking) changes
+ *     summary: Edit a question
+ *     description: >
+ *       Saves the edit atomically through save_question and stores a full after-save snapshot.
+ *       Published and flagged questions take a patch (default), minor or major edit; minor and
+ *       major edits go back to review and need a reviewer. A status change in questionData is
+ *       applied afterwards as the matching review action (submit, approve, archive, restore).
  *     tags:
  *       - Admin - Questions
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *         description: Question ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               questionData:
- *                 type: object
- *                 properties:
- *                   title:
- *                     type: string
- *                   stem:
- *                     type: string
- *                   difficulty:
- *                     type: string
- *                     enum: [easy, medium, hard]
- *                   teaching_point:
- *                     type: string
- *                   question_references:
- *                     type: string
- *                   question_set_id:
- *                     type: string
- *                     format: uuid
- *                   lesson:
- *                     type: string
- *                   topic:
- *                     type: string
- *                   status:
- *                     type: string
- *                     enum: [draft, pending_review, published, rejected]
- *               answerOptions:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       format: uuid
- *                     text:
- *                       type: string
- *                     is_correct:
- *                       type: boolean
- *                     explanation:
- *                       type: string
- *               questionImages:
- *                 type: array
- *                 items:
- *                   type: object
- *               tagIds:
- *                 type: array
- *                 items:
- *                   type: string
- *                   format: uuid
- *               categoryId:
- *                 type: string
- *                 format: uuid
- *               isPatchEdit:
- *                 type: boolean
- *                 description: Minor typo/wording fixes
- *               patchEditReason:
- *                 type: string
- *               updateType:
- *                 type: string
- *                 enum: [patch, minor, major]
- *               reviewerId:
- *                 type: string
- *                 format: uuid
- *               changeSummary:
- *                 type: string
- *     responses:
- *       200:
- *         description: Question updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 question:
- *                   type: object
- *                 versionId:
- *                   type: string
- *                   format: uuid
- *                 message:
- *                   type: string
- *       400:
- *         description: Bad request - invalid data
- *       401:
- *         description: Unauthorized - missing authentication
- *       403:
- *         description: Forbidden - insufficient permissions
- *       404:
- *         description: Question not found
- *       500:
- *         description: Internal server error
  */
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: questionId } = await params;
 
-    // Auth is handled by middleware - get user ID and role from headers
     const auth = requireUser(request);
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
-    const userRole = auth.role;
-
-    log.debug("PATCH - User authenticated:", userId, "Role:", userRole);
 
     const body = await parseBody(request, questionUpdateBodySchema);
     if (body instanceof NextResponse) return body;
-    const { answerOptions, questionImages, tagIds, categoryId, isPatchEdit } = body;
 
-    // Use admin client for the actual operations
     const adminClient = createServiceRoleClient();
-
-    // Get current question to check status and permissions
-    log.debug("PATCH - Fetching question with ID:", questionId);
-    const { data: currentQuestion, error: questionError } = await adminClient
+    const { data: current, error: currentError } = await adminClient
       .from("questions")
-      .select(
-        "id, status, created_by, reviewer_id, version_major, version_minor, version_patch, title, stem, difficulty, teaching_point, question_references, question_set_id, category_id, lesson, topic, anki_card_id, anki_deck_name"
-      )
+      .select("id, status, reviewer_id")
       .eq("id", questionId)
-      .single();
+      .maybeSingle();
+    if (currentError) {
+      log.error("PATCH - question fetch failed:", currentError);
+      return NextResponse.json({ error: "Failed to load the question" }, { status: 500 });
+    }
+    if (!current) {
+      return NextResponse.json({ error: "Question not found" }, { status: 404 });
+    }
 
-    log.debug("PATCH - Question fetch result:", {
-      found: !!currentQuestion,
-      error: questionError?.message,
-      status: currentQuestion?.status,
-    });
+    const isLive = current.status === "published" || current.status === "flagged";
+    let updateType: LiveUpdateType | null = null;
+    if (isLive) {
+      updateType =
+        body.isPatchEdit || !body.updateType || !["minor", "major"].includes(body.updateType)
+          ? "patch"
+          : (body.updateType as LiveUpdateType);
+    }
 
-    if (questionError || !currentQuestion) {
-      log.error("PATCH - Question fetch error:", {
-        questionId,
-        error: questionError,
-        message: questionError?.message,
-        details: questionError?.details,
-        hint: questionError?.hint,
-        code: questionError?.code,
-      });
+    const targetStatus = body.questionData?.status ?? "";
+    // A minor/major edit already sends the question to review; don't submit it twice.
+    const action =
+      updateType === "minor" || updateType === "major"
+        ? null
+        : statusChangeAction(current.status ?? "", targetStatus);
+    if (action === "invalid") {
       return NextResponse.json(
-        {
-          error: "Question not found",
-          details: questionError?.message,
-          questionId,
-        },
-        { status: 404 }
+        { error: `Use the review actions to move a question to ${targetStatus}` },
+        { status: 400 }
       );
     }
 
-    // Permission/status/ownership matrix — see canEditQuestion
-    const permission = canEditQuestion({
-      role: userRole,
-      permissions: auth.permissions,
-      userId,
-      question: currentQuestion,
-      isPatchEdit: !!isPatchEdit,
-    });
-    if (!permission.allowed) {
-      return NextResponse.json(
-        { error: permission.error, message: permission.message },
-        { status: 403 }
-      );
-    }
+    const saved = await saveQuestion({
+      actor: userId,
+      questionId,
+      payload: toPayload(body, updateType === "minor" || updateType === "major"),
+      changeSummary: body.changeSummary || body.patchEditReason || null,
+      updateType,
+    }).catch(writeErrorResponse);
+    if (saved instanceof NextResponse) return saved;
 
-    // Published questions can reach this route with zero `question_versions`
-    // rows (e.g. published via /approve or an external MCP tool, neither of
-    // which snapshot a version). If so, grab an accurate pre-edit snapshot
-    // now — before any of the mutations below run — so applyQuestionVersioning
-    // can backfill the version this question was actually on (usually 1.0.0)
-    // instead of silently starting its history mid-stream.
-    let preEditSnapshotForBackfill: Json | null = null;
-    if (currentQuestion.status === "published") {
-      const { count } = await adminClient
-        .from("question_versions")
-        .select("id", { count: "exact", head: true })
-        .eq("question_id", questionId);
-
-      if (!count) {
-        const { data } = await adminClient.rpc("get_question_snapshot_data", {
-          question_id_param: questionId,
-        });
-        preEditSnapshotForBackfill = data;
-      }
-    }
-
-    // Start transaction-like operations
-    try {
-      // Status-transition rules + main questions UPDATE payload
-      const { validQuestionFields, isFirstTimePublishing } = resolveQuestionUpdate({
-        currentQuestion,
-        body,
-        userId,
-      });
-
-      const { error: updateError } = await adminClient
-        .from("questions")
-        .update(validQuestionFields)
-        .eq("id", questionId);
-
-      if (updateError) {
-        throw new Error(`Failed to update question: ${updateError.message}`);
-      }
-
-      // Update answer options if provided
-      if (answerOptions) {
-        await syncAnswerOptions(adminClient, questionId, answerOptions);
-      } else {
-        log.debug("No answer options to update");
-      }
-
-      // Update question images if provided
-      if (questionImages) {
-        await syncQuestionImages(adminClient, questionId, questionImages);
-      }
-
-      // Update question tags if provided
-      if (tagIds !== undefined) {
-        await syncQuestionTags(adminClient, questionId, tagIds);
-      }
-
-      // Update category if provided
-      if (categoryId !== undefined) {
-        await updateQuestionCategory(adminClient, questionId, categoryId);
-      }
-
-      // Handle versioning (initial publish / patch / minor / major)
-      const versionId = await applyQuestionVersioning(adminClient, {
+    let status = saved.status;
+    let versionId = saved.version_id;
+    if (action) {
+      const transitioned = await transitionQuestion({
+        actor: userId,
         questionId,
-        userId,
-        currentQuestion,
-        body,
-        isFirstTimePublishing,
-        preEditSnapshotForBackfill,
-      });
-
-      // Get updated question data
-      const { data: updatedQuestion, error: fetchError } = await adminClient
-        .from("questions")
-        .select("id, version_major, version_minor, version_patch, updated_at, status")
-        .eq("id", questionId)
-        .single();
-
-      if (fetchError) {
-        log.error("Error fetching updated question:", fetchError);
+        action,
+        reviewerId: body.reviewerId || body.questionData?.reviewer_id || current.reviewer_id,
+      }).catch((error) => error);
+      if (transitioned instanceof Error) {
+        revalidateQuestions({ questionId, includeDashboard: true });
+        const response = writeErrorResponse(transitioned);
+        const { error } = (await response.json()) as { error: string };
         return NextResponse.json(
-          { error: "Question updated but failed to fetch updated data" },
-          { status: 500 }
+          { error: `Your changes were saved, but the status was not changed: ${error}` },
+          { status: response.status }
         );
       }
-
-      // Revalidate caches to update all admin pages
-      revalidateQuestions({ questionId, includeDashboard: true });
-
-      const versionString = formatVersion(
-        updatedQuestion.version_major,
-        updatedQuestion.version_minor,
-        updatedQuestion.version_patch,
-        false
-      );
-
-      return NextResponse.json({
-        success: true,
-        question: updatedQuestion,
-        versionId,
-        message: versionId
-          ? `Question updated to version ${versionString}`
-          : "Question updated successfully",
-      });
-    } catch (error) {
-      log.error("Error during question update:", error);
-      return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Failed to update question" },
-        { status: 500 }
+      status = transitioned.status;
+      versionId = transitioned.version_id;
+      await notifyTransition(transitioned, userId);
+    } else if (saved.status === "pending_review" && current.status !== "pending_review") {
+      // A minor or major edit of a live question went back to review.
+      await notifyTransition(
+        {
+          question_id: questionId,
+          action: "submit",
+          previous_status: current.status ?? "",
+          status: saved.status,
+          reviewer_id: saved.reviewer_id,
+          created_by: saved.created_by,
+          title: saved.title,
+          version_id: saved.version_id,
+        },
+        userId
       );
     }
+
+    revalidateQuestions({ questionId, includeDashboard: true });
+
+    const { major, minor, patch } = saved.version;
+    const versionString = formatVersion(major, minor, patch, false);
+    return NextResponse.json({
+      success: true,
+      question: {
+        id: questionId,
+        version_major: major,
+        version_minor: minor,
+        version_patch: patch,
+        status,
+      },
+      versionId,
+      message: isLive
+        ? `Question updated to version ${versionString}`
+        : "Question updated successfully",
+    });
   } catch (error) {
     log.error("Error in question update API:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

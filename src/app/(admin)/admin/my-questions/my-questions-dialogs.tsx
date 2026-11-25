@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
-import { Trash2 } from "lucide-react";
+import { Archive } from "lucide-react";
 
 interface DeleteQuestionsDialogProps {
   open: boolean;
@@ -35,11 +35,11 @@ export function DeleteQuestionsDialog({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete {count === 1 ? "question" : `${count} questions`}?</DialogTitle>
+          <DialogTitle>Archive {count === 1 ? "question" : `${count} questions`}?</DialogTitle>
           <DialogDescription>
             {count === 1
-              ? "This permanently deletes the draft question. This action cannot be undone."
-              : `This permanently deletes ${count} draft questions. This action cannot be undone.`}
+              ? "This archives the draft question. It is kept with its history, and you can restore it from the Question Database (Archived filter)."
+              : `This archives ${count} draft questions. They are kept with their history, and you can restore them from the Question Database (Archived filter).`}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -47,8 +47,8 @@ export function DeleteQuestionsDialog({
             Cancel
           </Button>
           <Button variant="destructive" onClick={onConfirm} disabled={deleting}>
-            <Trash2 className="h-4 w-4 mr-2" />
-            {deleting ? "Deleting..." : "Delete"}
+            <Archive className="h-4 w-4 mr-2" />
+            {deleting ? "Archiving..." : "Archive"}
           </Button>
         </DialogFooter>
       </DialogContent>

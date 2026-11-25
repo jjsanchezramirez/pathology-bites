@@ -1,13 +1,8 @@
-import { createClient } from "@/shared/services/server";
-import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import { NotificationTriggers } from "@/shared/services/notification-triggers";
-import { revalidateQuestions } from "@/shared/utils/api/revalidation";
-import { requireUser } from "@/shared/utils/api/api-guard";
-import { hasPermission, parsePermissions } from "@/shared/utils/auth/permissions";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+import { runTransitionRoute } from "@/features/admin/questions/services/transition-route";
+import { z } from "zod";
 
 const submitForReviewSchema = z.object({
   reviewer_id: z.string().min(1),
@@ -73,183 +68,17 @@ const submitForReviewSchema = z.object({
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const supabase = await createClient();
     const { id: questionId } = await params;
-
-    // Get current user from headers (set by middleware)
-    const auth = requireUser(request);
-    if (auth instanceof NextResponse) return auth;
-    const userId = auth.userId;
-
-    // Parse request body
     const body = await parseBody(request, submitForReviewSchema);
     if (body instanceof NextResponse) return body;
-    const { reviewer_id, resubmission_notes } = body;
-
-    // Verify reviewer exists and has appropriate role. Service-role read: users RLS only
-    // lets a non-admin read their own row, so an author submitting to a reviewer got
-    // nothing back here and the route answered 500.
-    const { data: reviewer, error: reviewerError } = await createServiceRoleClient()
-      .from("users")
-      .select("id, role, permissions")
-      .eq("id", reviewer_id)
-      .maybeSingle();
-
-    if (reviewerError) {
-      log.error("Error fetching reviewer:", reviewerError);
-      return NextResponse.json(
-        { error: "Database error while validating reviewer. Please try again." },
-        { status: 500 }
-      );
-    }
-
-    if (!reviewer) {
-      return NextResponse.json(
-        { error: "Invalid reviewer_id: reviewer not found" },
-        { status: 400 }
-      );
-    }
-
-    // The reviewer must be an admin or hold review_questions, and not be the submitter.
-    if (!hasPermission(reviewer.role, parsePermissions(reviewer.permissions), "review_questions")) {
-      return NextResponse.json(
-        { error: "Selected user is not a reviewer or admin" },
-        { status: 400 }
-      );
-    }
-    if (reviewer.id === userId) {
-      return NextResponse.json({ error: "You cannot review your own question" }, { status: 400 });
-    }
-
-    // Get the question to verify ownership and status
-    const { data: question, error: fetchError } = await supabase
-      .from("questions")
-      .select("id, status, created_by")
-      .eq("id", questionId)
-      .single();
-
-    if (fetchError) {
-      log.error("Error fetching question:", fetchError);
-      return NextResponse.json(
-        { error: "Database error while fetching question. Please try again." },
-        { status: 500 }
-      );
-    }
-
-    if (!question) {
-      return NextResponse.json({ error: "Question not found" }, { status: 404 });
-    }
-
-    // Verify question is in draft or rejected state
-    if (question.status !== "draft" && question.status !== "rejected") {
-      return NextResponse.json(
-        { error: `Cannot submit question with status: ${question.status}` },
-        { status: 400 }
-      );
-    }
-
-    // Admins, or the author holding create_questions. RLS enforces the same rule.
-    const isAdmin = auth.role === "admin";
-    const isAuthor = question.created_by === userId && auth.can("create_questions");
-
-    if (!isAdmin && !isAuthor) {
-      return NextResponse.json(
-        { error: "Only the author or an admin can submit this question for review" },
-        { status: 403 }
-      );
-    }
-
-    // Update question to pending_review
-    // Clear reviewer_feedback when resubmitting (feedback has been addressed)
-    const { data: updatedQuestion, error: updateError } = await supabase
-      .from("questions")
-      .update({
-        status: "pending_review",
-        reviewer_id: reviewer_id,
-        reviewer_feedback: null, // Clear old feedback
-        updated_at: new Date().toISOString(),
-        updated_by: userId,
-      })
-      .eq("id", questionId)
-      // The status check above only short-circuits; this filter is the actual
-      // barrier. Mirrors the draft/rejected check so a question that a
-      // reviewer just acted on can't be yanked back into review.
-      .in("status", ["draft", "rejected"])
-      .select()
-      .maybeSingle();
-
-    if (updateError) {
-      log.error("Error submitting question for review:", updateError);
-      return NextResponse.json(
-        { error: `Failed to submit question: ${updateError.message}` },
-        { status: 500 }
-      );
-    }
-
-    // Zero rows matched: status changed between our read and our write. Bail
-    // before the resubmission record and the reviewer notification.
-    if (!updatedQuestion) {
-      return NextResponse.json(
-        { error: "Question is no longer in a submittable state" },
-        { status: 409 }
-      );
-    }
-
-    // Create review record if resubmission notes are provided (for rejected → pending_review transitions)
-    if (resubmission_notes && question.status === "rejected") {
-      try {
-        const { error: reviewError } = await supabase.from("question_reviews").insert({
-          question_id: questionId,
-          reviewer_id: userId, // Creator is the "reviewer" of their own changes
-          action: "resubmitted",
-          feedback: null,
-          changes_made: {
-            resubmission_notes: resubmission_notes.trim(),
-            timestamp: new Date().toISOString(),
-            previous_status: "rejected",
-            new_status: "pending_review",
-          },
-        });
-
-        if (reviewError) {
-          log.error("Error creating resubmission review record:", reviewError);
-          // Don't fail the request if review record creation fails
-        }
-      } catch (error) {
-        log.error("Unexpected error creating resubmission review record:", error);
-        // Don't fail the request if review record creation fails
-      }
-    }
-
-    // Send notification to reviewer
-    try {
-      const notificationTriggers = new NotificationTriggers();
-      await notificationTriggers.onQuestionSubmittedForReview(
-        reviewer_id,
-        questionId,
-        updatedQuestion.title,
-        userId
-      );
-    } catch (error) {
-      log.error("Error sending submission notification:", error);
-      // Don't fail the request if notification fails
-    }
-
-    // Revalidate caches to update all admin pages
-    revalidateQuestions({ questionId, includeDashboard: true });
-
-    return NextResponse.json({
-      success: true,
-      question: updatedQuestion,
+    return await runTransitionRoute(request, questionId, "submit", {
+      reviewerId: body.reviewer_id,
+      notes: body.resubmission_notes ?? null,
     });
   } catch (error) {
     log.error("Unexpected error submitting question for review:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      {
-        error: "Internal server error. Please try again later.",
-        details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
-      },
+      { error: "Internal server error. Please try again later." },
       { status: 500 }
     );
   }

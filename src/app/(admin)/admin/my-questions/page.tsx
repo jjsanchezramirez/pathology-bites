@@ -21,6 +21,7 @@ import { PageHeader } from "@/shared/components/ui/page-header";
 import { PageContainer, TableShell, Toolbar } from "@/shared/components/ui/page-layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import {
+  Archive,
   Search,
   Send,
   RefreshCw,
@@ -30,7 +31,6 @@ import {
   Clock,
   CheckCircle2,
   Flag,
-  Trash2,
 } from "lucide-react";
 import { QuestionPreviewDialog } from "@/features/admin/questions/components/dialogs/question-preview-dialog";
 import { SubmitForReviewDialog } from "@/features/admin/questions/components/dialogs/submit-for-review-dialog";
@@ -390,16 +390,16 @@ export default function MyQuestionsPage() {
       );
 
       if (failures.length === deleteTargetIds.length) {
-        toast.error(`Failed to delete ${failures.length} question(s)`);
+        toast.error(`Failed to archive ${failures.length} question(s)`);
       } else if (failures.length > 0) {
         toast.warning(
-          `Deleted ${deleteTargetIds.length - failures.length} of ${deleteTargetIds.length}; ${failures.length} failed`
+          `Archived ${deleteTargetIds.length - failures.length} of ${deleteTargetIds.length}; ${failures.length} failed`
         );
       } else {
         toast.success(
           deleteTargetIds.length === 1
-            ? "Question deleted"
-            : `Deleted ${deleteTargetIds.length} questions`
+            ? "Question archived"
+            : `Archived ${deleteTargetIds.length} questions`
         );
       }
 
@@ -414,7 +414,7 @@ export default function MyQuestionsPage() {
       router.refresh();
     } catch (error) {
       log.error("Error deleting question(s):", error);
-      toast.error("Failed to delete question(s)");
+      toast.error("Failed to archive question(s)");
     } finally {
       setDeleting(false);
     }
@@ -517,8 +517,8 @@ export default function MyQuestionsPage() {
             variant="destructive"
             onClick={() => openDeleteDialog(Array.from(selectedQuestions))}
           >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete Selected
+            <Archive className="h-4 w-4 mr-2" />
+            Archive Selected
           </Button>
         </div>
       )}

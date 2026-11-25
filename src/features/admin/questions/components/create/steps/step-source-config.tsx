@@ -262,7 +262,11 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
         questionData.tag_ids = tagIds;
       }
 
-      updateFormState(questionData);
+      updateFormState({
+        ...questionData,
+        source: "import",
+        sourceDetail: { method: "json_paste" },
+      });
     },
     [parseJSON, updateFormState]
   );
@@ -409,7 +413,16 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
         if (tagIds.length > 0) generatedData.tag_ids = tagIds;
       }
 
-      updateFormState(generatedData);
+      updateFormState({
+        ...generatedData,
+        source: "ai_assisted",
+        sourceDetail: {
+          method: "in_site_generator",
+          model: formState.selectedAIModel,
+          model_name:
+            ACTIVE_AI_MODELS.find((m) => m.id === formState.selectedAIModel)?.name ?? null,
+        },
+      });
       toast.success("Question generated successfully! Advancing to edit step...");
 
       // Auto-advance to Step 2 (Content Edit) after successful generation

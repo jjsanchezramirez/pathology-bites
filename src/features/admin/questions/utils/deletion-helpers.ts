@@ -1,10 +1,10 @@
 import { QuestionWithDetails } from "@/shared/types/questions";
 
 /**
- * Who may delete a question (mirrors DELETE /api/admin/questions/[id]/delete):
- * - Only draft questions can be deleted
- * - Admins can delete any draft question
- * - Holders of create_questions can delete their own draft questions
+ * Who may archive a question (mirrors transition_question's archive action, which the
+ * DELETE /api/admin/questions/[id]/delete route runs; nothing is deleted):
+ * - Admins can archive any question that is not already archived
+ * - Holders of create_questions can archive their own draft or rejected questions
  */
 export interface DeleteAccess {
   isAdmin: boolean;
@@ -20,26 +20,30 @@ export function canDeleteQuestion(
     return { canDelete: false, reason: "Missing required information" };
   }
 
-  if (question.status !== "draft") {
-    return {
-      canDelete: false,
-      reason: `Cannot delete ${question.status} questions. Only draft questions can be deleted.`,
-    };
+  if (question.status === "archived") {
+    return { canDelete: false, reason: "This question is already archived." };
   }
 
   if (access.isAdmin) return { canDelete: true };
 
+  if (question.status !== "draft" && question.status !== "rejected") {
+    return {
+      canDelete: false,
+      reason: `Only an admin can archive a ${question.status} question.`,
+    };
+  }
+
   if (access.canCreate) {
     return question.created_by === access.userId
       ? { canDelete: true }
-      : { canDelete: false, reason: "You can only delete your own questions." };
+      : { canDelete: false, reason: "You can only archive your own questions." };
   }
 
-  return { canDelete: false, reason: "You do not have permission to delete questions." };
+  return { canDelete: false, reason: "You do not have permission to archive questions." };
 }
 
 /**
- * Check if the delete button should be shown for a question
+ * Check if the archive action should be shown for a question
  */
 export function shouldShowDeleteButton(
   question: QuestionWithDetails | null,

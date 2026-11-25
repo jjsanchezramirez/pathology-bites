@@ -67,19 +67,17 @@ export function DeleteQuestionDialog({
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {deletionCheck.canDelete ? "Confirm Deletion" : "Cannot Delete Question"}
+              {deletionCheck.canDelete ? "Archive this question?" : "Cannot archive this question"}
             </DialogTitle>
             <DialogDescription>
               {deletionCheck.canDelete ? (
                 <>
-                  Are you sure you want to delete "{question?.title}"?
-                  <br />
-                  <br />
-                  This action cannot be undone. All associated answer options and images will also
-                  be removed.
+                  "{question?.title}" will be archived and hidden from students and the review
+                  queue. Nothing is deleted: its options, images, history and student answers are
+                  kept, and it can be restored to draft from the Archived filter.
                 </>
               ) : (
-                `Cannot delete "${question?.title}"`
+                `Cannot archive "${question?.title}"`
               )}
             </DialogDescription>
           </DialogHeader>
@@ -99,7 +97,7 @@ export function DeleteQuestionDialog({
             </Button>
             {deletionCheck.canDelete && (
               <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-                {isDeleting ? "Deleting..." : "Confirm Deletion"}
+                {isDeleting ? "Archiving..." : "Archive"}
               </Button>
             )}
           </DialogFooter>
