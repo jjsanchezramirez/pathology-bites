@@ -45,6 +45,8 @@ export const PASSAGES = 3;
 export const PASSAGE_CHARS = 4500;
 /** Searches per question at most: the planned corpus, then others only on a miss. */
 export const MAX_SEARCHES = 3;
+/** Comparisons may add one targeted search per diagnosis the first results missed. */
+export const COMPARE_MAX_SEARCHES = 4;
 /** Excerpt length the reranker scores (it reads ~512 tokens per pair). */
 export const RERANK_CHARS = 900;
 /** Best reranker score below which a corpus "missed" and the fallback corpus is searched. */
@@ -53,6 +55,8 @@ export const RELEVANCE_MIN = 0.1;
 export const SEARCH_LIMIT = 3;
 /** Room for a short answer, list or small table plus the one-line follow-ups (~40 tokens). */
 export const ANSWER_MAX_TOKENS = 360;
+/** Tables get more room: a three-way IHC table legitimately ran past 360. */
+export const TABLE_MAX_TOKENS = 600;
 
 /**
  * Zero-token source guess for when the planner call fails. Only strong
@@ -154,7 +158,7 @@ export function relevantExcerpt(body: string, question: string, max = PASSAGE_CH
  * positive. A gap must read as a gap.
  */
 export const ANSWER_RULES =
-  'You are Dr. Albright, a concise pathology tutor. Use only the numbered sources; read them fully and attribute each number or finding to the item it belongs to. A source answers the question even when worded differently (a percentage of cases staining positive answers a question about sensitivity). Cite as [1], [2], [3], in table cells too. Never fill a gap with a guess: write "not stated" for anything the sources do not say. If the sources do not answer the question, say so in one sentence. End with one line: "Follow-ups: <question> | <question>" — two short questions a pathology learner might ask next.';
+  'You are Dr. Albright, a concise pathology tutor. Use only the numbered sources; read them fully and attribute each number or finding to the item it belongs to. A source answers the question even when worded differently (a percentage of cases staining positive answers a question about sensitivity). Cite as [1], [2], [3]. Never fill a gap with a guess. If the sources do not answer the question, say so in one sentence. End with one line: "Follow-ups: <question> | <question>" — two short questions a pathology learner might ask next.';
 
 /** True when an answer used (almost) its whole output budget, i.e. was cut off. */
 export function hitTokenCap(
@@ -182,7 +186,10 @@ export function tidyAnswer(text: string): string {
  * second one. Tolerates bold/bullet decoration and a missing line.
  */
 export function splitFollowUps(text: string): { answer: string; followUps: string[] } {
-  const m = text.match(/(?:^|\n)[ \t>*_-]*\**follow[- ]?ups?\**\s*:\**\s*([\s\S]+?)\s*$/i);
+  // On its own line, or right after a sentence ("… PMBL. Follow-ups: a | b").
+  const m = text.match(
+    /(?:^|\n|[.!?][ \t]+)[ \t>*_-]*\**follow[- ]?ups?\**\s*:\**\s*([\s\S]+?)\s*$/i
+  );
   if (!m) return { answer: text.trim(), followUps: [] };
   const followUps = m[1]
     .split(/\s*\|\s*|\n+/)
@@ -194,7 +201,8 @@ export function splitFollowUps(text: string): { answer: string; followUps: strin
     )
     .filter((q) => q.length >= 8 && q.length <= 120)
     .slice(0, 3);
-  return { answer: text.slice(0, m.index).trim(), followUps };
+  const keep = /^[.!?]/.test(m[0]) ? 1 : 0; // keep the sentence's own full stop
+  return { answer: text.slice(0, (m.index ?? 0) + keep).trim(), followUps };
 }
 
 export function buildAnswerPrompt(

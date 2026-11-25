@@ -111,6 +111,15 @@ describe("splitFollowUps", () => {
       ).followUps
     ).toEqual(["First question here?", "Second question here?"]);
   });
+  it("splits follow-ups that follow a sentence on the same line", () => {
+    expect(
+      splitFollowUps("They differ in CD30. Follow-ups: What about MEF2B? | Is OCT2 useful?")
+    ).toEqual({
+      answer: "They differ in CD30.",
+      followUps: ["What about MEF2B?", "Is OCT2 useful?"],
+    });
+  });
+
   it("does not cut an answer that mentions follow-up in passing", () => {
     const text = "Patients need follow-up of 5 years [1].";
     expect(splitFollowUps(text)).toEqual({ answer: text, followUps: [] });
