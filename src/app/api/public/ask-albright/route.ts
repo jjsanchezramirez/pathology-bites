@@ -21,6 +21,7 @@ import {
   reserveAnon,
 } from "@/features/user/ask-albright/lib/anon-usage";
 import { NDJSON, limited, streamResponse } from "@/features/user/ask-albright/lib/http";
+import { budgetMessage } from "@/features/user/ask-albright/lib/usage";
 import { MAX_QUESTION_CHARS } from "@/features/user/ask-albright/lib/router";
 import { createClient } from "@/shared/services/server";
 import { APIRateLimiter } from "@/shared/utils/api/api-rate-limiter";
@@ -178,7 +179,9 @@ export async function POST(request: NextRequest) {
         ? "You've used your free questions. Sign up free to keep asking."
         : reservation.reason === "ip"
           ? "Free questions from your network are used up for today. Sign up free to keep asking."
-          : "Dr. Albright has answered all the free questions he can today. Sign up free to keep asking.";
+          : reservation.period === "day" || !reservation.period
+            ? "Dr. Albright has answered all the free questions he can today. Sign up free to keep asking."
+            : budgetMessage(reservation.period);
     return NextResponse.json(
       { error: message, reason: reservation.reason, remaining: reservation.remaining },
       { status: 429 }

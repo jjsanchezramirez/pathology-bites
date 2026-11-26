@@ -889,28 +889,30 @@ export function AskAlbrightLauncher({ variant = "user" }: { variant?: "user" | "
         >
           <div className="min-h-0 overflow-hidden">
             <div className="flex max-h-[min(70vh,640px)] flex-col gap-3 overflow-y-auto px-4 pb-2 pt-6">
-              <div className="flex items-start justify-between gap-2">
-                <div>
+              {/* Title row, then the subtitle on its own full-width line (it
+                  must stay one line; beside the close button it wouldn't fit). */}
+              <div>
+                <div className="flex items-start justify-between gap-2">
                   <p className="text-sm font-semibold">Ask Dr. Albright</p>
-                  <p className="text-xs text-muted-foreground">
-                    Cited answers from PathOutlines, PubMed, WHO &amp; Pathology Bites
-                  </p>
-                  {anon && remaining !== null && !result && remaining > 0 && (
-                    <p className="mt-1 text-xs font-medium text-primary">
-                      {remaining === status?.limit
-                        ? `Try ${plural(remaining)} — no account needed`
-                        : `You have ${plural(remaining)} left`}
-                    </p>
-                  )}
+                  <button
+                    type="button"
+                    onClick={close}
+                    aria-label="Close"
+                    className="-mt-0.5 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={close}
-                  aria-label="Close"
-                  className="rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                <p className="truncate text-[11px] text-muted-foreground">
+                  Cited answers from PathOutlines, PubMed, WHO &amp; Pathology Bites
+                </p>
+                {anon && remaining !== null && !result && remaining > 0 && (
+                  <p className="mt-1 text-xs font-medium text-primary">
+                    {remaining === status?.limit
+                      ? `Try ${plural(remaining)} — no account needed`
+                      : `You have ${plural(remaining)} left`}
+                  </p>
+                )}
               </div>
 
               {outOfFree && !result && <SignUpCard />}
@@ -1093,7 +1095,7 @@ export function AskAlbrightLauncher({ variant = "user" }: { variant?: "user" | "
                       )}
                     </p>
                   )}
-                  <p className="mt-3 border-t pt-2.5 text-center text-[11px] text-muted-foreground">
+                  <p className="mt-3 truncate border-t pt-2.5 text-center text-[10px] text-muted-foreground">
                     Dr. Albright can make mistakes. Check the sources; not for diagnostic use.
                   </p>
                 </div>

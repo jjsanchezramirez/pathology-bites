@@ -8,7 +8,7 @@ import {
   askAlbrightStream,
   isAskAlbrightAvailable,
 } from "@/features/user/ask-albright/lib/ask";
-import { recordCost, reserveQuestion } from "@/features/user/ask-albright/lib/usage";
+import { budgetMessage, recordCost, reserveQuestion } from "@/features/user/ask-albright/lib/usage";
 import { findInHistory, saveHistory } from "@/features/user/ask-albright/lib/history";
 import { MAX_QUESTION_CHARS } from "@/features/user/ask-albright/lib/router";
 import { NDJSON, limited, streamResponse } from "@/features/user/ask-albright/lib/http";
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
     return limited(
       midnight.getTime(),
       reservation.reason === "global"
-        ? "Dr. Albright has reached today's limit. Try again tomorrow."
+        ? budgetMessage(reservation.period ?? "day")
         : "Daily question limit reached. Try again tomorrow."
     );
   }

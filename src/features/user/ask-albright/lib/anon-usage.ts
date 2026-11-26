@@ -6,6 +6,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { log } from "@/shared/utils/logging";
 import { COST_CAP_USD } from "./cost";
+import { type BudgetPeriod, asPeriod } from "./usage";
 
 /**
  * Free questions for signed-out visitors (the homepage teaser), in
@@ -18,9 +19,11 @@ import { COST_CAP_USD } from "./cost";
  *   backstop for clearing cookies. Higher than 3 on purpose: a hospital puts
  *   every pathologist behind one address. IPv6 is counted per /64 (one
  *   household or phone gets a whole /64). Stored only as a day-salted HMAC.
- * - Global: ASK_ALBRIGHT_ANON_DAILY_BUDGET_USD (default $0.50 = 250 answers at
- *   the 0.20¢ cap), separate from the signed-in budget so a bot run can never
- *   lock out members. Set it to 0 to switch the teaser off without a deploy.
+ * - Teaser share: ASK_ALBRIGHT_ANON_DAILY_BUDGET_USD (default $0.50 = 250
+ *   answers at the 0.20¢ cap) — at most half of the $1/day, so a bot run can
+ *   never lock members out. Set it to 0 to switch the teaser off.
+ * - And the site-wide spend caps every answer shares ($1/day, $5/week,
+ *   $15/month; public.ask_albright_budget, see lib/usage.ts).
  *
  * Not one of the per-action rate limiters removed in the Apr–May 2026 audit:
  * those guarded Supabase auth endpoints that Supabase already limits. This
@@ -97,6 +100,8 @@ export interface AnonReservation {
   /** Free questions this browser has left after this one. */
   remaining: number;
   reason?: "visitor" | "ip" | "global" | "unavailable";
+  /** For reason "global": which spend cap. */
+  period?: BudgetPeriod;
 }
 
 /** How many free questions this browser has left (no reservation). */
@@ -129,11 +134,12 @@ export async function reserveAnon(visitor: string, network: string): Promise<Ano
       p_global_max: global,
     });
     if (error) throw error;
-    const r = data as { allowed?: boolean; reason?: string; used?: number } | null;
+    const r = data as { allowed?: boolean; reason?: string; used?: number; period?: string } | null;
     const remaining = Math.max(0, free - (r?.used ?? free));
     if (r?.allowed) return { allowed: true, remaining };
-    const reason = r?.reason === "ip" || r?.reason === "global" ? r.reason : "visitor";
-    return { allowed: false, remaining, reason };
+    if (r?.reason === "global")
+      return { allowed: false, remaining, reason: "global", period: asPeriod(r.period) };
+    return { allowed: false, remaining, reason: r?.reason === "ip" ? "ip" : "visitor" };
   } catch (err) {
     log.error("[ask-albright] anon reservation failed; refusing the question", err);
     return { allowed: false, remaining: 0, reason: "unavailable" };
