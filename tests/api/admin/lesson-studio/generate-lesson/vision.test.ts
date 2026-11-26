@@ -2,9 +2,9 @@ import { describe, it, expect } from "vitest";
 import {
   parseVisionJSON,
   overrideToolDeterministically,
-} from "@/app/api/admin/lesson-studio/generate-lesson/vision-v2";
-import type { VisionResult } from "@/app/api/admin/lesson-studio/generate-sequence/vision";
-import type { ImageInput } from "@/app/api/admin/lesson-studio/generate-sequence/prompt";
+  type ImageInput,
+  type VisionResult,
+} from "@/app/api/admin/lesson-studio/generate-lesson/vision";
 
 // ---------------------------------------------------------------------------
 // Fixtures

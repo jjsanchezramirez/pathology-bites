@@ -1,12 +1,174 @@
-// Pass 2: Image analysis.
-// Walks VISION_FALLBACK_CHAIN via the shared runVisionTask dispatcher; every
-// provider now sees the same prompt and the same JSON parser.
+// Per-image vision for the lesson generator: where the key feature is, what to
+// call it, and how to point at it. Runs every image through the shared vision
+// fallback chain with one JSON prompt; the model's choice of pointer is then
+// replaced by a deterministic decision table (magnification × object shape ×
+// size), which proved steadier than trusting the model.
 
 import { runVisionTask } from "@/shared/services/ai-fallback";
-import type { VisionResult, AnnotationTool } from "../generate-sequence/vision";
-import { normaliseMagnification, deriveMicroscopicTool } from "../generate-sequence/vision";
-import type { ImageInput } from "../generate-sequence/prompt";
 import { log } from "@/shared/utils/logging";
+
+/** One library image as the generator sees it. */
+export interface ImageInput {
+  url: string;
+  title: string;
+  description: string;
+  category: string; // "microscopic" | "gross" | "figure" | "table" | ...
+  /** Microscopic magnification level — guides the pointer choice. */
+  magnification?: "low" | "medium" | "high" | "very_high" | null;
+  width: number;
+  height: number;
+}
+
+export type AnnotationTool =
+  | "spotlight" // Dims surroundings — low-mag busy fields where feature is hard to locate
+  | "circle" // Circular discrete structure — round follicle, granuloma
+  | "ellipse" // Elongated discrete structure — twinned GCs, oval gland pair
+  | "rectangle" // Boxy/irregular region — table cell, labelled diagram region
+  | "arrow" // Very small or punctate structure — mitotic figure, vessel, single cell
+  | "none"; // Overview/pattern image — text overlay is sufficient
+
+export type ObjectShape = "circular" | "ovoid" | "irregular";
+export type ObjectSize = "large" | "medium" | "small";
+
+export interface VisionResult {
+  /** Whether the vision model could actually see and interpret the image. */
+  canSeeImage: boolean;
+  /** Position of the single most important feature, in 0–100 viewport coords. */
+  featurePosition: { x: number; y: number } | null;
+  /** Concise label for the feature (≤5 words). */
+  suggestedLabel: string;
+  /** Which annotation tool is most appropriate for this image. */
+  annotationTool: AnnotationTool;
+  /** One-sentence justification for the tool choice. */
+  annotationReason: string;
+  // --- Microscopic-specific fields ---
+  /** Whether a discrete object/structure is present (Q0 for microscopic). */
+  objectPresent?: boolean | null;
+  /** Geometric shape of the identified object (Q0b). */
+  objectShape?: ObjectShape | null;
+  /** Relative size of the object in the frame (Q0c). */
+  objectSize?: ObjectSize | null;
+}
+
+// ---------------------------------------------------------------------------
+// Normalise magnification from DB string ("10x", "40x", …) or free text
+// ---------------------------------------------------------------------------
+
+type MagnificationEnum = ImageInput["magnification"];
+
+/**
+ * Convert a raw DB magnification string (e.g. "10x", "40x") or a free-text
+ * description/title that mentions magnification keywords into the canonical
+ * "low" | "medium" | "high" | "very_high" enum used by the decision table.
+ *
+ * DB numeric mapping:
+ *   2x, 4x, 5x                → low
+ *   10x                       → low   (scanning / overview power)
+ *   20x                       → medium
+ *   40x, 50x                  → high
+ *   60x, 100x                 → very_high
+ *
+ * Text heuristics (applied to title + description when DB value is absent):
+ *   "low power" / "low mag" / "×4" / "×10"                      → low
+ *   "medium power" / "intermediate" / "×20"                      → medium
+ *   "high power" / "high mag" / "hpf" / "×40" / "×60"           → high
+ *   "oil immersion" / "×100"                                     → very_high
+ */
+export function normaliseMagnification(
+  dbValue: string | null | undefined,
+  fallbackText?: string
+): MagnificationEnum {
+  // 1. Try numeric DB value first
+  if (dbValue) {
+    const lower = dbValue.toLowerCase().trim();
+    const xMatch = lower.match(/^(\d+)x$/);
+    if (xMatch) {
+      const n = parseInt(xMatch[1], 10);
+      if (n <= 10) return "low";
+      if (n <= 20) return "medium";
+      if (n <= 60) return "high";
+      return "very_high"; // 100x+
+    }
+    // Already in enum form (e.g. passed directly from vision-test)
+    if (["low", "medium", "high", "very_high"].includes(lower)) {
+      return lower as MagnificationEnum;
+    }
+  }
+
+  // 2. Text-based fallback — scan title + description
+  if (fallbackText) {
+    const t = fallbackText.toLowerCase();
+    // Very high (oil immersion, 100x) — check before "high" to avoid partial match
+    if (/oil.?immersion|×\s*100|\b100\s*x\b/.test(t)) return "very_high";
+    // High
+    if (/high.?power|high.?mag|h\.?p\.?f\.?|hpf|×\s*40|×\s*60|\b40\s*x\b|\b60\s*x\b/.test(t))
+      return "high";
+    // Medium
+    if (/medium.?power|intermediate.?mag|×\s*20|\b20\s*x\b/.test(t)) return "medium";
+    // Low
+    if (
+      /low.?power|low.?mag|scanning.?power|overview|×\s*[245]|×\s*10|\b[245]\s*x\b|\b10\s*x\b/.test(
+        t
+      )
+    )
+      return "low";
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Derive tool from object properties + magnification (microscopic/gross)
+//
+// Decision table:
+//   No object, any mag                                  → none  (pan/zoom only)
+//   Object, low mag,   circular/ovoid                   → spotlight + zoom-in
+//   Object, low mag,   irregular                        → arrow + zoom-in
+//   Object, other mag, medium/large, circular/ovoid     → circle / ellipse
+//   Object, other mag, small,        circular/ovoid     → arrow
+//   Object, other mag, medium/large, irregular          → none  (pan/zoom only)
+//   Object, other mag, small,        irregular          → spotlight + zoom-in
+// ---------------------------------------------------------------------------
+
+/** @internal exported for testing */
+export function deriveMicroscopicTool(
+  objectPresent: boolean | null,
+  objectShape: ObjectShape | null,
+  objectSize: ObjectSize | null,
+  magnification: ImageInput["magnification"]
+): AnnotationTool {
+  // No discrete object → simple pan/zoom, no annotation overlay
+  if (!objectPresent) return "none";
+
+  const isLowMag = magnification === "low";
+  const isSmall = objectSize === "small";
+  const isMediumOrLarge = objectSize === "medium" || objectSize === "large";
+  const isRound = objectShape === "circular" || objectShape === "ovoid";
+  const isIrregular = objectShape === "irregular";
+
+  // Low mag + circular/ovoid → spotlight (draw attention within busy architecture)
+  if (isLowMag && isRound) return "spotlight";
+
+  // Low mag + irregular → arrow (point to the oddly-shaped feature)
+  if (isLowMag && isIrregular) return "arrow";
+
+  // Higher mag + medium/large + circular/ovoid → shape outline
+  if (!isLowMag && isMediumOrLarge && isRound) {
+    return objectShape === "ovoid" ? "ellipse" : "circle";
+  }
+
+  // Higher mag + small + circular/ovoid → arrow (too small for a shape)
+  if (!isLowMag && isSmall && isRound) return "arrow";
+
+  // Higher mag + medium/large + irregular → pan/zoom only
+  if (!isLowMag && isMediumOrLarge && isIrregular) return "none";
+
+  // Higher mag + small + irregular → spotlight (subtle, hard to find)
+  if (!isLowMag && isSmall && isIrregular) return "spotlight";
+
+  // Fallback
+  return "none";
+}
 
 // ---------------------------------------------------------------------------
 // Prompt
@@ -157,7 +319,7 @@ export function parseVisionJSON(raw: string, _image: ImageInput): VisionResult |
 
 // ---------------------------------------------------------------------------
 // Deterministic tool override
-// Uses v1's decision table + spotlight bias for consistency.
+// The decision table below, plus a bias toward spotlights.
 // ---------------------------------------------------------------------------
 
 /** @internal exported for testing */
@@ -177,7 +339,6 @@ export function overrideToolDeterministically(
     return { ...result, annotationTool: "none", annotationReason: "No feature position found" };
   }
 
-  // Use v1 decision table for microscopic
   if (category === "microscopic") {
     let tool = deriveMicroscopicTool(
       result.objectPresent ?? null,
@@ -234,7 +395,7 @@ async function analyzeOneImage(image: ImageInput, modelOverride?: string): Promi
   try {
     const { parsed: result } = await runVisionTask("lesson-vision", prompt, image.url, {
       system: "You are an expert pathologist. Respond with only the JSON requested.",
-      label: `vision-v2[${image.title.slice(0, 30)}]`,
+      label: `lesson-vision[${image.title.slice(0, 30)}]`,
       modelOverride,
       // Parsing inside the attempt is what makes fallback meaningful: a model
       // that answers but returns unparseable JSON hands off to the next one.
@@ -247,7 +408,7 @@ async function analyzeOneImage(image: ImageInput, modelOverride?: string): Promi
     // Override the model's tool suggestion with deterministic decision table
     return overrideToolDeterministically(result, imageWithMag);
   } catch (err) {
-    log.warn(`[vision-v2] All models failed for "${image.title}":`, err);
+    log.warn(`[lesson-vision] All models failed for "${image.title}":`, err);
     return FALLBACK;
   }
 }
@@ -256,13 +417,13 @@ async function analyzeOneImage(image: ImageInput, modelOverride?: string): Promi
 // Public API: analyse all images in parallel
 // ---------------------------------------------------------------------------
 
-export async function analyzeImagesV2(
+export async function analyzeImages(
   images: ImageInput[],
   modelOverride?: string
 ): Promise<VisionResult[]> {
-  log.debug(`[vision-v2] Analysing ${images.length} images...`);
+  log.debug(`[lesson-vision] Analysing ${images.length} images...`);
   const results = await Promise.all(images.map((img) => analyzeOneImage(img, modelOverride)));
   const seen = results.filter((r) => r.canSeeImage).length;
-  log.debug(`[vision-v2] Done — ${seen}/${images.length} analysed successfully`);
+  log.debug(`[lesson-vision] Done — ${seen}/${images.length} analysed successfully`);
   return results;
 }

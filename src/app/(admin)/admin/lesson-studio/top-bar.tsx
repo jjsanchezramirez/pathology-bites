@@ -194,13 +194,7 @@ export function TopBar({
 
       {/* --- Right: Generate · Save status · Preview --------------------- */}
       <div className="flex flex-shrink-0 items-center gap-1">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onGenerate}
-          disabled={!hasAudio || noSlides}
-          title="Generate lesson with AI"
-        >
+        <Button variant="outline" size="sm" onClick={onGenerate} title="Draft a lesson with AI">
           <Wand2 className="mr-1 h-3 w-3" />
           Generate
         </Button>

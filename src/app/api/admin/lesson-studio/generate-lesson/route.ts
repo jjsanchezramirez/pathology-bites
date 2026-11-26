@@ -1,179 +1,132 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
-import type { ImageInput } from "../generate-sequence/prompt";
-import type { GenerateLessonRequest } from "./types";
-import { analyzeTranscript } from "./transcript-analysis";
-import { analyzeImagesV2 } from "./vision-v2";
-import { planLesson } from "./planner";
-import { assembleLesson } from "./assembler-v2";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+import { analyzeImages, type ImageInput } from "./vision";
+import { writeScript } from "./writer";
 
-// Vercel hobby plan caps serverless functions at 60s. Pipeline must fit within
-// that ceiling — see planner / assembler for the per-pass budgets.
-export const maxDuration = 60;
+// Vision (parallel, one deadline) + the writer: see the lesson-vision and
+// lesson-writer budgets in ai-models.ts. Needs Fluid Compute for > 60 s.
+export const maxDuration = 120;
+
+const MAX_IMAGES = 8;
+
+const schema = z.object({
+  topic: z.string().trim().min(3).max(300),
+  notes: z.string().trim().max(6000).optional(),
+  minutes: z.number().min(1).max(10).default(3),
+  images: z
+    .array(
+      z.object({
+        url: z.string().url(),
+        title: z.string().max(500).optional(),
+        description: z.string().max(2000).optional(),
+        category: z.string().max(40).optional(),
+        width: z.number().positive().optional(),
+        height: z.number().positive().optional(),
+      })
+    )
+    .max(MAX_IMAGES)
+    .default([]),
+  modelOverride: z.string().max(120).optional(),
+});
 
 /**
  * @swagger
  * /api/admin/lesson-studio/generate-lesson:
  *   post:
- *     summary: Generate a complete lesson from images and audio using AI
+ *     summary: Draft a lesson script with AI
  *     description: |
- *       Multi-pass AI pipeline that generates a complete Lesson object in native editor format.
- *       Pass 1-2 run in parallel: transcript analysis + image vision analysis.
- *       Pass 3: AI lesson planning (slide ordering + text slides only).
- *       Pass 4: Deterministic assembly (durations, annotations, camera — all computed, not AI).
- *       Uses the shared AI fallback chain.
+ *       Writes a narrated lesson in the script format (scenes of the five
+ *       templates, one sentence per beat) from a topic, optional notes and up
+ *       to 8 library images. Each image goes through vision first, so image
+ *       scenes point at real features. The client turns the script into
+ *       editable canvas scenes (lessonFromScript), then narrates it as usual.
+ *       Requires admin role.
  *     tags:
  *       - Admin - Lesson Studio
  *     security:
  *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [topic]
+ *             properties:
+ *               topic: { type: string }
+ *               notes: { type: string, description: "Outline or points the lesson must cover" }
+ *               minutes: { type: number, default: 3 }
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     url: { type: string }
+ *                     title: { type: string }
+ *     responses:
+ *       200:
+ *         description: "{ script, warnings, model }"
+ *       502:
+ *         description: Every model failed to produce a usable script
  */
 export async function POST(request: NextRequest) {
+  const auth = requireAdmin(request);
+  if (auth instanceof NextResponse) return auth;
+  const body = await parseBody(request, schema);
+  if (body instanceof NextResponse) return body;
+
+  const started = Date.now();
   try {
-    // Auth check
-    const auth = requireAdmin(request);
-    if (auth instanceof NextResponse) return auth;
-
-    const body: GenerateLessonRequest = await request.json();
-    const { images, svgs, transcript, audioDuration, audioUrl, audioTitle, modelOverride } = body;
-
-    // Validate inputs
-    if (!images || images.length === 0) {
-      return NextResponse.json({ error: "At least one image is required" }, { status: 400 });
-    }
-    if (!transcript || !transcript.trim()) {
-      return NextResponse.json(
-        { error: "Transcript is required for lesson generation" },
-        { status: 400 }
-      );
-    }
-    if (!audioDuration || audioDuration <= 0) {
-      return NextResponse.json({ error: "Valid audioDuration is required" }, { status: 400 });
-    }
-    if (!audioUrl) {
-      return NextResponse.json({ error: "audioUrl is required" }, { status: 400 });
-    }
-
-    const startTime = Date.now();
-    log.debug(
-      `[generate-lesson] Starting pipeline for ${images.length} images, ${audioDuration.toFixed(1)}s audio`
+    const images = await enrichImageMetadata(
+      body.images.map((img) => ({
+        url: img.url,
+        title: img.title ?? "",
+        description: img.description ?? "",
+        category: img.category ?? "microscopic",
+        magnification: null,
+        width: img.width ?? 0,
+        height: img.height ?? 0,
+      }))
     );
-
-    // -----------------------------------------------------------------------
-    // Pass 0: Enrich image metadata from DB
-    // -----------------------------------------------------------------------
-    const enrichedImages = await enrichImageMetadata(images);
-    log.debug(
-      `[generate-lesson] Enriched ${enrichedImages.filter((img) => img.title).length}/${images.length} images with DB metadata`
+    const vision = images.length ? await analyzeImages(images, body.modelOverride) : [];
+    const { script, warnings, model } = await writeScript(
+      { topic: body.topic, notes: body.notes, minutes: body.minutes, images, vision },
+      body.modelOverride
     );
-
-    const userSvgs = svgs ?? [];
-    log.debug(`[generate-lesson] User provided ${userSvgs.length} SVGs`);
-
-    // -----------------------------------------------------------------------
-    // Passes 1-2: run in parallel (transcript analysis + vision)
-    // -----------------------------------------------------------------------
-    const [transcriptAnalysis, visionResults] = await Promise.all([
-      analyzeTranscript(transcript, enrichedImages, audioDuration, modelOverride),
-      analyzeImagesV2(enrichedImages, modelOverride),
-    ]);
-
-    const parallelElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    log.debug(`[generate-lesson] Passes 1-2 complete in ${parallelElapsed}s`);
-    log.debug(
-      `[generate-lesson] Transcript: ${transcriptAnalysis.segments.length} segments, title="${transcriptAnalysis.episodeTitle}"`
+    log.info(
+      `[generate-lesson] ${script.scenes.length} scenes from ${images.length} images in ${Date.now() - started}ms (${model})`
     );
-    log.debug(
-      `[generate-lesson] Vision: ${visionResults.filter((r) => r.canSeeImage).length}/${images.length} analysed`
-    );
-    visionResults.forEach((v, i) => {
-      log.debug(
-        `  [${i}] tool=${v.annotationTool}, pos=${v.featurePosition ? `${v.featurePosition.x},${v.featurePosition.y}` : "none"}, label="${v.suggestedLabel}"`
-      );
-    });
-
-    // -----------------------------------------------------------------------
-    // Pass 3: Lesson planning (ordering + text slides + SVG placement)
-    // -----------------------------------------------------------------------
-    const plan = await planLesson(
-      transcriptAnalysis,
-      enrichedImages,
-      audioDuration,
-      userSvgs,
-      modelOverride
-    );
-
-    const planElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    log.debug(
-      `[generate-lesson] Plan complete in ${planElapsed}s — order=[${plan.imageOrder}], ${plan.textSlides.length} text slides, ${plan.svgPlacements.length} SVG placements`
-    );
-
-    // -----------------------------------------------------------------------
-    // Pass 4: Deterministic assembly
-    // -----------------------------------------------------------------------
-    const lesson = assembleLesson(
-      plan,
-      enrichedImages,
-      visionResults,
-      transcriptAnalysis,
-      userSvgs,
-      audioUrl,
-      audioTitle,
-      audioDuration,
-      transcript
-    );
-
-    const totalElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    log.debug(
-      `[generate-lesson] Complete in ${totalElapsed}s — ${lesson.slides.length} slides, ${lesson.slides.reduce((n, s) => n + s.elements.length, 0)} elements`
-    );
-
-    return NextResponse.json({
-      success: true,
-      lesson,
-      debug: {
-        transcriptAnalysis,
-        visionResults,
-        plan,
-        elapsed: totalElapsed,
-      },
-    });
+    return NextResponse.json({ script, warnings, model });
   } catch (error) {
-    log.error("[generate-lesson] Unexpected error:", error);
+    log.error("[generate-lesson] failed:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error during lesson generation" },
-      { status: 500 }
+      { error: error instanceof Error ? error.message : "Lesson generation failed" },
+      { status: 502 }
     );
   }
 }
 
-// ---------------------------------------------------------------------------
-// Enrich image metadata from the images table
-// ---------------------------------------------------------------------------
-
+/** Fill in title, description, category, magnification and size from the images table. */
 async function enrichImageMetadata(images: ImageInput[]): Promise<ImageInput[]> {
   if (images.length === 0) return images;
-
   try {
     const supabase = await createClient();
-    const urls = images.map((img) => img.url);
-
     const { data, error } = await supabase
       .from("images")
       .select("url, description, alt_text, category, magnification, width, height")
-      .in("url", urls);
-
+      .in(
+        "url",
+        images.map((img) => img.url)
+      );
     if (error || !data) {
-      log.warn("[enrich] DB lookup failed:", error?.message);
+      log.warn("[generate-lesson] image lookup failed:", error?.message);
       return images;
     }
-
-    const byUrl = new Map<string, (typeof data)[number]>();
-    for (const row of data) {
-      byUrl.set(row.url, row);
-    }
-
+    const byUrl = new Map(data.map((row) => [row.url, row]));
     return images.map((img) => {
       const db = byUrl.get(img.url);
       if (!db) return img;
@@ -182,14 +135,14 @@ async function enrichImageMetadata(images: ImageInput[]): Promise<ImageInput[]> 
         title: db.description || db.alt_text || img.title,
         description: db.alt_text || db.description || img.description,
         category: db.category || img.category,
-        // images.magnification is free-text in the DB; ImageInput narrows it
+        // images.magnification is free text; vision normalises it.
         magnification: (db.magnification as ImageInput["magnification"]) || img.magnification,
         width: db.width || img.width,
         height: db.height || img.height,
       };
     });
   } catch (err) {
-    log.warn("[enrich] Unexpected error:", err);
+    log.warn("[generate-lesson] image lookup error:", err);
     return images;
   }
 }

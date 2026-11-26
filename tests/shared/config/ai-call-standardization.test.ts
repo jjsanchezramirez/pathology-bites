@@ -96,9 +96,9 @@ describe("AI call standardization", () => {
   it("points vision tasks at the vision chain and text tasks at the text chain", () => {
     // A text model handed an image silently returns nonsense rather than failing.
     expect(AI_TASKS["lesson-vision"].chain).toBe(VISION_FALLBACK_CHAIN);
-    for (const name of ["lesson-planner", "lesson-transcript"] as const) {
-      expect(AI_TASKS[name].chain, `${name} must use the text chain`).toBe(TEXT_FALLBACK_CHAIN);
-    }
+    expect(AI_TASKS["lesson-writer"].chain, "lesson-writer must use the text chain").toBe(
+      TEXT_FALLBACK_CHAIN
+    );
   });
 
   it("has no decommissioned model id anywhere in the source", () => {
@@ -161,17 +161,14 @@ describe("AI call standardization", () => {
     }
   });
 
-  it("keeps the lesson-studio critical path inside the 60s generate-lesson budget", () => {
-    // generate-lesson (maxDuration 60) runs transcript analysis and vision
-    // concurrently via Promise.all, then the planner. Images also fan out in
-    // parallel, so vision contributes one deadline rather than one per image.
-    // The critical path is therefore max(transcript, vision) + planner.
-    const criticalPath =
-      Math.max(AI_TASKS["lesson-transcript"].deadlineMs, AI_TASKS["lesson-vision"].deadlineMs) +
-      AI_TASKS["lesson-planner"].deadlineMs;
+  it("keeps the lesson-studio critical path inside the 120s generate-lesson budget", () => {
+    // generate-lesson (maxDuration 120) runs vision on every image in parallel,
+    // so vision contributes one deadline rather than one per image, then the
+    // writer. The critical path is vision + writer.
+    const criticalPath = AI_TASKS["lesson-vision"].deadlineMs + AI_TASKS["lesson-writer"].deadlineMs;
 
-    // Headroom for image fetching, DB reads and assembly, which are not AI time.
-    expect(criticalPath).toBeLessThanOrEqual(50_000);
+    // Headroom for DB reads and validation, which are not AI time.
+    expect(criticalPath).toBeLessThanOrEqual(110_000);
   });
 
   // Providers retire models on their own schedule, and a remap is the one place
