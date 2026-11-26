@@ -63,6 +63,8 @@ export function matchNorm(text: string): string {
     .trim();
 }
 
+const MAX_STEM_ENTITIES = 3;
+
 export function buildEntityIndex(entities: EntityRow[], synonyms: SynonymRow[]): EntityIndex {
   const byId = new Map(entities.map((e) => [e.id, e]));
   const terms = new Map<string, Term>();
@@ -80,6 +82,26 @@ export function buildEntityIndex(entities: EntityRow[], synonyms: SynonymRow[]):
   for (const s of synonyms) {
     const e = byId.get(s.entity_id);
     if (e) add(s.term, e, s.kind === "abbreviation");
+  }
+  // Site-qualified names also answer to their stem: nothing is named plain
+  // "low-grade serous carcinoma" — only "…of the ovary" and "…of the
+  // peritoneum" — so the question matched neither. Guarded, because a wrong
+  // stem sends a question to the wrong tumour: 3+ words, never "other …", no
+  // entity already owning the stem, at most 3 site variants, and no OTHER
+  // entity whose name starts with it ("clear cell sarcoma" of the kidney must
+  // not answer for clear cell sarcoma of soft tissue).
+  const names = entities.map((e) => ({ id: e.id, norm: matchNorm(e.name) }));
+  const stems = new Map<string, EntityRow[]>();
+  for (const e of entities) {
+    const m = matchNorm(e.name).match(/^(.+?) of the [a-z0-9 ]+$/);
+    if (!m || m[1].split(" ").length < 3 || m[1].startsWith("other ")) continue;
+    stems.set(m[1], [...(stems.get(m[1]) ?? []), e]);
+  }
+  for (const [stem, ents] of stems) {
+    if (terms.has(stem) || ents.length > MAX_STEM_ENTITIES) continue;
+    const mine = new Set(ents.map((e) => e.id));
+    if (names.some((n) => !mine.has(n.id) && n.norm.startsWith(`${stem} `))) continue;
+    for (const e of ents) add(stem, e, false);
   }
   return { terms, maxWords };
 }
@@ -130,6 +152,7 @@ const MAX = {
   aberrant: 6,
   wildtype: 6,
   molecular: 6,
+  molecularAbsent: 6,
 };
 
 /**
@@ -163,6 +186,7 @@ export function entityProfileText(name: string, rows: ProfileRow[]): string | nu
     aberrant: [] as string[],
     wildtype: [] as string[],
     molecular: [] as string[],
+    molecularAbsent: [] as string[],
   };
   for (const r of ranked) {
     const pct = r.pooled_pct != null ? ` (${Math.round(r.pooled_pct)}%)` : "";
@@ -183,6 +207,13 @@ export function entityProfileText(name: string, rows: ProfileRow[]): string | nu
         group = r.call;
         label = `${r.name}${pct}`;
       }
+    } else if (r.call === "negative") {
+      // "absence of BRAF p.V600E" in adamantinomatous craniopharyngioma: without
+      // this line the model copied V600E across from the papillary column.
+      group = "molecularAbsent";
+      label = /\b(mutation|fusion|amplification|deletion|rearrangement|methylation)\b/i.test(r.name)
+        ? r.name
+        : `${r.name} ${r.kind.replace(/_/g, " ")}`;
     } else if (r.call === "positive") {
       group = "molecular";
       label = /\b(mutation|fusion|amplification|deletion|rearrangement|methylation)\b/i.test(r.name)
@@ -211,6 +242,9 @@ export function entityProfileText(name: string, rows: ProfileRow[]): string | nu
       lists[k].length ? `${PATTERN_LINE[k]}: ${lists[k].join("; ")}.` : ""
     ),
     lists.molecular.length ? `Molecular: ${lists.molecular.join("; ")}.` : "",
+    lists.molecularAbsent.length
+      ? `Molecular, reported absent: ${lists.molecularAbsent.join("; ")}.`
+      : "",
   ]
     .filter(Boolean)
     .join(" ");
