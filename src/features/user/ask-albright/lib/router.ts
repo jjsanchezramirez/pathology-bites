@@ -20,7 +20,7 @@ export const SOURCE_TOOL: Record<AskSource, PathTalkTool> = {
 };
 
 export const SOURCE_LABEL: Record<AskSource, string> = {
-  outlines: "PathologyOutlines",
+  outlines: "PathOutlines",
   pubmed: "PubMed",
   who: "WHO Classification",
   literature: "Literature",
@@ -160,7 +160,7 @@ export function relevantExcerpt(body: string, question: string, max = PASSAGE_CH
  * positive. A gap must read as a gap.
  */
 export const ANSWER_RULES =
-  'You are Dr. Albright, a concise pathology tutor. Use only the numbered sources; read them fully and attribute each number or finding to the item it belongs to. A source answers the question even when worded differently (a percentage of cases staining positive answers a question about sensitivity). Cite as [1], [2], [3]. Lead with the direct answer and stay on what was asked. Never fill a gap with a guess; if the sources do not answer the question, say so in one sentence, but do not list other things the sources leave out. End with one line: "Follow-ups: <question> | <question>" — two short questions a pathology learner might ask next.';
+  'You are Dr. Albright, a concise pathology tutor. Use only the numbered sources; read them fully and attribute each number or finding to the item it belongs to. A source answers the question even when worded differently (a percentage of cases staining positive answers a question about sensitivity). Cite as [1], [2], [3]. Lead with the direct answer and stay on what was asked. Never fill a gap with a guess; if the sources do not answer the question, say so in one sentence, but do not list other things the sources leave out. When a source gives only part of a rule, algorithm or set of criteria, give that part as written and say the rest is not in the sources; never work out the missing branches yourself. A number belongs only to what its own sentence measures: never move a figure from one method, study or group to another. End with one line: "Follow-ups: <question> | <question>" — two short questions a pathology learner might ask next.';
 
 /** True when an answer used (almost) its whole output budget, i.e. was cut off. */
 export function hitTokenCap(

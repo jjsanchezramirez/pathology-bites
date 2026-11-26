@@ -7,19 +7,21 @@ vi.mock("@/shared/utils/logging", () => ({
 vi.mock("@/features/user/ask-albright/lib/history", () => ({
   listHistory: vi.fn(async () => []),
   clearHistory: vi.fn(async () => undefined),
+  setFeedback: vi.fn(async () => true),
 }));
 
-import { GET, DELETE } from "@/app/api/user/ask-albright/history/route";
-import { clearHistory, listHistory } from "@/features/user/ask-albright/lib/history";
+import { GET, DELETE, PATCH } from "@/app/api/user/ask-albright/history/route";
+import { clearHistory, listHistory, setFeedback } from "@/features/user/ask-albright/lib/history";
 
 const URL_BASE = "http://localhost:3000/api/user/ask-albright/history";
 const ID = "0b8a4c1e-2f3d-4a5b-8c6d-7e8f9a0b1c2d";
 
-function req(method: string, query = "", userId: string | null = "user-1") {
+function req(method: string, query = "", userId: string | null = "user-1", body?: unknown) {
   return createMockRequest({
     method,
     url: `${URL_BASE}${query}`,
     headers: userId ? { "x-user-id": userId } : {},
+    ...(body !== undefined ? { body } : {}),
   });
 }
 
@@ -35,7 +37,13 @@ describe("/api/user/ask-albright/history", () => {
 
   it("lists only the caller's entries, limit clamped to 1–50", async () => {
     vi.mocked(listHistory).mockResolvedValue([
-      { id: ID, question: "Q?", result: {} as never, createdAt: "2026-11-24T00:00:00Z" },
+      {
+        id: ID,
+        question: "Q?",
+        result: {} as never,
+        createdAt: "2026-11-24T00:00:00Z",
+        feedback: null,
+      },
     ]);
     const body = await getResponseJson(await GET(req("GET", "?limit=500")));
     expect(listHistory).toHaveBeenCalledWith("user-1", 50);
@@ -61,5 +69,21 @@ describe("/api/user/ask-albright/history", () => {
   it("400s on a malformed id", async () => {
     expect((await DELETE(req("DELETE", "?id=1;drop"))).status).toBe(400);
     expect(clearHistory).not.toHaveBeenCalled();
+  });
+
+  it("saves a rating on the caller's own entry", async () => {
+    expect((await PATCH(req("PATCH", "", "user-1", { id: ID, rating: -1 }))).status).toBe(200);
+    expect(setFeedback).toHaveBeenLastCalledWith("user-1", ID, -1);
+    expect((await PATCH(req("PATCH", "", "user-1", { id: ID, rating: 0 }))).status).toBe(200);
+    expect(setFeedback).toHaveBeenLastCalledWith("user-1", ID, 0);
+  });
+
+  it("rejects a bad rating or id, unauthenticated calls, and unknown entries", async () => {
+    expect((await PATCH(req("PATCH", "", "user-1", { id: ID, rating: 5 }))).status).toBe(400);
+    expect((await PATCH(req("PATCH", "", "user-1", { id: "x", rating: 1 }))).status).toBe(400);
+    expect((await PATCH(req("PATCH", "", null, { id: ID, rating: 1 }))).status).toBe(401);
+    expect(setFeedback).not.toHaveBeenCalled();
+    vi.mocked(setFeedback).mockResolvedValueOnce(false);
+    expect((await PATCH(req("PATCH", "", "user-1", { id: ID, rating: 1 }))).status).toBe(404);
   });
 });
