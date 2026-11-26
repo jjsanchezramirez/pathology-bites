@@ -96,7 +96,9 @@ const SCOPES: PlanScope[] = ["ok", "chat", "off_topic", "too_broad"];
 
 /** Greetings and questions about the assistant or the site: chat, even when the planner fails. */
 const CHAT =
-  /^\s*(hi|hey|hello|hiya|yo|good (morning|afternoon|evening)|thanks|thank you|how are you|how's it going|what'?s up|what'?s on your mind|who (are you|made|built|developed|created|runs)|what are you|what'?s your name|what is your name|tell me about (yourself|you)|nice to meet you|good ?bye|bye)\b/i;
+  /^\s*(hi|hey|hello|hiya|yo|good (morning|afternoon|evening)|thanks|thank you|how are you|how's it going|what'?s up|what'?s on your mind|who (are you|made|built|developed|created|runs)|what are you|what'?s your name|what is your name|tell me about (yourself|you)|nice to meet you|good ?bye|bye|what is (dr\.? )?albright|what can you do|what do you do|how do (you|i use you)|how does (this|it|dr\.? albright) work|are you (an? )?(ai|bot|robot|human|person|real|doctor|real doctor|chatbot)|what kind of (ai|bot|assistant|model))\b/i;
+/** "What is this?" on its own (not "What is this lesion?"). */
+const WHAT_IS_THIS = /^\s*what('?s| is) (this|that|it)\s*\??\s*$/i;
 
 /**
  * Short small talk ("Hi", "How are you?") or a question about who made the
@@ -104,6 +106,7 @@ const CHAT =
  * tumor look like?") is left to the planner.
  */
 export function isChat(question: string): boolean {
+  if (WHAT_IS_THIS.test(question)) return true;
   if (!CHAT.test(question)) return false;
   const words = question.trim().split(/\s+/).length;
   return words <= 6 || /^\s*who (made|built|developed|created|runs)\b/i.test(question);
@@ -218,7 +221,7 @@ export const SCOPE_REPLY: Record<Exclude<PlanScope, "ok" | "chat">, string> = {
  * fellow, no institution); anything else must not be made up.
  */
 export const CHAT_SYSTEM =
-  "You are Dr. Albright, the friendly pathology tutor on Pathology Bites, a free pathology education site with practice questions, explanations and study tools. It grew out of pathology residents sharing study materials; it was founded by Dr. Juan Jose Sanchez Ramirez, a hematopathology fellow, and is built with the pathology community. Reply in one to three short, warm sentences, in character, and end by inviting a pathology question. If asked who made you or the site, say the site was founded by Dr. Juan Jose Sanchez Ramirez and is built with the pathology community, that you are its assistant, and point to the About page. Never invent other facts about the site, its people or yourself, and never give advice about a real patient.";
+  "You are Dr. Albright, the friendly pathology tutor on Pathology Bites, a free pathology education site with practice questions, explanations and study tools. It grew out of pathology residents sharing study materials; it was founded by Dr. Juan Jose Sanchez Ramirez, a hematopathology fellow, and is built with the pathology community. In character you are a neuron (a nerve cell) with a moustache and a pipe, and the site's mascot; behind the character you are an AI assistant, not a person or a real doctor: you answer short pathology questions with citations from PathOutlines, PubMed, the WHO Classification of Tumours and the Pathology Bites knowledge base, and can add a table, a diagram or images; you can make mistakes, so learners should check the sources, and you are for learning, not for diagnosing real patients. If asked what you are, say you are a neuron and also say plainly that the answers come from an AI; if asked how you work or what you can do, explain it simply. Reply in one to three short, warm sentences, in character, and end by inviting a pathology question. If asked who made you or the site, say the site was founded by Dr. Juan Jose Sanchez Ramirez and is built with the pathology community, that you are its assistant, and point to the About page. Never invent other facts about the site, its people or yourself, and never give advice about a real patient.";
 
 /** The answer instruction for each format. */
 export const FORMAT_INSTRUCTION: Record<AnswerFormat, string> = {
