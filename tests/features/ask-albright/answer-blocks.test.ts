@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { inlineLinks, parseAnswerBlocks } from "@/features/user/ask-albright/lib/answer-blocks";
+import {
+  inlineLinks,
+  mergeLeadIns,
+  parseAnswerBlocks,
+} from "@/features/user/ask-albright/lib/answer-blocks";
 
 describe("parseAnswerBlocks", () => {
   it("parses a Markdown table and keeps the text around it in order", () => {
@@ -47,6 +51,40 @@ describe("parseAnswerBlocks", () => {
     expect(parseAnswerBlocks("CK7 - patchy in oncocytoma [1].")).toEqual([
       { kind: "p", text: "CK7 - patchy in oncocytoma [1]." },
     ]);
+  });
+
+  it("treats unbolded '- Essential:' / '- Desirable:' as group titles (criteria format)", () => {
+    const text = [
+      "- Essential:",
+      " - Primary nodal or mediastinal presentation [2]",
+      "- Desirable:",
+      " - EBV positivity (~40% of cases) [2]",
+    ].join("\n");
+    const blocks = parseAnswerBlocks(text);
+    expect(blocks.map((b) => (b.kind === "list" ? b.title : b.kind))).toEqual([
+      "Essential",
+      "Desirable",
+    ]);
+    // A criterion split across bullets with one lead-in is put back together.
+    expect(
+      mergeLeadIns([
+        "Primary nodal presentation [2]",
+        "Immunophenotype of HRS cells: CD30+ [2]",
+        "Immunophenotype of HRS cells: PAX5+ (weak to moderate) [2]",
+        "Immunophenotype of HRS cells: CD20−/weak [2, 3].",
+        "Histology: subtyping (if possible) [2]",
+      ])
+    ).toEqual([
+      "Primary nodal presentation [2]",
+      "Immunophenotype of HRS cells: CD30+, PAX5+ (weak to moderate), CD20−/weak [2, 3]",
+      "Histology: subtyping (if possible) [2]",
+    ]);
+    // Short criteria still read one per line.
+    const short = parseAnswerBlocks("**Desirable:**\n- CD15+ [1]\n- CD45− [1]\n- EBV+ [1]");
+    expect(short[0]).toMatchObject({ kind: "list", title: "Desirable", inline: false });
+    // Any other unbolded bulleted "X:" stays an item.
+    const other = parseAnswerBlocks("- Note:\n- CD30 [1]");
+    expect(other.every((b) => b.kind !== "list" || b.title === null)).toBe(true);
   });
 
   it("turns labels into group titles and keeps indented bullets in their group (CCRCC shape)", () => {

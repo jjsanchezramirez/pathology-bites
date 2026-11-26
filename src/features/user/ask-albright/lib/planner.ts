@@ -21,7 +21,7 @@
 import { ANSWER_RULES, type AskSource, heuristicSource } from "./router";
 import { KNOWN_STAINS } from "./tables";
 
-export type AnswerFormat = "sentence" | "bullets" | "paragraph" | "table" | "marker";
+export type AnswerFormat = "sentence" | "bullets" | "paragraph" | "table" | "marker" | "criteria";
 export type PlanScope = "ok" | "chat" | "off_topic" | "too_broad";
 /**
  * The one visual an answer may carry — the cascade (ask.ts resolves it):
@@ -82,6 +82,17 @@ function heuristicVisual(question: string): PlanVisual {
 
 const COMPARES = /\b(compare|comparison|versus|vs\.?|table|differ|difference|distinguish)\b/i;
 const YES_NO = /^\s*(is|are|does|do|can|could|should|was|were|has|have)\b/i;
+/**
+ * Asking for a set of diagnostic criteria ("WHO diagnostic criteria for CHL").
+ * Decided by wording, not by the planner (it never sees the "criteria"
+ * format): the answer came back as one 170-word paragraph mixing essential
+ * and desirable criteria.
+ */
+const CRITERIA = /\b(criteria|criterion)\b/i;
+/** A criteria question the "criteria" format fits (not a yes/no or a comparison). */
+function wantsCriteria(question: string): boolean {
+  return CRITERIA.test(question) && !YES_NO.test(question) && !COMPARES.test(question);
+}
 
 /** A marker name in the question: CD99, TTF-1, S100, p63, SOX10… or desmin, calretinin. */
 export function namesMarker(question: string): boolean {
@@ -131,7 +142,13 @@ export function fallbackPlan(question: string): Plan {
     fallback: source === "outlines" ? "pubmed" : "outlines",
     query: question,
     focus: "",
-    format: /\b(compare|versus|vs\.?|table)\b/i.test(question) ? "table" : "paragraph",
+    // Also the plan when the planner misses its deadline, so wording rules
+    // that must always hold (criteria) apply here too.
+    format: wantsCriteria(question)
+      ? "criteria"
+      : /\b(compare|versus|vs\.?|table)\b/i.test(question)
+        ? "table"
+        : "paragraph",
     items: [],
     visual: heuristicVisual(question),
   };
@@ -179,7 +196,9 @@ export function parsePlan(raw: string, question: string): Plan {
   // a table of "PPV: not stated" rows).
   // A yes/no question gets a direct answer unless a table was asked for: "Are
   // MEF2B and J chain useful in distinguishing NLPHL from CHL?" became a table.
-  if (format === "table" && YES_NO.test(question) && !/\btable\b/i.test(question)) {
+  if (wantsCriteria(question)) {
+    format = "criteria";
+  } else if (format === "table" && YES_NO.test(question) && !/\btable\b/i.test(question)) {
     format = "sentence";
   } else if (format === "marker" && YES_NO.test(question)) {
     // "Is CD117 positive in renal oncocytoma?" asks about one pairing, not the
@@ -217,6 +236,23 @@ export function parsePlan(raw: string, question: string): Plan {
   return { scope, source, fallback, query, focus, format, items, visual };
 }
 
+/**
+ * The planned format once the passages are known. The criteria format only
+ * when a passage really lists essential criteria (WHO's "Essential: …"):
+ * when WHO search came up empty and PathOutlines answered "Diagnostic
+ * criteria for classic Hodgkin lymphoma", the model put its own "Essential" /
+ * "Desirable" labels over a marker dump, CD45 included. Anything else falls
+ * back to the paragraph it got before.
+ */
+export function formatForPassages(format: AnswerFormat, passages: string[]): AnswerFormat {
+  if (format !== "criteria") return format;
+  // "Essential: …" itself, not the bare heading: WHO's CMML page has only
+  // "Essential and desirable diagnostic criteria See Box 2.19" (its criteria
+  // are prerequisite/supporting, in a box the corpus lacks), and the model
+  // made up an essential/desirable split.
+  return passages.some((p) => /\bEssential:\s*\S/i.test(p)) ? "criteria" : "paragraph";
+}
+
 /** What Dr. Albright says instead of searching, for out-of-scope questions. */
 export const SCOPE_REPLY: Record<Exclude<PlanScope, "ok" | "chat">, string> = {
   off_topic:
@@ -245,6 +281,11 @@ export const FORMAT_INSTRUCTION: Record<AnswerFormat, string> = {
   // answer had wandered through thymic carcinoma and mucicarmine instead.
   marker:
     'Answer as short bullets ("- ") under these bold labels, in this order, each on its own line: "**Positive — normal tissue:**", "**Negative — normal tissue:**", "**Positive — tumors:**", "**Negative — tumors:**". One tissue or tumor per bullet with its key detail (pattern, % if given), and cite every bullet. At most 12 bullets per label, the tumors most often met in practice first. Omit a label the sources say nothing about. No other labels, no tables.',
+  // WHO lists essential and desirable criteria separately; a paragraph ran
+  // them together. Only used when a passage has that wording
+  // (formatForPassages); other schemes (Milan…) get a paragraph.
+  criteria:
+    'Answer as short bullets ("- "), one criterion per bullet, each cited, under "**Essential:**" and "**Desirable:**" on their own lines, in that order. List only what a source itself calls an essential or desirable criterion, under the label that source gives it; never move a criterion between the two, and never add other findings, markers or numbers. Keep each criterion whole, as the source states it: its findings stay on one line, separated by commas; never split one criterion into several bullets or repeat a lead-in ("Immunophenotype:") across bullets. After the last bullet only the Follow-ups line: no summary and no sentence about what the sources leave out. No tables.',
   table:
     "Answer as a compact Markdown table: at most 5 columns and 8 rows, cells under 10 words, no padding or alignment spaces (rows = items, columns = features). Choose the features that best tell the items apart; if the question names no aspect, cover more than one (e.g. typical patient or site, key morphology, key stains, genetics). Never add a feature no source covers for any item. Keep the question's items as the items, in its own words; never swap one for a different diagnosis a source is about (a gray zone lymphoma page is not PMBL). Cite in the cells too; write 'not stated' in any cell the sources do not cover, and in every cell for an item no source covers. Then one sentence that answers the question directly.",
 };
