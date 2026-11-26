@@ -188,6 +188,9 @@ describe("planner prompt and answer system", () => {
     expect(isChat("What is this lesion?")).toBe(false);
     expect(isChat("What is it that stains with CD117 in GIST?")).toBe(false);
     expect(CHAT_SYSTEM).toMatch(/you are a neuron/);
+    // "Dr." and "MD" both say physician: chat uses "Dr. <name>"; the About page uses "<name>, MD".
+    expect(CHAT_SYSTEM).toMatch(/founded by Dr\. Juan Jose Sanchez Ramirez, a hematopathology/);
+    expect(CHAT_SYSTEM).not.toMatch(/Sanchez Ramirez, MD/);
     expect(CHAT_SYSTEM).toMatch(/you are an AI assistant, not a person or a real doctor/);
   });
 
