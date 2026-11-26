@@ -924,4 +924,14 @@ describe("POST /api/user/ask-albright — visuals cascade", () => {
     const body = await getResponseJson(await POST(ask("Workup of an oncocytic renal tumor")));
     expect(body.tables).toEqual([]);
   });
+
+  it("answers a joke request from the list: no planner, no search, nothing saved", async () => {
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(await POST(ask("Tell me a joke")));
+    expect(body).toMatchObject({ scope: "chat", citations: [], costUsd: 0 });
+    expect(body.answer.length).toBeGreaterThan(20);
+    expect(ai).not.toHaveBeenCalled();
+    expect(search).not.toHaveBeenCalled();
+    expect(saveHistory).not.toHaveBeenCalled();
+  });
 });

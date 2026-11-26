@@ -41,6 +41,7 @@ import {
   answerSystem,
   CHAT_SYSTEM,
   PLANNER_HEDGE_MODEL,
+  isJoke,
   PLANNER_MODEL,
   PLANNER_SYSTEM,
   type Plan,
@@ -57,6 +58,7 @@ import {
 } from "./tables";
 import { type Page, mergeByHref, rankPages, keyTerms, type SourcedHit } from "./rank";
 import { rerankScores } from "./rerank";
+import { jokeAnswer } from "./jokes";
 import {
   type AskVisual,
   DIAGRAM_INSTRUCTION,
@@ -526,6 +528,27 @@ export async function* askAlbrightStream(
   /** noCache: always answer fresh and don't store it (the dev eval uses this). */
   { noCache = false }: { noCache?: boolean } = {}
 ): AsyncGenerator<AskEvent> {
+  // Jokes come from the curated list: no planner, no search, no model, no cache.
+  if (isJoke(question)) {
+    yield {
+      type: "done",
+      result: {
+        answer: jokeAnswer(),
+        source: "outlines",
+        sourceLabel: SOURCE_LABEL.outlines,
+        citations: [],
+        tables: [],
+        followUps: [],
+        tokens: 0,
+        cached: false,
+        scope: "chat",
+        format: "sentence",
+        costUsd: 0,
+      },
+    };
+    return;
+  }
+
   const key = normalizeQuestion(question);
   const hit = noCache ? null : cacheGet(key);
   if (hit) {

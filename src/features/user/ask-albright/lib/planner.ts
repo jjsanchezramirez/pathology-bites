@@ -97,6 +97,15 @@ const SCOPES: PlanScope[] = ["ok", "chat", "off_topic", "too_broad"];
 /** Greetings and questions about the assistant or the site: chat, even when the planner fails. */
 const CHAT =
   /^\s*(hi|hey|hello|hiya|yo|good (morning|afternoon|evening)|thanks|thank you|how are you|how's it going|what'?s up|what'?s on your mind|who (are you|made|built|developed|created|runs)|what are you|what'?s your name|what is your name|tell me about (yourself|you)|nice to meet you|good ?bye|bye|what is (dr\.? )?albright|what can you do|what do you do|how do (you|i use you)|how does (this|it|dr\.? albright) work|are you (an? )?(ai|bot|robot|human|person|real|doctor|real doctor|chatbot)|what kind of (ai|bot|assistant|model))\b/i;
+/** Asking for a joke: small talk at any (short) length — "tell me a joke about residents". */
+const JOKE =
+  /^\s*(?:(?:please|ok|okay|hi|hey)[, ]+)?(?:(?:can|could|would|will) you )?(?:tell|give|say) (?:me |us )?(?:a |another |one more |something |anything )?(?:pathology |medical |bad |good |quick )?(?:joke|pun|something funny|anything funny|funny)\b|^\s*(?:make me laugh|got any jokes|know any jokes|any jokes|(?:a |another )?(?:pathology )?(?:joke|pun)s?\b)/i;
+
+/** A request for a joke (answered from the curated list in jokes.ts, never by the model). */
+export function isJoke(question: string): boolean {
+  return JOKE.test(question) && question.trim().split(/\s+/).length <= 12;
+}
+
 /** "What is this?" on its own (not "What is this lesion?"). */
 const WHAT_IS_THIS = /^\s*what('?s| is) (this|that|it)\s*\??\s*$/i;
 
@@ -107,6 +116,7 @@ const WHAT_IS_THIS = /^\s*what('?s| is) (this|that|it)\s*\??\s*$/i;
  */
 export function isChat(question: string): boolean {
   if (WHAT_IS_THIS.test(question)) return true;
+  if (isJoke(question)) return true;
   if (!CHAT.test(question)) return false;
   const words = question.trim().split(/\s+/).length;
   return words <= 6 || /^\s*who (made|built|developed|created|runs)\b/i.test(question);
