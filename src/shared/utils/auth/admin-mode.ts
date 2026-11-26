@@ -4,8 +4,8 @@
  *
  * Admin mode is which area a staff member is looking at, and so which
  * dashboard theme is available:
- * - admin (the /admin area; admins and anyone holding a permission): only 'default'
- * - user (the student dashboard): 'tangerine', 'sage-garden', 'notebook' and 'default'
+ * - admin (the /admin area; admins and anyone holding a permission): every theme
+ * - user (the student dashboard): 'sage-garden' (default), 'tangerine', 'notebook' and 'default'
  * What a staff member can do inside /admin depends on their permissions, not the mode.
  */
 

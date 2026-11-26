@@ -10,6 +10,7 @@ import { toast } from "@/shared/utils/ui/toast";
 import { getTextZoomConfig, getValidZoomLevel } from "@/shared/utils/ui/text-zoom";
 import { useDashboardSettings } from "@/shared/contexts/dashboard-settings-provider";
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
+import { DEFAULT_DASHBOARD_THEME_ID } from "@/shared/config/dashboard-themes";
 import {
   userSettingsService,
   type QuizSettings,
@@ -193,7 +194,7 @@ export default function SettingsPage() {
       setTextZoomContext(config.default);
       setTheme("system");
       // Reset dashboard theme using DashboardThemeProvider which handles admin mode
-      setDashboardTheme("default");
+      setDashboardTheme(DEFAULT_DASHBOARD_THEME_ID);
 
       // Save to database, then invalidate SWR cache
       await userSettingsService.updateNotificationSettings(defaultPreferences);
