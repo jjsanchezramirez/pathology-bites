@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  REVIEW,
   SCORING_GUIDE,
   matchScoring,
   scoringCitations,
@@ -53,9 +52,11 @@ describe("scoring content", () => {
     }
   });
 
-  it("keeps the unverified facts on the review list", () => {
-    expect(REVIEW.length).toBeGreaterThan(0);
+  it("names the assay for every PD-L1 cut-off row", () => {
     const table = SCORING_GUIDE.find((e) => e.id === "pdl1-cutoffs")!.answer;
-    expect(table).toContain("†");
+    const rows = table.split("\n").filter((l) => /^\| (?!Setting|---)/.test(l));
+    expect(rows.length).toBe(9);
+    for (const r of rows) expect(r).toMatch(/· (22C3|28-8|SP263|SP142) \|/);
+    expect(table).not.toContain("†");
   });
 });

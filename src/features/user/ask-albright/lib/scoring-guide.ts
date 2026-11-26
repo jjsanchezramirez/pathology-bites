@@ -9,9 +9,9 @@
  * TNBC line. The rules are few, stable in form, and must be exact.
  *
  * Every number below was checked against its cited source (PubMed abstract or
- * the PathologyOutlines page) on 2026-11-26. Two things the abstracts do not
- * state are marked † in the table and listed in REVIEW: which assay each
- * pembrolizumab / nivolumab trial used. Cut-offs follow drug approvals, which
+ * the PathologyOutlines page) on 2026-11-26. The one thing the abstracts do
+ * not state — which assay each pembrolizumab (22C3) and nivolumab (28-8) trial
+ * used — was confirmed by the owner on review the same day. Cut-offs follow drug approvals, which
  * change and differ by country, so the table says "pivotal trial cut-off" and
  * carries AS_OF — it is a teaching table, not a label.
  */
@@ -180,7 +180,7 @@ export const SCORING_GUIDE: ScoringEntry[] = [
     id: "pdl1-cutoffs",
     title: "PD-L1 cut-offs by tumour type",
     ask: "What are the PD-L1 cut-offs by tumour type?",
-    answer: `PD-L1 cut-offs used in the pivotal trials (as of ${SCORING_AS_OF}; approvals and labels change and differ by country — check the current label):\n\n| Setting | Score · assay | Cut-off(s) |\n|---|---|---|\n| NSCLC, 1st line (pembrolizumab) | TPS · 22C3† | ≥ 50% [1]; ≥ 1% [2] |\n| NSCLC, adjuvant (atezolizumab) | TC · SP263 | ≥ 1% [3] |\n| Head & neck SCC (pembrolizumab) | CPS · 22C3† | ≥ 1; ≥ 20 [4] |\n| Cervix (pembrolizumab) | CPS · 22C3† | ≥ 1 [5] |\n| TNBC (pembrolizumab) | CPS · 22C3 | ≥ 10 [6, 7] |\n| TNBC (atezolizumab) | IC · SP142 | ≥ 1% [7] |\n| Oesophageal SCC (pembrolizumab) | CPS · 22C3† | ≥ 10 [8] |\n| Gastric / GEJ adenocarcinoma (pembrolizumab) | CPS · 22C3† | ≥ 1; ≥ 10 [9] |\n| Gastric / GEJ / oesophageal adenocarcinoma (nivolumab) | CPS · 28-8† | ≥ 5 [10] |\n\n† Assay not named in the cited abstract.`,
+    answer: `PD-L1 cut-offs used in the pivotal trials (as of ${SCORING_AS_OF}; approvals and labels change and differ by country — check the current label):\n\n| Setting | Score · assay | Cut-off(s) |\n|---|---|---|\n| NSCLC, 1st line (pembrolizumab) | TPS · 22C3 | ≥ 50% [1]; ≥ 1% [2] |\n| NSCLC, adjuvant (atezolizumab) | TC · SP263 | ≥ 1% [3] |\n| Head & neck SCC (pembrolizumab) | CPS · 22C3 | ≥ 1; ≥ 20 [4] |\n| Cervix (pembrolizumab) | CPS · 22C3 | ≥ 1 [5] |\n| TNBC (pembrolizumab) | CPS · 22C3 | ≥ 10 [6, 7] |\n| TNBC (atezolizumab) | IC · SP142 | ≥ 1% [7] |\n| Oesophageal SCC (pembrolizumab) | CPS · 22C3 | ≥ 10 [8] |\n| Gastric / GEJ adenocarcinoma (pembrolizumab) | CPS · 22C3 | ≥ 1; ≥ 10 [9] |\n| Gastric / GEJ / oesophageal adenocarcinoma (nivolumab) | CPS · 28-8 | ≥ 5 [10] |`,
     sources: [
       SRC.kn024,
       SRC.kn042,
@@ -196,16 +196,6 @@ export const SCORING_GUIDE: ScoringEntry[] = [
     related: ["pdl1-scores", "her2-gastric"],
   },
 ];
-
-/**
- * Facts the cited abstracts do not state, for the owner's review before this
- * ships: the companion assay of each pembrolizumab / nivolumab trial (the
- * cells marked †). Kept here so the review list lives with the content.
- */
-export const REVIEW = [
-  "22C3 as the assay in KEYNOTE-024/042/048/826/590/859 (abstracts give the score and cut-off only)",
-  "28-8 as the assay in CheckMate 649 (abstract gives CPS ≥ 5 only)",
-] as const;
 
 const HER2 = /\b(her-?2|erbb2|her2\/neu)\b/;
 const PDL1 = /\b(pd-?l1|22c3|28-8|sp263|sp142|tps|cps)\b/;
