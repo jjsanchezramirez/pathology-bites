@@ -102,6 +102,7 @@ export function CallBadge({ call, className }: { call: string | null; className?
     loss: { label: "Loss", className: "border-rose-300 bg-rose-50 text-rose-700" },
     retained: { label: "Retained", className: "border-emerald-300 bg-emerald-50 text-emerald-700" },
     wildtype: { label: "Wildtype", className: "border-sky-300 bg-sky-50 text-sky-700" },
+    aberrant: { label: "Aberrant", className: "border-orange-300 bg-orange-50 text-orange-700" },
   };
   const s = map[String(call ?? "").toLowerCase()];
   if (!s) return null;
