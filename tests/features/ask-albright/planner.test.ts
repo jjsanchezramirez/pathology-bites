@@ -156,6 +156,23 @@ describe("planner prompt and answer system", () => {
     expect(ANSWER_RULES.replace(/\[\d\]/g, "")).not.toMatch(/\d/);
   });
 
+  it("treats joke requests as chat, and keeps the joke rules in the persona", () => {
+    for (const q of [
+      "Tell me a joke",
+      "Tell me something funny",
+      "Can you tell me a pathology joke?",
+      "Tell me a joke about pathology residents please",
+      "Make me laugh",
+      "Got any jokes?",
+      "Another pun",
+    ])
+      expect(isChat(q)).toBe(true);
+    expect(isChat("Tell me something about CD30")).toBe(false);
+    expect(isChat("Is a joke stain a real thing in histotechnology labs today?")).toBe(false);
+    // Jokes come from the list, so the model is never asked for one.
+    expect(CHAT_SYSTEM).not.toMatch(/joke/i);
+  });
+
   it("treats questions about what Dr. Albright is as chat", () => {
     for (const q of [
       "What are you?",
