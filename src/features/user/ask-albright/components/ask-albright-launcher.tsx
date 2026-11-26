@@ -1,11 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ExternalLink, LoaderCircle, SendHorizontal, ThumbsDown, ThumbsUp, X } from "lucide-react";
 
 import { cn } from "@/shared/utils";
-import { parseAnswerBlocks } from "../lib/answer-blocks";
+import { inlineLinks, parseAnswerBlocks } from "../lib/answer-blocks";
 import type { AskVisual } from "../lib/visuals";
 import { MAX_QUESTION_CHARS, normalizeQuestion } from "../lib/router";
 import { AlbrightAvatar } from "./albright-avatar";
@@ -212,7 +213,24 @@ function CiteSup({ cites }: { cites: AskResponse["citations"] }) {
   );
 }
 
-/** `**bold**` and citation markers; everything else is plain text. */
+/** In-site links in a reply (see inlineLinks): page names the guide or small talk point to. */
+function SiteLinks({ text }: { text: string }) {
+  return (
+    <>
+      {inlineLinks(text).map((p, j) =>
+        p.href ? (
+          <Link key={j} href={p.href} className="text-primary underline underline-offset-2">
+            {p.text}
+          </Link>
+        ) : (
+          p.text
+        )
+      )}
+    </>
+  );
+}
+
+/** `**bold**`, citation markers and in-site links; everything else is plain text. */
 function Inline({ text, citations }: { text: string; citations: AskResponse["citations"] }) {
   return (
     <>
@@ -230,7 +248,9 @@ function Inline({ text, citations }: { text: string; citations: AskResponse["cit
           return bold ? (
             <strong key={`${i}-${k}`}>{bold[1]}</strong>
           ) : (
-            <span key={`${i}-${k}`}>{seg}</span>
+            <span key={`${i}-${k}`}>
+              <SiteLinks text={seg} />
+            </span>
           );
         });
       })}

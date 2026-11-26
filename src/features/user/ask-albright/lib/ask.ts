@@ -89,6 +89,9 @@ import {
   sameMarkerNote,
   termAlternatives,
 } from "./synonyms";
+import { isFactRequest } from "./fact";
+import { randomKbFact } from "./kb-fact";
+import { guideFollowUps, matchGuide } from "./site-guide";
 
 export interface AskCitation {
   n: number;
@@ -518,6 +521,53 @@ async function lookupVisual(plan: Plan, question: string): Promise<AskVisual | n
 }
 
 /**
+ * A reply that needed no model call (site guide, random fact): sources first,
+ * then the whole text. Marked as small talk, so it is neither saved to history
+ * nor rated, and costs nothing.
+ */
+function* instantReply(
+  t0: number,
+  reply: { answer: string; citations: AskCitation[]; followUps: string[] },
+  /** Shown only per citation; the reply-level label is kept honest for telemetry. */
+  sourceLabel: string = SOURCE_LABEL.who
+): Generator<AskEvent> {
+  const ms = Date.now() - t0;
+  yield {
+    type: "meta",
+    source: "who",
+    sourceLabel,
+    citations: reply.citations,
+    tables: [],
+    format: "sentence",
+  };
+  yield {
+    type: "done",
+    result: {
+      answer: reply.answer,
+      source: "who",
+      sourceLabel,
+      citations: reply.citations,
+      tables: [],
+      followUps: reply.followUps,
+      tokens: 0,
+      cached: false,
+      scope: "chat",
+      format: "sentence",
+      costUsd: 0,
+      timings: {
+        plan: 0,
+        search: 0,
+        searches: 0,
+        profile: 0,
+        firstToken: ms,
+        answer: 0,
+        total: ms,
+      },
+    },
+  };
+}
+
+/**
  * The pipeline, streamed: cache → plan (with a first search started
  * alongside it) → more searches only on a miss, never past the deadline →
  * knowledge-base profiles → passages trimmed to the cost budget → the answer,
@@ -547,6 +597,32 @@ export async function* askAlbrightStream(
       },
     };
     return;
+  }
+
+  // 0. Answers that need no model call, before the cache (each "tell me
+  // something" gets a new fact) — both fall through to the planner if empty:
+  //   a how-to about the site itself → its site-guide entry (site-guide.ts);
+  //   "tell me something" → one cited WHO sentence from the knowledge base (fact.ts).
+  const guide = matchGuide(question);
+  if (guide) {
+    yield* instantReply(
+      Date.now(),
+      {
+        answer: guide.answer,
+        citations: [{ n: 1, title: guide.title, href: guide.href, sourceLabel: "Pathology Bites" }],
+        followUps: guideFollowUps(guide),
+      },
+      "Pathology Bites"
+    );
+    return;
+  }
+  if (isFactRequest(question)) {
+    const t0 = Date.now();
+    const fact = await randomKbFact();
+    if (fact) {
+      yield* instantReply(t0, fact);
+      return;
+    }
   }
 
   const key = normalizeQuestion(question);

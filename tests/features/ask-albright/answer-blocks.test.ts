@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseAnswerBlocks } from "@/features/user/ask-albright/lib/answer-blocks";
+import { inlineLinks, parseAnswerBlocks } from "@/features/user/ask-albright/lib/answer-blocks";
 
 describe("parseAnswerBlocks", () => {
   it("parses a Markdown table and keeps the text around it in order", () => {
@@ -162,5 +162,31 @@ describe("parseAnswerBlocks while streaming", () => {
     expect(parseAnswerBlocks("| Marker | CHL |")).toEqual([
       { kind: "p", text: "| Marker | CHL |" },
     ]);
+  });
+});
+
+describe("inlineLinks", () => {
+  it("links in-site Markdown links and the About page", () => {
+    expect(inlineLinks("Open [My Quizzes](/dashboard/quizzes) or see our About page.")).toEqual([
+      { text: "Open " },
+      { text: "My Quizzes", href: "/dashboard/quizzes" },
+      { text: " or see our " },
+      { text: "About page", href: "/about" },
+      { text: "." },
+    ]);
+  });
+
+  it("never links off-site or protocol-relative URLs", () => {
+    for (const t of [
+      "[x](https://evil.example)",
+      "[x](//evil.example)",
+      "[x](javascript:alert(1))",
+    ]) {
+      expect(inlineLinks(t).every((p) => !p.href)).toBe(true);
+    }
+  });
+
+  it("leaves plain text and citation markers alone", () => {
+    expect(inlineLinks("CD30 is positive [1].")).toEqual([{ text: "CD30 is positive [1]." }]);
   });
 });
