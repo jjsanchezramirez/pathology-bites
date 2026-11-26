@@ -84,12 +84,46 @@ describe("entityProfileText", () => {
       row("Ki-67", "protein", "index"),
     ])!;
     expect(text).toContain("Positive: β-catenin (98%); CD10.");
-    expect(text).toContain("Negative: Chromogranin; Trypsin (loss).");
+    expect(text).toContain("Negative: Chromogranin.");
+    expect(text).toContain("Loss of expression (stain lost in the tumour cells): Trypsin.");
     expect(text).toContain("Molecular: CTNNB1 exon 3 mutation.");
     expect(text).not.toContain("KRAS");
     expect(text).not.toContain("Ki-67");
     // Read as a verdict, the lists misled (calretinin "reliable in both").
     expect(text).toMatch(/not how often or how strongly/);
+  });
+
+  it("gives loss, retained, aberrant and wild-type lines of their own", () => {
+    // "Negative: SDHB (loss)" was read as "SDHB is not lost".
+    const text = entityProfileText("Paraganglioma", [
+      row("Chromogranin", "protein", "positive", 2),
+      row("SDHB", "protein", "loss"),
+      row("INI1", "protein", "retained"),
+      row("p53", "protein", "aberrant", 2),
+      row("RB1", "protein", "wildtype"),
+    ])!;
+    expect(text).toContain("Positive: Chromogranin.");
+    expect(text).toMatch(/Loss of expression[^:]*: SDHB\./);
+    expect(text).toMatch(/Retained expression[^:]*: INI1\./);
+    expect(text).toMatch(/Aberrant, mutation-type staining[^:]*: p53\./);
+    expect(text).toMatch(/Wild-type, normal-pattern staining: RB1\./);
+    expect(text).not.toMatch(/Negative:/);
+    expect(text.match(/Positive: [^.]*\./)?.[0]).toBe("Positive: Chromogranin.");
+  });
+
+  it("keeps a marker that is lost in some and retained in others on both lines", () => {
+    const text = entityProfileText("Paraganglioma", [
+      row("SDHB", "protein", "retained", 1, 100),
+      row("SDHB", "protein", "loss", 1),
+    ])!;
+    expect(text).toMatch(/Loss of expression[^:]*: SDHB\./);
+    expect(text).toMatch(/Retained expression[^:]*: SDHB \(100%\)\./);
+  });
+
+  it("profiles an entity whose only findings are pattern calls", () => {
+    expect(entityProfileText("LGSC", [row("p53", "protein", "wildtype")])).toMatch(
+      /Wild-type, normal-pattern staining: p53\./
+    );
   });
 
   it("returns null when the knowledge base has nothing usable", () => {
