@@ -792,7 +792,7 @@ export function AskAlbrightLauncher() {
                 <div>
                   <p className="text-sm font-semibold">Ask Dr. Albright</p>
                   <p className="text-xs text-muted-foreground">
-                    Short, cited answers from PathOutlines, PubMed, WHO and Pathology Bites.
+                    Cited answers from PathOutlines, PubMed, WHO &amp; Pathology Bites
                   </p>
                 </div>
                 <button
