@@ -174,6 +174,15 @@ describe("planner prompt and answer system", () => {
     expect(ANSWER_RULES).toMatch(/never move a figure/);
   });
 
+  it("forbids answering about a different diagnosis or inventing a classification", () => {
+    expect(ANSWER_RULES).toMatch(
+      /finding in a different diagnosis, even a related one, is not an answer/
+    );
+    expect(ANSWER_RULES).toMatch(
+      /Never say one diagnosis is a type, subtype or variant of another/
+    );
+  });
+
   it("puts no concrete findings or numbers in the answer rules (they leak into answers)", () => {
     // "positive in 9 of 10 cases", meant as an example, came back as an HPV table cell.
     expect(ANSWER_RULES.replace(/\[\d\]/g, "")).not.toMatch(/\d/);
