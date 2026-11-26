@@ -122,9 +122,28 @@ export function findEntities(index: EntityIndex, text: string): FoundEntity[] {
   return out;
 }
 
-const POSITIVE = new Set(["positive", "retained", "mixed"]);
-const NEGATIVE = new Set(["negative", "loss"]);
-const MAX = { positive: 14, negative: 8, molecular: 6 };
+const MAX = {
+  positive: 14,
+  negative: 8,
+  loss: 8,
+  retained: 8,
+  aberrant: 6,
+  wildtype: 6,
+  molecular: 6,
+};
+
+/**
+ * Pattern calls get lines of their own, named in plain words. Folded into
+ * Positive/Negative they misled the answer model: given "Negative: SDHB
+ * (loss)" for paraganglioma it answered "SDHB is not lost; positive in 100%",
+ * and p53 aberrant / wild-type calls were dropped from the profile entirely.
+ */
+const PATTERN_LINE: Record<"loss" | "retained" | "aberrant" | "wildtype", string> = {
+  loss: "Loss of expression (stain lost in the tumour cells)",
+  retained: "Retained expression (stain kept, the normal pattern)",
+  aberrant: "Aberrant, mutation-type staining (e.g. p53 overexpression or null)",
+  wildtype: "Wild-type, normal-pattern staining",
+};
 
 /**
  * One passage for an entity: positive and negative markers and molecular
@@ -136,20 +155,33 @@ export function entityProfileText(name: string, rows: ProfileRow[]): string | nu
     (a, b) => (b.sources ?? 0) - (a.sources ?? 0) || (b.pooled_pct ?? -1) - (a.pooled_pct ?? -1)
   );
   const seen = new Set<string>();
-  const lists = { positive: [] as string[], negative: [] as string[], molecular: [] as string[] };
+  const lists = {
+    positive: [] as string[],
+    negative: [] as string[],
+    loss: [] as string[],
+    retained: [] as string[],
+    aberrant: [] as string[],
+    wildtype: [] as string[],
+    molecular: [] as string[],
+  };
   for (const r of ranked) {
-    const key = r.name.toLowerCase();
-    if (seen.has(key)) continue;
     const pct = r.pooled_pct != null ? ` (${Math.round(r.pooled_pct)}%)` : "";
     let group: keyof typeof lists | null = null;
     let label = r.name;
     if (r.kind === "protein" || r.kind === "dye") {
-      if (POSITIVE.has(r.call)) {
+      if (r.call === "positive" || r.call === "mixed") {
         group = "positive";
         label = `${r.name}${r.call === "mixed" ? " (variable)" : pct}`;
-      } else if (NEGATIVE.has(r.call)) {
+      } else if (r.call === "negative") {
         group = "negative";
-        label = `${r.name}${r.call === "loss" ? " (loss)" : ""}`;
+      } else if (
+        r.call === "loss" ||
+        r.call === "retained" ||
+        r.call === "aberrant" ||
+        r.call === "wildtype"
+      ) {
+        group = r.call;
+        label = `${r.name}${pct}`;
       }
     } else if (r.call === "positive") {
       group = "molecular";
@@ -157,11 +189,17 @@ export function entityProfileText(name: string, rows: ProfileRow[]): string | nu
         ? `${r.name}${pct}`
         : `${r.name} ${r.kind.replace(/_/g, " ")}${pct}`;
     }
-    if (!group || lists[group].length >= MAX[group]) continue;
+    if (!group) continue;
+    // One row per marker — except across the pattern lines, where a marker
+    // seen both ways IS the finding: "paraganglioma" pools the WHO volumes,
+    // and a 34/34 SDHB-retained series hid the SDHB-loss rows, so the answer
+    // was "SDHB is not lost".
+    const key = group in PATTERN_LINE ? `${r.name.toLowerCase()}|${group}` : r.name.toLowerCase();
+    if (seen.has(key) || lists[group].length >= MAX[group]) continue;
     lists[group].push(label);
     seen.add(key);
   }
-  if (lists.positive.length + lists.negative.length + lists.molecular.length === 0) return null;
+  if (Object.values(lists).every((l) => l.length === 0)) return null;
   return [
     // The lists say WHERE a marker is reported, not how often or how strongly:
     // read as a verdict, "calretinin positive" in both mesothelioma subtypes
@@ -169,6 +207,9 @@ export function entityProfileText(name: string, rows: ProfileRow[]): string | nu
     `${name} in the Pathology Bites knowledge base (WHO-derived; lists where each marker has been reported, not how often or how strongly; for frequency and reliability use the other sources).`,
     lists.positive.length ? `Positive: ${lists.positive.join("; ")}.` : "",
     lists.negative.length ? `Negative: ${lists.negative.join("; ")}.` : "",
+    ...(["loss", "retained", "aberrant", "wildtype"] as const).map((k) =>
+      lists[k].length ? `${PATTERN_LINE[k]}: ${lists[k].join("; ")}.` : ""
+    ),
     lists.molecular.length ? `Molecular: ${lists.molecular.join("; ")}.` : "",
   ]
     .filter(Boolean)
