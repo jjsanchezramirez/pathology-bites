@@ -80,7 +80,7 @@ const HIDDEN = [/^\/dashboard\/quiz\/(?!new$)[^/]+$/, /^\/dashboard\/anki$/];
  */
 function cellTone(cell: string): string {
   const t = cell
-    .replace(/\[\d(?:,\s*\d)*\]|\*\*/g, "")
+    .replace(/\[\d{1,2}(?:,\s*\d{1,2})*\]|\*\*/g, "")
     .trim()
     .toLowerCase();
   if (/^not stated/.test(t)) return "italic text-muted-foreground";
@@ -184,7 +184,8 @@ function GridTable({
  * A run of citation markers — "[1]", "[1,3]", "[1], [3]" — with the space
  * before it. Rendered as one superscript ¹·³ instead of bulky bracketed links.
  */
-const CITE_RUN = /(\s*\[\d(?:,\s*\d)*\](?:\s*,?\s*\[\d(?:,\s*\d)*\])*)/g;
+// Up to two digits: the PD-L1 cut-off table cites 10 sources, and "[10]" showed as text.
+const CITE_RUN = /(\s*\[\d{1,2}(?:,\s*\d{1,2})*\](?:\s*,?\s*\[\d{1,2}(?:,\s*\d{1,2})*\])*)/g;
 
 /**
  * Superscript citation numbers, each linking to its source. `relative` +

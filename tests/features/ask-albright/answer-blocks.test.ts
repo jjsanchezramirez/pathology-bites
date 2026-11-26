@@ -250,3 +250,12 @@ describe("comparison tables", () => {
     expect(parseAnswerBlocks(text)).toEqual([{ kind: "p", text: "Intro." }]);
   });
 });
+
+describe("two-digit citations", () => {
+  it("keeps [10] out of the plain text of a list item", () => {
+    const [b] = parseAnswerBlocks(
+      "**Cut-offs:**\n- CPS ≥ 5 [10]\n- TPS ≥ 50% [1]\n- CPS ≥ 10 [6, 7]"
+    );
+    expect(b).toMatchObject({ kind: "list", inline: true });
+  });
+});

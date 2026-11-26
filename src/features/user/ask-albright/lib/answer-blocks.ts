@@ -27,7 +27,7 @@ const INLINE_ITEM_HARD_MAX = 80;
 
 const plain = (s: string) =>
   s
-    .replace(/\[\d(?:,\s*\d)*\]/g, "")
+    .replace(/\[\d{1,2}(?:,\s*\d{1,2})*\]/g, "")
     .replace(/\*\*/g, "")
     .trim();
 

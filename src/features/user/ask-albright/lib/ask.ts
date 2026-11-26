@@ -94,6 +94,7 @@ import {
 import { isFactRequest } from "./fact";
 import { randomKbFact } from "./kb-fact";
 import { guideFollowUps, matchGuide } from "./site-guide";
+import { matchScoring, scoringCitations, scoringFollowUps } from "./scoring-guide";
 
 export interface AskCitation {
   n: number;
@@ -643,6 +644,16 @@ export async function* askAlbrightStream(
       },
       "Pathology Bites"
     );
+    return;
+  }
+  // HER2 / PD-L1 scoring rules: cited, curated, no model call (scoring-guide.ts).
+  const scoring = matchScoring(question);
+  if (scoring) {
+    yield* instantReply(Date.now(), {
+      answer: scoring.answer,
+      citations: scoringCitations(scoring),
+      followUps: scoringFollowUps(scoring),
+    });
     return;
   }
   if (isFactRequest(question)) {
