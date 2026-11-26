@@ -6,6 +6,8 @@ import remarkGfm from "remark-gfm";
 import { visit } from "unist-util-visit";
 import { Card } from "@/shared/components/ui/card";
 import { ImageCarousel } from "@/shared/components/media/image-carousel";
+import { LessonEmbed } from "@/shared/components/explainer/lesson-embed";
+import { lessonIdFromLine } from "@/shared/lesson/embed";
 
 // Remark plugin: turn an image-only paragraph (one or more images, ignoring whitespace
 // and soft breaks) into a single block carousel node. This (a) avoids the invalid
@@ -47,6 +49,25 @@ function remarkImagesToCarousel() {
   };
 }
 
+// Remark plugin: a paragraph that is only `:::explainer[<lesson id>]` becomes a
+// Lesson Studio lesson (the same directive Learning Modules use). Matched on the
+// whole paragraph rather than with remark-directive, so colons in ordinary question
+// text ("ratio 2:1", "CD3:CD8") are never parsed as directives.
+function remarkLessonEmbeds() {
+  return (tree: MdNode) => {
+    visit(tree as never, "paragraph", (node: MdNode) => {
+      const children = node.children ?? [];
+      if (children.length !== 1 || children[0].type !== "text") return;
+      const id = lessonIdFromLine(children[0].value ?? "");
+      if (!id) return;
+      const data = node.data ?? (node.data = {});
+      data.hName = "lesson-embed";
+      data.hProperties = { lessonId: id };
+      node.children = [];
+    });
+  };
+}
+
 type CarouselImage = { url: string; alt: string; caption?: string };
 
 // The two question carousels (shared ImageCarousel + admin SimpleImageCarousel) share this
@@ -77,9 +98,10 @@ interface QuestionMarkdownProps {
 // Compact + color-agnostic: inherits text color from the parent (e.g. text-muted-foreground)
 // so it drops into existing containers without restyling. GFM + images: bold/italic, lists,
 // tables, code, strikethrough, links. Image-only paragraphs render through an injected
-// carousel (see image-carousel below); inline images stay plain. Directive-based embeds
-// (video, Anki cards) arrive with #18 and MUST tag their wrappers with `data-no-highlight`
-// to stay clickable inside the FakeSelectionHighlight surface (the carousel already does).
+// carousel (see image-carousel below); inline images stay plain. A line holding only
+// `:::explainer[<lesson id>]` embeds a Lesson Studio lesson. Embeds MUST tag their wrappers
+// with `data-no-highlight` to stay clickable inside the FakeSelectionHighlight surface
+// (the carousel and LessonEmbed already do).
 const STATIC_COMPONENTS: Components = {
   p: ({ children }) => <p className="leading-relaxed [&:not(:last-child)]:mb-3">{children}</p>,
   strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
@@ -171,7 +193,7 @@ function QuestionMarkdownImpl({
   // Block mode groups image-only paragraphs into a carousel; inline mode (option text)
   // skips it — a carousel can't render inside the surrounding inline <span>.
   const remarkPlugins = useMemo(
-    () => (inline ? [remarkGfm] : [remarkGfm, remarkImagesToCarousel]),
+    () => (inline ? [remarkGfm] : [remarkGfm, remarkLessonEmbeds, remarkImagesToCarousel]),
     [inline]
   );
 
@@ -194,6 +216,9 @@ function QuestionMarkdownImpl({
           </div>
         );
       },
+      // A published lesson (block mode only; see remarkLessonEmbeds).
+      "lesson-embed": ({ lessonId }: { lessonId?: string }) =>
+        lessonId ? <LessonEmbed lessonId={lessonId} className="my-3 border" /> : null,
     };
     if (inline) map.p = ({ children }) => <>{children}</>;
     return map;

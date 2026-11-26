@@ -226,21 +226,3 @@ export function importScript(source: string): ImportResult {
   }
   return scriptLessonFromText(trimmed);
 }
-
-/** The lesson as clean JSON for drafting elsewhere (no ids, timings or audio). */
-export function exportScriptJson(lesson: ScriptLesson): string {
-  return JSON.stringify(
-    {
-      format: SCRIPT_FORMAT,
-      version: SCRIPT_VERSION,
-      title: lesson.title,
-      description: lesson.description,
-      scenes: lesson.scenes.map(({ id: _id, duration: _d, ...s }) => ({
-        ...s,
-        beats: s.beats.map(({ id: _b, start: _s, end: _e, ...b }) => b),
-      })),
-    },
-    null,
-    2
-  );
-}

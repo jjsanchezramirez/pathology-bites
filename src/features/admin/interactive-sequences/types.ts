@@ -1,16 +1,15 @@
 // Interactive Sequence types and interfaces
 
 import type { Lesson } from "@/shared/lesson/types";
-import type { ScriptLesson } from "@/shared/lesson/script/types";
 
-/** What sequence_data can hold: a canvas Lesson or a script-first lesson. */
-export type StoredSequenceData = Lesson | ScriptLesson;
+/** What sequence_data holds: a canvas Lesson (older rows may be legacy shapes — normalize on read). */
+export type StoredSequenceData = Lesson;
 
 export interface InteractiveSequence {
   id: string;
   title: string;
   description: string | null;
-  sequence_data: StoredSequenceData; // Lesson or ScriptLesson JSON (older rows: ExplainerSequence — normalize on read)
+  sequence_data: StoredSequenceData; // Lesson JSON (older rows: script lesson or ExplainerSequence — normalize on read)
   category_id: string | null;
   status: "draft" | "published" | "archived";
   published_at: string | null;

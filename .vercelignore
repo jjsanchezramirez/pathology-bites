@@ -37,7 +37,6 @@ tmp
 temp
 
 # FFmpeg WASM files (large binaries, downloaded via postinstall)
-public/ffmpeg/
 
 # AI-assistant tooling state (defensive — these tools may write local config)
 .cursor

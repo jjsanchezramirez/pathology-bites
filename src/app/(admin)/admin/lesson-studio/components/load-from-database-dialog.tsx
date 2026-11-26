@@ -20,9 +20,7 @@ import {
 } from "@/shared/components/ui/select";
 import { Loader2, FolderOpen, Calendar } from "lucide-react";
 import type { InteractiveSequence } from "@/features/admin/interactive-sequences/types";
-import { normalizeStoredLesson } from "@/shared/lesson/normalize";
-import { isScriptLesson } from "@/shared/lesson/script/types";
-import { computeTimeline } from "@/shared/lesson/script/timeline";
+import { normalizeStoredSequence } from "@/shared/lesson/normalize";
 import { slideStarts } from "@/shared/lesson/evaluate";
 
 interface LoadFromDatabaseDialogProps {
@@ -229,21 +227,11 @@ export function LoadFromDatabaseDialog({
                           </span>
                           {(() => {
                             const raw: unknown = seq.sequence_data;
-                            if (isScriptLesson(raw)) {
-                              return (
-                                <>
-                                  <span>Script lesson</span>
-                                  <span>{raw.scenes.length} scenes</span>
-                                  <span>{computeTimeline(raw).duration.toFixed(1)}s</span>
-                                </>
-                              );
-                            }
-                            const l = normalizeStoredLesson(raw);
+                            const l = normalizeStoredSequence(raw);
                             const slides = l?.slides.length ?? 0;
                             const dur = l ? slideStarts(l).duration : 0;
                             return (
                               <>
-                                <span>Canvas lesson</span>
                                 <span>{slides} slides</span>
                                 <span>{dur.toFixed(1)}s</span>
                               </>

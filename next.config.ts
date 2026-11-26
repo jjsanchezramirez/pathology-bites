@@ -204,112 +204,82 @@ const nextConfig = {
       },
     ];
 
-    // COEP/COOP headers required for SharedArrayBuffer (FFmpeg.wasm threading).
-    // Applied only to admin/audio routes to avoid breaking cross-origin embeds elsewhere.
-    const sharedArrayBufferHeaders = [
+    // Security headers. `embeddable` routes (/embed/*) may be framed by any site,
+    // so they drop X-Frame-Options and allow every frame ancestor; everything else
+    // stays unframeable.
+    const securityHeaderList = (embeddable: boolean) => [
+      // Prevent clickjacking attacks
+      ...(embeddable ? [] : [{ key: "X-Frame-Options", value: "DENY" }]),
+      // Prevent MIME type sniffing
       {
-        source: "/admin/audio/:path*",
-        headers: [
-          { key: "Cross-Origin-Embedder-Policy", value: "require-corp" },
-          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
-        ],
+        key: "X-Content-Type-Options",
+        value: "nosniff",
       },
+      // Enable XSS protection
       {
-        source: "/debug/audio-upload-test",
-        headers: [
-          { key: "Cross-Origin-Embedder-Policy", value: "require-corp" },
-          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
-        ],
+        key: "X-XSS-Protection",
+        value: "1; mode=block",
       },
-      // FFmpeg WASM/JS files and Next.js chunks must opt in to cross-origin
-      // isolation so the browser allows them to load under COEP.
+      // Referrer policy for privacy
       {
-        source: "/ffmpeg/:path*",
-        headers: [{ key: "Cross-Origin-Resource-Policy", value: "cross-origin" }],
+        key: "Referrer-Policy",
+        value: "strict-origin-when-cross-origin",
       },
+      // Permissions policy to restrict browser features
       {
-        source: "/_next/:path*",
-        headers: [{ key: "Cross-Origin-Resource-Policy", value: "cross-origin" }],
+        key: "Permissions-Policy",
+        value: "camera=(self), microphone=(self), geolocation=(), interest-cohort=()",
       },
+      // Content Security Policy
+      {
+        key: "Content-Security-Policy",
+        value: [
+          "default-src 'self'",
+          // static.cloudflareinsights.com hosts the beacon Cloudflare Web
+          // Analytics auto-injects. The dashboard toggle adds the
+          // <script> tag at proxy time, so the only way to silence the
+          // CSP violation in the console is to allow the origin here.
+          // Disable Web Analytics in the Cloudflare dashboard if you want
+          // to drop this entry instead.
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://vercel.live https://va.vercel-scripts.com https://www.googletagmanager.com https://challenges.cloudflare.com https://static.cloudflareinsights.com https://cdn.jsdelivr.net https://unpkg.com",
+          "worker-src 'self' blob: https://cdn.jsdelivr.net",
+          "child-src 'self' blob:",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          "font-src 'self' https://fonts.gstatic.com",
+          "img-src 'self' data: blob: https: http:",
+          "media-src 'self' data: blob: https://img.pathologybites.com https://data.pathologybites.com https://audio.pathologybites.com",
+          "connect-src 'self' https://wsi.pathologybites.com https://pathpresenter.blob.core.windows.net https://pathpresenter2.blob.core.windows.net https://*.supabase.co https://vercel.live wss://*.supabase.co https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.googletagmanager.com https://www.google.com https://virtualpathology.leeds.ac.uk https://www.virtualpathology.leeds.ac.uk https://images.virtualpathology.leeds.ac.uk https://tumourclassification.iarc.who.int https://wirtualnymikroskop.mostwiedzy.pl https://slides.learnhaem.com https://img.pathologybites.com https://data.pathologybites.com https://challenges.cloudflare.com https://turnstile.com https://unpkg.com https://cdn.jsdelivr.net",
+          "frame-src 'self' https://accounts.google.com https://vercel.live https://image.upmc.edu https://*.supabase.co https://pathpresenter.net https://pathpresenter.blob.core.windows.net https://pathpresenter2.blob.core.windows.net https://learn.mghpathology.org https://virtualpathology.leeds.ac.uk https://www.virtualpathology.leeds.ac.uk https://images.virtualpathology.leeds.ac.uk https://dlm.lmp.utoronto.ca https://rosai.secondslide.com https://rosaicollection.net http://www.hematopathologyetutorial.com https://hematopathologyetutorial.com https://images.virtualpathology.leeds.ac.uk/ https://pecan.stjude.cloud https://stjudecloudslides.blob.core.windows.net https://tumourclassification.iarc.who.int https://wirtualnymikroskop.mostwiedzy.pl https://slides.learnhaem.com https://www.learnhaem.com https://learnhaem.com https://neuro2.pathology.pitt.edu https://challenges.cloudflare.com https://turnstile.com",
+          "object-src 'none'",
+          "base-uri 'self'",
+          "form-action 'self'",
+          embeddable ? "frame-ancestors *" : "frame-ancestors 'self'",
+          // Only upgrade insecure requests in production
+          ...(process.env.NODE_ENV === "production" ? ["upgrade-insecure-requests"] : []),
+        ].join("; "),
+      },
+      // Add HSTS for production, or a development-friendly header for dev
+      ...(process.env.NODE_ENV === "production"
+        ? [
+            {
+              key: "Strict-Transport-Security",
+              value: "max-age=31536000; includeSubDomains; preload",
+            },
+          ]
+        : [
+            {
+              key: "X-Development-Mode",
+              value: "true",
+            },
+          ]),
     ];
 
     const securityHeaders = [
-      {
-        // Apply security headers to all routes
-        source: "/(.*)",
-        headers: [
-          // Prevent clickjacking attacks
-          {
-            key: "X-Frame-Options",
-            value: "DENY",
-          },
-          // Prevent MIME type sniffing
-          {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-          // Enable XSS protection
-          {
-            key: "X-XSS-Protection",
-            value: "1; mode=block",
-          },
-          // Referrer policy for privacy
-          {
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin",
-          },
-          // Permissions policy to restrict browser features
-          {
-            key: "Permissions-Policy",
-            value: "camera=(self), microphone=(self), geolocation=(), interest-cohort=()",
-          },
-          // Content Security Policy
-          {
-            key: "Content-Security-Policy",
-            value: [
-              "default-src 'self'",
-              // static.cloudflareinsights.com hosts the beacon Cloudflare Web
-              // Analytics auto-injects. The dashboard toggle adds the
-              // <script> tag at proxy time, so the only way to silence the
-              // CSP violation in the console is to allow the origin here.
-              // Disable Web Analytics in the Cloudflare dashboard if you want
-              // to drop this entry instead.
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://vercel.live https://va.vercel-scripts.com https://www.googletagmanager.com https://challenges.cloudflare.com https://static.cloudflareinsights.com https://cdn.jsdelivr.net https://unpkg.com",
-              "worker-src 'self' blob: https://cdn.jsdelivr.net",
-              "child-src 'self' blob:",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https: http:",
-              "media-src 'self' data: blob: https://img.pathologybites.com https://data.pathologybites.com https://audio.pathologybites.com",
-              "connect-src 'self' https://wsi.pathologybites.com https://pathpresenter.blob.core.windows.net https://pathpresenter2.blob.core.windows.net https://*.supabase.co https://vercel.live wss://*.supabase.co https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.googletagmanager.com https://www.google.com https://virtualpathology.leeds.ac.uk https://www.virtualpathology.leeds.ac.uk https://images.virtualpathology.leeds.ac.uk https://tumourclassification.iarc.who.int https://wirtualnymikroskop.mostwiedzy.pl https://slides.learnhaem.com https://img.pathologybites.com https://data.pathologybites.com https://challenges.cloudflare.com https://turnstile.com https://unpkg.com https://cdn.jsdelivr.net",
-              "frame-src 'self' https://accounts.google.com https://vercel.live https://image.upmc.edu https://*.supabase.co https://pathpresenter.net https://pathpresenter.blob.core.windows.net https://pathpresenter2.blob.core.windows.net https://learn.mghpathology.org https://virtualpathology.leeds.ac.uk https://www.virtualpathology.leeds.ac.uk https://images.virtualpathology.leeds.ac.uk https://dlm.lmp.utoronto.ca https://rosai.secondslide.com https://rosaicollection.net http://www.hematopathologyetutorial.com https://hematopathologyetutorial.com https://images.virtualpathology.leeds.ac.uk/ https://pecan.stjude.cloud https://stjudecloudslides.blob.core.windows.net https://tumourclassification.iarc.who.int https://wirtualnymikroskop.mostwiedzy.pl https://slides.learnhaem.com https://www.learnhaem.com https://learnhaem.com https://neuro2.pathology.pitt.edu https://challenges.cloudflare.com https://turnstile.com",
-              "object-src 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-              "frame-ancestors 'self'",
-              // Only upgrade insecure requests in production
-              ...(process.env.NODE_ENV === "production" ? ["upgrade-insecure-requests"] : []),
-            ].join("; "),
-          },
-          // Add HSTS for production, or a development-friendly header for dev
-          ...(process.env.NODE_ENV === "production"
-            ? [
-                {
-                  key: "Strict-Transport-Security",
-                  value: "max-age=31536000; includeSubDomains; preload",
-                },
-              ]
-            : [
-                {
-                  key: "X-Development-Mode",
-                  value: "true",
-                },
-              ]),
-        ],
-      },
+      { source: "/((?!embed/).*)", headers: securityHeaderList(false) },
+      { source: "/embed/:path*", headers: securityHeaderList(true) },
     ];
 
-    return [...cacheHeaders, ...sharedArrayBufferHeaders, ...securityHeaders];
+    return [...cacheHeaders, ...securityHeaders];
   },
 };
 

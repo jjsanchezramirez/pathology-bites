@@ -75,7 +75,6 @@ src/app/debug/
 src/app/api/debug/
 
 # FFmpeg WASM files (download via npm postinstall)
-public/ffmpeg/
 
 # AI-assistant tooling state (defensive — these tools may write local config)
 .cursor/

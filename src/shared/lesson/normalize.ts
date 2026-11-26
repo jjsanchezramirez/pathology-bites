@@ -8,7 +8,8 @@
 // ~321-line keyframe reverse-engineering in from-sequence.ts.
 
 import type { Lesson, Slide, SlideElement, ImageElement } from "./types";
-import { isScriptLesson, type ScriptLesson } from "./script/types";
+import { isScriptLesson } from "./script/types";
+import { lessonFromScript } from "./templates";
 
 export function isLessonShape(v: unknown): v is Lesson {
   if (!v || typeof v !== "object") return false;
@@ -87,16 +88,12 @@ export function normalizeStoredLesson(raw: unknown): Lesson | null {
 
 // ---- Script lessons -------------------------------------------------------------
 
-/** Any shape the sequence routes accept: a canvas Lesson or a script lesson. */
-export function isStoredSequenceShape(v: unknown): boolean {
-  return isLessonShape(v) || isScriptLesson(v);
-}
-
 /**
- * Like normalizeStoredLesson, but script lessons come back as they are.
- * Players accept either; the canvas studio only takes the Lesson branch.
+ * Like normalizeStoredLesson, but also accepts rows saved by the retired script
+ * studio (`format: "script-lesson"`): those become canvas lessons built from the
+ * same scene templates, so every player and the studio see one model.
  */
-export function normalizeStoredSequence(raw: unknown): Lesson | ScriptLesson | null {
-  if (isScriptLesson(raw)) return raw;
+export function normalizeStoredSequence(raw: unknown): Lesson | null {
+  if (isScriptLesson(raw)) return lessonFromScript(raw);
   return normalizeStoredLesson(raw);
 }

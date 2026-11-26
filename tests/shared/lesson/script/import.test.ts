@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  exportScriptJson,
   importScript,
   lintScriptLesson,
   scriptLessonFromJson,
@@ -108,15 +107,6 @@ describe("importScript and export", () => {
       "takehome",
     ]);
     expect(r.warnings).toEqual([]);
-  });
-
-  it("round-trips through export", () => {
-    const a = importScript(barrett).lesson!;
-    const b = importScript(exportScriptJson(a)).lesson!;
-    const strip = (l: typeof a) =>
-      l.scenes.map((s) => ({ ...s, id: "", beats: s.beats.map((x) => ({ ...x, id: "" })) }));
-    expect(strip(b)).toEqual(strip(a));
-    expect(exportScriptJson(a)).not.toMatch(/"id"/);
   });
 
   it("says when JSON is broken", () => {

@@ -7,16 +7,15 @@
 // and each element is tied to its sentence with a cue, so the slide times
 // itself from the narration (see auto-timing.ts): no keyframes needed.
 //
-// Geometry mirrors the script-lesson stage (script/draw.ts): sizes are in
-// percent of the frame width, and converted to the element rect's units
-// (x and width in percent of width, y and height in percent of height).
+// Sizes are in percent of the frame width, and converted to the element rect's
+// units (x and width in percent of width, y and height in percent of height).
 
 import { autoTimeLesson, autoTimeSlide } from "./auto-timing";
-import { DRAW_THEME as T } from "./script/draw";
 import type { Beat, ImageRegion, Scene, ScriptLesson, TemplateKind } from "./script/types";
 import { DEFAULT_FRAMING, emptyLesson } from "./types";
 import type {
   CameraElement,
+  LessonAudio,
   ElementCue,
   ImageElement,
   Lesson,
@@ -28,6 +27,16 @@ import type {
   TextElement,
 } from "./types";
 
+/** The template palette: warm white, dark ink, brand teal, a yellow mark on pictures. */
+const T = {
+  background: "#FBFAF7",
+  ink: "#14212B",
+  inkSoft: "#33434F",
+  accent: "#1C7D88",
+  accentSoft: "#E3F0F1",
+  mark: "#F4BE1A",
+  dim: "rgba(12, 20, 28, 0.62)",
+} as const;
 export const TEMPLATE_THEME = T;
 
 /** Frame height in percent-of-width units (16:9). */
@@ -655,18 +664,20 @@ const BUILDERS: Record<TemplateKind, (scene: Scene) => Built> = {
 };
 
 /** One scene as a clean-look slide: editable elements, narration lines and cues. */
-export function slideFromScene(scene: Scene): Slide {
+export function slideFromScene(scene: Scene, narrated = false): Slide {
   const { elements, byBeat } = BUILDERS[scene.template](scene);
   const lines: NarrationLine[] = scene.beats.map((b, k) => ({
     id: uid("line"),
     text: b.say,
     elementIds: byBeat.get(k) ?? [],
+    // Recorded sentence times carry over when the scene was narrated.
+    ...(narrated && isTime(b.start) && isTime(b.end) ? { start: b.start, end: b.end } : {}),
   }));
   const slide: Slide = {
     id: uid("slide"),
     backgroundColor: T.background,
     imageCategory: "blank",
-    duration: 6,
+    duration: narrated && isTime(scene.duration) ? scene.duration : 6,
     transitionIn: { kind: "crossfade", duration: 0.5 },
     initialFraming: { ...DEFAULT_FRAMING },
     elements,
@@ -678,13 +689,26 @@ export function slideFromScene(scene: Scene): Slide {
   return autoTimeSlide(slide);
 }
 
-/** A whole script lesson as an editable canvas lesson. Narration audio is not carried over. */
+const isTime = (n: unknown): n is number => typeof n === "number" && isFinite(n) && n >= 0;
+
+/**
+ * A whole script lesson as an editable canvas lesson. When the script was
+ * narrated, its audio and the recorded sentence times come along, so the
+ * converted lesson plays in step with the existing track.
+ */
 export function lessonFromScript(script: ScriptLesson): Lesson {
+  const narrated = !!script.audio?.url;
+  let audio: LessonAudio | null = null;
+  if (narrated && script.audio) {
+    const { scriptHash: _hash, ...rest } = script.audio;
+    audio = rest;
+  }
   return autoTimeLesson({
     ...emptyLesson(),
-    title: script.title,
-    description: script.description,
-    slides: script.scenes.map(slideFromScene),
+    title: script.title ?? "",
+    description: script.description ?? "",
+    audio,
+    slides: (script.scenes ?? []).map((scene) => slideFromScene(scene, narrated)),
   });
 }
 

@@ -12,6 +12,21 @@
 import type { Lesson, NarrationLine, Slide, SlideElement, WordTiming } from "./types";
 
 // ---------------------------------------------------------------------------
+// Speech estimate
+// ---------------------------------------------------------------------------
+
+/** Speaking rate for estimates, words per second (~155 words a minute). */
+const WORDS_PER_SECOND = 2.6;
+const MIN_SENTENCE = 1.2;
+
+/** Estimated seconds to speak a sentence, used to time lessons before any voice exists. */
+export function estimateSpeech(text: string): number {
+  const n = text.trim().split(/\s+/).filter(Boolean).length;
+  if (n === 0) return 0;
+  return Math.max(MIN_SENTENCE, n / WORDS_PER_SECOND);
+}
+
+// ---------------------------------------------------------------------------
 // Script → lines
 // ---------------------------------------------------------------------------
 
