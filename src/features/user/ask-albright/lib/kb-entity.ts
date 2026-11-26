@@ -30,6 +30,8 @@ export interface EntityProfile {
   title: string;
   href: string;
   text: string;
+  /** The rows behind `text`, for checking the answer's table (table-check.ts). */
+  rows: ProfileRow[];
 }
 
 const PAGE = 1000;
@@ -133,10 +135,8 @@ export async function entityProfiles(text: string, max: number): Promise<EntityP
 
     return found.flatMap((f) => {
       const mine = new Set(f.entities.map((e) => e.id));
-      const text = entityProfileText(
-        f.name,
-        rows.filter((r) => mine.has(r.entity_id))
-      );
+      const own = rows.filter((r) => mine.has(r.entity_id));
+      const text = entityProfileText(f.name, own);
       if (!text) return [];
       const slug = f.entities[0].slug;
       return [
@@ -144,6 +144,7 @@ export async function entityProfiles(text: string, max: number): Promise<EntityP
           title: f.name,
           href: KNOWLEDGE_PAGES_ENABLED ? `/e/${slug}` : "/tools/ihc",
           text,
+          rows: own,
         },
       ];
     });
