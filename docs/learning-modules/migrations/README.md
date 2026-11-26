@@ -12,3 +12,15 @@ diffs policies and grants against the starting state.
 | File                                            | Test                                         | Apply when                                                                       |
 | ----------------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------- |
 | `20261126140000_learning_modules_anon_read.sql` | `supabase/tests/learning-modules-rls/run.sh` | Any time; no app change needed. Required before anything reads these signed out. |
+
+## Live rehearsal
+
+`supabase/tests/anon-read-rls-live/build.sh` prints one script (both migrations here and in
+`docs/r2-storage/migrations/`) that runs on production inside a transaction ending in ROLLBACK:
+every app activity on `learning_subjects`, `lessons`, `user_lesson_progress` and
+`r2_storage_metrics`, as anon, user, staff, admin and service_role, before / after / rolled back.
+
+Last run 2026-11-26 on production: **PASS**. 130 activities, 0 failing. 11 anon reads failed
+before (42501) and all succeed after with exactly the intended rows. Every user, staff, admin and
+service_role result is identical before and after. The rollback restored every result and the
+exact policy and grant snapshot. Afterwards, no fixture rows and no policy changes remained.
