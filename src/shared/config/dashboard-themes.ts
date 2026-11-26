@@ -407,6 +407,9 @@ export const getThemeById = (id: string): DashboardTheme | undefined => {
   return dashboardThemes.find((theme) => theme.id === id);
 };
 
+/** Theme anyone who hasn't picked one sees, in the dashboard and the admin area. */
+export const DEFAULT_DASHBOARD_THEME_ID = "sage-garden";
+
 export const getDefaultTheme = (): DashboardTheme => {
-  return dashboardThemes[0]; // Default theme
+  return getThemeById(DEFAULT_DASHBOARD_THEME_ID) ?? dashboardThemes[0];
 };

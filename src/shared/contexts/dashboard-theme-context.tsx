@@ -29,8 +29,11 @@ import { log } from "@/shared/utils/logging";
  * Manual URL nav (typing /admin or /dashboard) should switch the theme even
  * without clicking the mode toggle — this is the source of truth, not the cookie.
  */
-/** Themes offered on the student dashboard. The admin area only gets "default". */
-const STUDENT_THEME_IDS = ["tangerine", "sage-garden", "notebook", "default"];
+/**
+ * Themes offered on the student dashboard. The admin area offers every theme in
+ * dashboardThemes, including any not listed here yet.
+ */
+const STUDENT_THEME_IDS = ["sage-garden", "tangerine", "notebook", "default"];
 
 /** Every CSS variable any theme writes, in either mode. */
 const ALL_THEME_VARIABLE_KEYS = Array.from(
@@ -100,20 +103,11 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
   // Get available themes based on admin mode
   const getAvailableThemes = (mode: AdminMode): DashboardTheme[] => {
     if (isAdminTypeMode(mode)) {
-      // Admin area: only default theme
-      return dashboardThemes.filter((theme) => theme.id === "default");
+      // Admin area: every theme
+      return dashboardThemes;
     } else {
       // Student dashboard: everything listed in STUDENT_THEME_IDS
       return dashboardThemes.filter((theme) => STUDENT_THEME_IDS.includes(theme.id));
-    }
-  };
-
-  // Get default theme for mode
-  const getDefaultThemeForMode = (mode: AdminMode): DashboardTheme => {
-    if (isAdminTypeMode(mode)) {
-      return getThemeById("default") || getDefaultTheme();
-    } else {
-      return getThemeById("tangerine") || getDefaultTheme();
     }
   };
 
@@ -183,15 +177,15 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
             themeToSet = theme;
             log.debug("[DashboardTheme] Loaded from SWR cache:", themeToSet.id);
           } else {
-            themeToSet = getDefaultThemeForMode(defaultMode);
+            themeToSet = getDefaultTheme();
             log.debug("[DashboardTheme] Theme not available, using default:", themeToSet.id);
           }
         } else {
-          themeToSet = getDefaultThemeForMode(defaultMode);
+          themeToSet = getDefaultTheme();
           log.debug("[DashboardTheme] No theme preference, using default:", themeToSet.id);
         }
       } else {
-        themeToSet = getDefaultThemeForMode(defaultMode);
+        themeToSet = getDefaultTheme();
         log.debug("[DashboardTheme] No settings in SWR cache, using default:", themeToSet.id);
       }
 
@@ -361,7 +355,7 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
     setAdminModeState(mode);
 
     // Switch to appropriate theme for new mode
-    const newTheme = getDefaultThemeForMode(mode);
+    const newTheme = getDefaultTheme();
     setCurrentTheme(newTheme);
   };
 
