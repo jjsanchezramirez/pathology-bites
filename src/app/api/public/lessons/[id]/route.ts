@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/shared/services/server";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { isLessonId } from "@/shared/lesson/embed";
 import { log } from "@/shared/utils/logging";
 
@@ -12,7 +12,7 @@ import { log } from "@/shared/utils/logging";
  *       Public, unauthenticated. Returns one published lesson (interactive
  *       sequence) so it can be embedded anywhere: Learning Modules, question
  *       explanations, other pages, or other sites via /embed/lessons/{id}.
- *       Drafts and unknown ids return 404 (RLS only exposes published rows).
+ *       Drafts and unknown ids return 404.
  *     tags:
  *       - Public
  *     parameters:
@@ -32,7 +32,12 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
   }
   try {
-    const supabase = await createClient();
+    // Service role on purpose: the table's read policy has an "or admin" branch
+    // that calls internal.is_current_user_admin(), which anon may not execute,
+    // so signed-out viewers (every embed on another site) would get a
+    // permission error. The query itself is the guard: one id, published only,
+    // fixed columns.
+    const supabase = createServiceRoleClient();
     const { data, error } = await supabase
       .from("interactive_sequences")
       .select("id, title, description, sequence_data")

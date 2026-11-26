@@ -2,8 +2,8 @@
 
 Lesson Studio (`/admin/lesson-studio`) is the canvas editor: library on the
 left, canvas in the middle, inspector on the right, timeline and filmstrip
-below. Scene templates live inside it. The script studio moved to
-`/admin/lesson-studio/script`; `/admin/lesson-studio/classic` redirects.
+below. Scene templates live inside it. See [README.md](./README.md) for the
+whole workflow.
 
 ## Add scene
 
@@ -13,9 +13,9 @@ template drops in ordinary elements: text, shapes, pictures, spotlights and
 camera moves. Move, restyle or delete any of them. On an image scene, drag a
 library picture onto the grey slot (or onto an existing picture) to swap it.
 
-**File → Import script…** turns a whole script (JSON or plain text, same
-formats as the script studio) into template scenes. Loading a script-studio
-lesson opens an editable copy; saving the copy creates a new lesson.
+**File → Import script…** turns a whole script (JSON or plain text, see
+[script-lessons.md](./script-lessons.md)) into template scenes. **Generate**
+drafts one with AI.
 
 ## Narration sets the timing
 
@@ -51,14 +51,12 @@ use the same curve. A spotlight on a template slide can be limited to the
 picture (`within`). Slides without `look` render exactly as before, so older
 lessons play unchanged.
 
-Code: `src/shared/lesson/clean.ts` (items + canvas drawing for export),
+Code: `src/shared/lesson/clean.ts` (drawing items),
 `src/shared/components/explainer/clean-layer.tsx` (player and editor),
 `src/shared/lesson/templates.ts` (scene → slide).
 
-## Known limits of the prototype
+## Known limits
 
 - Zooms move the whole frame (classic camera), not just the picture, so
   callouts beside the picture leave the frame while zoomed.
 - Text heights in templates are estimated, so a long label can need a nudge.
-- Narration audio from the script studio is not carried over; narrate again
-  in the canvas editor.

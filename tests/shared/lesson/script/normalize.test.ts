@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { isLessonShape, normalizeStoredSequence } from "@/shared/lesson/normalize";
 import { emptyScriptLesson, type ScriptLesson } from "@/shared/lesson/script/types";
 import { emptyLesson } from "@/shared/lesson/types";
@@ -32,6 +34,17 @@ describe("stored sequences", () => {
     expect(out.slides).toHaveLength(1);
     expect(out.slides[0].look).toBe("clean");
     expect(out.audio).toBeNull();
+  });
+
+  it("converts the loose import shape too (beats as bare sentences)", () => {
+    const raw = JSON.parse(
+      readFileSync(join(process.cwd(), "docs/lesson-studio/barrett-script-lesson.json"), "utf8")
+    );
+    const out = normalizeStoredSequence(raw)!;
+    expect(out.slides).toHaveLength(raw.scenes.length);
+    expect(
+      out.slides.every((s) => s.narration!.lines.every((l) => typeof l.text === "string"))
+    ).toBe(true);
   });
 
   it("keeps a narrated script's audio and recorded sentence times", () => {

@@ -8,7 +8,7 @@
 // ~321-line keyframe reverse-engineering in from-sequence.ts.
 
 import type { Lesson, Slide, SlideElement, ImageElement } from "./types";
-import { isScriptLesson } from "./script/types";
+import { isScriptLesson, type Beat, type Scene, type ScriptLesson } from "./script/types";
 import { lessonFromScript } from "./templates";
 
 export function isLessonShape(v: unknown): v is Lesson {
@@ -94,6 +94,28 @@ export function normalizeStoredLesson(raw: unknown): Lesson | null {
  * same scene templates, so every player and the studio see one model.
  */
 export function normalizeStoredSequence(raw: unknown): Lesson | null {
-  if (isScriptLesson(raw)) return lessonFromScript(raw);
+  if (isScriptLesson(raw)) return lessonFromScript(coerceScript(raw));
   return normalizeStoredLesson(raw);
+}
+
+/**
+ * Stored script rows may use the loose import shape (a beat as a bare sentence,
+ * missing ids or beats). Fill those in without dropping narration times.
+ */
+function coerceScript(raw: ScriptLesson): ScriptLesson {
+  const scenes = Array.isArray(raw.scenes) ? raw.scenes : [];
+  return {
+    ...raw,
+    scenes: scenes
+      .filter((s): s is Scene => !!s && typeof s === "object")
+      .map((s, i) => ({
+        ...s,
+        id: s.id || `scene-${i}`,
+        beats: (Array.isArray(s.beats) ? s.beats : []).map((b: unknown, k): Beat => {
+          if (typeof b === "string") return { id: `beat-${i}-${k}`, say: b };
+          const beat = (b ?? {}) as Partial<Beat>;
+          return { ...beat, id: beat.id || `beat-${i}-${k}`, say: beat.say ?? "" };
+        }),
+      })),
+  };
 }

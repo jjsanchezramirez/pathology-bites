@@ -1,27 +1,21 @@
-# Script lessons
+# The script format
 
-The script studio (`/admin/lesson-studio/script`) builds lessons script first. A lesson is a
-list of scenes. Each scene uses one of five templates, and each sentence of
-narration is one beat: when the narrator says it, its item appears.
-
-The canvas editor at `/admin/lesson-studio` now offers the same templates as
-editable scenes; see [templates-in-canvas.md](./templates-in-canvas.md). Canvas
-lessons keep playing exactly as before.
+A script is a lesson written as narration, one sentence at a time. It's how a
+lesson comes into Lesson Studio from outside: **File → Import script…** (JSON or
+plain text), and the AI generator writes the same JSON. Each scene becomes an
+editable canvas slide built from one of five templates; each sentence becomes a
+narration line, and the items it reveals appear when it's spoken. See
+[README.md](./README.md) for the whole workflow.
 
 ## The rules that keep it simple
 
 - **Script first.** Write the narration one sentence at a time. Add on-screen
   words to a sentence only when something should appear with it.
 - **Five templates.** Title, image with callouts, side by side, step ladder,
-  take-home. No free placement.
+  take-home.
 - **Timing from the voice.** Before narration, timing is estimated from word
   count (about 155 words a minute, with the same pauses the narration uses).
-  After narration, each sentence starts exactly when it is spoken. Nothing is
-  keyframed by hand.
-- **Fixed motion.** One easing curve (ease in-out cubic), one fade (0.6 s with a
-  small rise), one zoom (1.1 s, at most 3×), and a 0.5 s crossfade between scenes.
-- **One look.** Instrument Sans, warm white background, dark ink, the brand teal
-  as the only accent, and a yellow mark on pictures.
+  After narration, each sentence starts exactly when it is spoken.
 
 ## Templates
 
@@ -84,7 +78,6 @@ but adds nothing on screen.
 - `image` can be a URL string or `{ url, alt?, width?, height? }`.
 - `region` is in percent of the picture: `x`, `y` is the top-left corner.
 - `mark` is `ring` (default), `spotlight` or `zoom`.
-- **Export** in the studio writes this same format, without ids, timings or audio.
 
 ## Plain-text format
 
@@ -101,15 +94,8 @@ A line starting with `#` starts a scene (`# template: Heading`). Every other lin
 is one sentence: `Sentence | on-screen words | smaller line`. A line without a
 bar is split into sentences.
 
-## Storage
+## Older rows
 
-Script lessons are saved in `interactive_sequences.sequence_data` like canvas
-lessons, marked with `"format": "script-lesson"`. No schema change. The player
-picks the right renderer from that marker.
-
-## Video export
-
-**Export → Video (MP4)** renders the lesson frame by frame in the browser and
-adds the narration audio. It draws the same five templates and motion as the
-player (`src/shared/lesson/script/draw.ts`), in Instrument Sans. Captions can be
-burned in; they're on by default when the lesson has no narration yet.
+The retired script studio saved this format directly in
+`interactive_sequences.sequence_data` (marked `"format": "script-lesson"`).
+Those rows are converted to canvas lessons when read, with any narration kept.

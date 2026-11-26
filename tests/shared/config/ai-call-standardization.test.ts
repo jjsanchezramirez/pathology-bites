@@ -165,7 +165,8 @@ describe("AI call standardization", () => {
     // generate-lesson (maxDuration 120) runs vision on every image in parallel,
     // so vision contributes one deadline rather than one per image, then the
     // writer. The critical path is vision + writer.
-    const criticalPath = AI_TASKS["lesson-vision"].deadlineMs + AI_TASKS["lesson-writer"].deadlineMs;
+    const criticalPath =
+      AI_TASKS["lesson-vision"].deadlineMs + AI_TASKS["lesson-writer"].deadlineMs;
 
     // Headroom for DB reads and validation, which are not AI time.
     expect(criticalPath).toBeLessThanOrEqual(110_000);
