@@ -216,7 +216,9 @@ export function dropUnaskedGaps(answer: string): string {
   const GAP =
     /\s*(?:However,\s*)?(?:the (?:provided )?sources?|it is) (?:do(?:es)? not|don't|doesn't|is not|are not)\b[^.\n]*\.\s*$/i;
   let out = answer;
-  for (let i = 0; i < 2; i++) {
+  // A comparison table can trail one per empty cell ("…typical site for CHL. …
+  // key morphology for PMBL. …"); the cells already say "not stated".
+  for (let i = 0; i < 6; i++) {
     const m = out.match(GAP);
     if (!m || m.index === undefined) break;
     const rest = out.slice(0, m.index);
@@ -249,6 +251,41 @@ export function splitFollowUps(text: string): { answer: string; followUps: strin
     .slice(0, 3);
   const keep = /^[.!?]/.test(m[0]) ? 1 : 0; // keep the sentence's own full stop
   return { answer: text.slice(0, (m.index ?? 0) + keep).trim(), followUps };
+}
+
+const ASPECTS: Array<{ named: RegExp; ask: string }> = [
+  { named: /\b(ihc|immuno\w*|stains?|staining|markers?|panel)\b/i, ask: "IHC of" },
+  {
+    named: /\b(molecular|genetic\w*|mutations?|fusions?|translocations?|cytogenetic\w*)\b/i,
+    ask: "Molecular findings of",
+  },
+  { named: /\b(morpholog\w*|histolog\w*|microscop\w*|features?)\b/i, ask: "Morphology of" },
+];
+
+/**
+ * Follow-ups for a comparison the model gave none for: the aspects the
+ * question did not name ("CHL vs NLPHL vs PMBL" → "IHC of CHL vs NLPHL vs
+ * PMBL", "Molecular findings of …"). A bare comparison is answered across
+ * domains rather than first asking which one the reader meant; these let them
+ * drill into one with a click (pure, zero-token).
+ */
+export function comparisonFollowUps(question: string): string[] {
+  const q = question
+    .trim()
+    .replace(/[?.!\s]+$/, "")
+    .replace(
+      /^(?:compare|comparison of|what(?:'s| is) the difference between|difference between|how (?:do|does) you (?:tell apart|distinguish))\s+/i,
+      ""
+    )
+    // "IHC of CHL vs NLPHL" → "CHL vs NLPHL", so the next aspect reads cleanly.
+    .replace(
+      /^(?:the\s+)?(?:ihc|immunohistochemistry|immunophenotypes?|stains?|markers?|molecular(?: findings)?|genetics|morphology|histology)\s+(?:of|in|for)\s+/i,
+      ""
+    );
+  if (q.length > 80 || !/\b(vs\.?|versus|and|or)\b/i.test(q)) return [];
+  return ASPECTS.filter((a) => !a.named.test(question))
+    .slice(0, 2)
+    .map((a) => `${a.ask} ${q}`);
 }
 
 export function buildAnswerPrompt(

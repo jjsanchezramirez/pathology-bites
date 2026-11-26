@@ -43,6 +43,19 @@ function headingOf(line: string): string | null {
   return null;
 }
 
+/** A table cell that says nothing ("not stated", "—", "N/A"); citations ignored. */
+const EMPTY_CELL =
+  /^(?:not stated|not reported|not mentioned|not covered|n\/a|na|none|unknown|[-–—?]|)\.?$/i;
+
+/**
+ * Rows where no item has a value are filler: "CD274 | not stated | not stated |
+ * not stated" ran to eight such rows in a CHL / NLPHL / PMBL table. A row
+ * saying something for even one item stays — that gap is information.
+ */
+export function dropEmptyRows(rows: string[][]): string[][] {
+  return rows.filter((r) => r.slice(1).some((c) => !EMPTY_CELL.test(plain(c))));
+}
+
 /** Placeholder bullets the model writes for empty groups ("- None"). */
 const EMPTY_ITEM = /^(none|not stated|n\/a|nil|none reported|none mentioned)\.?$/i;
 
@@ -93,16 +106,16 @@ export function parseAnswerBlocks(
       const rows = group.filter((l) => !isSeparator(l)).map(cells);
       // A real table has a header and at least one row; otherwise keep the text.
       // While streaming, the header alone is enough: the rows are on their way.
-      if (rows.length >= 2 || (streaming && rows.length === 1 && rows[0].length >= 2)) {
-        const width = rows[0].length;
-        blocks.push({
-          kind: "table",
-          header: rows[0],
-          rows: rows.slice(1).map((r) => Array.from({ length: width }, (_, k) => r[k] ?? "")),
-        });
-      } else {
+      const width = rows[0]?.length ?? 0;
+      const body = dropEmptyRows(
+        rows.slice(1).map((r) => Array.from({ length: width }, (_, k) => r[k] ?? ""))
+      );
+      if (body.length >= 1 || (streaming && rows.length >= 1 && width >= 2)) {
+        blocks.push({ kind: "table", header: rows[0], rows: body });
+      } else if (rows.length < 2) {
         blocks.push({ kind: "p", text: group.join(" ") });
       }
+      // else: a real table whose every row was filler — nothing to show.
       continue;
     }
     const title = headingOf(lines[i]);
