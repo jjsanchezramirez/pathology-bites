@@ -9,7 +9,9 @@ import { COST_CAP_USD } from "./cost";
  * Durable daily limits (public.ask_albright_usage, UTC days). Unlike the
  * in-memory per-minute limiter, these hold across instances and cold starts.
  *
- * - Per user: ASK_ALBRIGHT_USER_DAILY questions (default 50).
+ * - Per user: ASK_ALBRIGHT_USER_DAILY questions (default 50). Admins have no
+ *   per-user cap (owner's call, Nov 2026), but still count toward the global
+ *   budget and are still recorded.
  * - Global:   ASK_ALBRIGHT_DAILY_BUDGET_USD (default $2). Every answer is
  *   capped at COST_CAP_USD, so the budget is enforced as a question count
  *   (budget / cap) before anything is spent — exact, not after the fact.
@@ -39,9 +41,17 @@ export interface Reservation {
 
 const db = () => createServiceRoleClient() as unknown as SupabaseClient;
 
+/** No per-user cap: what admins get (the database column is an integer). */
+const UNCAPPED = 2_000_000_000;
+
 /** Take one of today's questions for this user, if any are left. */
-export async function reserveQuestion(userId: string): Promise<Reservation> {
-  const { perUser, global } = dailyLimits();
+export async function reserveQuestion(
+  userId: string,
+  { uncapped = false }: { uncapped?: boolean } = {}
+): Promise<Reservation> {
+  const limits = dailyLimits();
+  const perUser = uncapped ? UNCAPPED : limits.perUser;
+  const { global } = limits;
   try {
     const { data, error } = await db().rpc("ask_albright_reserve", {
       p_user: userId,
