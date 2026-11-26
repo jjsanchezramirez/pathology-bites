@@ -13,3 +13,5 @@ diffs policies and grants against the starting state.
 | File                                              | Test                                           | Apply when                      |
 | ------------------------------------------------- | ---------------------------------------------- | ------------------------------- |
 | `20261126140100_r2_storage_metrics_anon_read.sql` | `supabase/tests/r2-storage-metrics-rls/run.sh` | Any time; no app change needed. |
+
+**Applied to production 2026-11-26** (Supabase migrations `learning_modules_anon_read` and `r2_storage_metrics_anon_read`). Checked afterwards: anon reads published rows and 0 metrics without error, signed-in users and admins see the same rows as before, anon holds only SELECT, and the advisors show no new findings.

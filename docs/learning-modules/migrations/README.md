@@ -24,3 +24,5 @@ Last run 2026-11-26 on production: **PASS**. 130 activities, 0 failing. 11 anon 
 before (42501) and all succeed after with exactly the intended rows. Every user, staff, admin and
 service_role result is identical before and after. The rollback restored every result and the
 exact policy and grant snapshot. Afterwards, no fixture rows and no policy changes remained.
+
+**Applied to production 2026-11-26** (Supabase migrations `learning_modules_anon_read` and `r2_storage_metrics_anon_read`). Checked afterwards: anon reads published rows and 0 metrics without error, signed-in users and admins see the same rows as before, anon holds only SELECT, and the advisors show no new findings.
