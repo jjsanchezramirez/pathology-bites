@@ -7,6 +7,7 @@ import {
   searchPathTalk,
   searchPathTalkFigures,
 } from "@/shared/services/pathtalk";
+import { criteriaAnswer, pickCriteriaPage } from "./who-criteria";
 import { searchImagesForDiagnosis } from "@/shared/services/image-search";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { log } from "@/shared/utils/logging";
@@ -40,7 +41,6 @@ import {
 import {
   type AnswerFormat,
   answerSystem,
-  formatForPassages,
   CHAT_SYSTEM,
   PLANNER_HEDGE_MODEL,
   isJoke,
@@ -429,7 +429,7 @@ const GENERIC_TITLE_WORDS = new Set([
 
 function maxTokensFor(format: AnswerFormat): number {
   if (format === "marker") return MARKER_MAX_TOKENS;
-  return format === "table" || format === "criteria" ? TABLE_MAX_TOKENS : ANSWER_MAX_TOKENS;
+  return format === "table" ? TABLE_MAX_TOKENS : ANSWER_MAX_TOKENS;
 }
 
 /** The knowledge-base profile of the marker the question names (first match with an id). */
@@ -932,10 +932,17 @@ export async function* askAlbrightStream(
     }
     return kept;
   });
-  const format = formatForPassages(
-    plan.format,
-    chosen.map((c) => c.page.body)
-  );
+  // Criteria come straight from a WHO passage that lists them (both groups,
+  // WHO's words, no model call); with none, the old paragraph.
+  const whoCriteria =
+    plan.format === "criteria"
+      ? pickCriteriaPage(
+          candidates.map((c) => c.page),
+          `${question} ${plan.query}`
+        )
+      : null;
+  const format: AnswerFormat =
+    plan.format === "criteria" && !whoCriteria ? "paragraph" : plan.format;
   const wantsDiagram = plan.visual === "diagram";
   const systemFor = (fmt: AnswerFormat) =>
     wantsDiagram ? `${answerSystem(fmt)} ${DIAGRAM_INSTRUCTION}` : answerSystem(fmt);
@@ -970,13 +977,13 @@ export async function* askAlbrightStream(
   const passages: Passage[] = [...fitted.pages, ...fitted.profiles];
   // One visual per answer: when this one gets a diagram, images or a figure,
   // the rebuilt source tables still inform the model but are not shown.
-  const tables =
+  let tables =
     plan.visual === "none"
       ? usedPages
           .flatMap((c, i) => tablesFor[chosen.indexOf(c)].map((t) => ({ ...t, n: i + 1 })))
           .slice(0, MAX_TABLES)
       : [];
-  const citations: AskCitation[] = [
+  let citations: AskCitation[] = [
     ...usedPages.map((c, i) => ({
       n: i + 1,
       title: c.page.title,
@@ -990,7 +997,14 @@ export async function* askAlbrightStream(
       sourceLabel: "Pathology Bites",
     })),
   ];
-  const top = usedPages[0]?.page.source ?? plan.source;
+  if (whoCriteria) {
+    const { page } = whoCriteria;
+    citations = [
+      { n: 1, title: page.title, href: page.href, sourceLabel: SOURCE_LABEL[page.source] },
+    ];
+    tables = [];
+  }
+  const top = whoCriteria?.page.source ?? usedPages[0]?.page.source ?? plan.source;
 
   // 4. Answer in the planned format, streamed. Its worst case (this prompt
   // plus its full output cap) is held against the budget before it starts.
@@ -1051,7 +1065,11 @@ export async function* askAlbrightStream(
   let finalFormat = format;
   let content = "";
   let completion: number | undefined;
-  {
+  if (whoCriteria) {
+    content = criteriaAnswer(whoCriteria.criteria, 1);
+    timings.firstToken = since();
+    yield { type: "delta", text: content };
+  } else {
     const gen = streamAnswer(format, maxOut);
     for (;;) {
       const step = await gen.next();

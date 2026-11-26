@@ -232,3 +232,22 @@ export function inlineLinks(text: string): InlinePiece[] {
   if (last < text.length) out.push({ text: text.slice(last) });
   return out;
 }
+
+/**
+ * Long lines read better in a wider card: true when a bullet runs past ~70
+ * characters or the answer is long overall (WHO criteria wrapped to three
+ * or four lines per bullet in the 400px card). Citations and bold don't count.
+ */
+export function hasLongLines(blocks: AnswerBlock[]): boolean {
+  let total = 0;
+  for (const b of blocks) {
+    if (b.kind === "list") {
+      for (const it of b.items) {
+        const n = plain(it).length;
+        if (n > 70) return true;
+        total += n;
+      }
+    } else if (b.kind === "p") total += plain(b.text).length;
+  }
+  return total > 450;
+}

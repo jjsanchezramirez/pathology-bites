@@ -5,7 +5,6 @@ import {
   PLANNER_SYSTEM,
   answerSystem,
   fallbackPlan,
-  formatForPassages,
   isChat,
   namesMarker,
   parsePlan,
@@ -100,19 +99,6 @@ describe("parsePlan", () => {
     expect(fallbackPlan("WHO criteria for classic Hodgkin lymphoma").format).toBe("criteria");
     expect(FORMAT_INSTRUCTION.criteria).toMatch(/\*\*Essential:\*\*.*\*\*Desirable:\*\*/);
     expect(PLANNER_SYSTEM).not.toMatch(/"criteria"\|/);
-  });
-
-  it("keeps the criteria format only when a passage lists essential/desirable criteria", () => {
-    const who = "Diagnostic criteria Essential: CD30+ HRS cells. Desirable: CD15+.";
-    expect(formatForPassages("criteria", ["morphology", who])).toBe("criteria");
-    expect(formatForPassages("criteria", ["Mixed inflammatory background; CD30+, CD15+"])).toBe(
-      "paragraph"
-    );
-    expect(formatForPassages("table", ["no criteria here"])).toBe("table");
-    // A heading that points to a box is not a list.
-    expect(
-      formatForPassages("criteria", ["Essential and desirable diagnostic criteria See Box 2.19."])
-    ).toBe("paragraph");
   });
 
   it("turns an explicit 'X vs Y' into a table, but not a yes/no question", () => {

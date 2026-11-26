@@ -236,23 +236,6 @@ export function parsePlan(raw: string, question: string): Plan {
   return { scope, source, fallback, query, focus, format, items, visual };
 }
 
-/**
- * The planned format once the passages are known. The criteria format only
- * when a passage really lists essential criteria (WHO's "Essential: …"):
- * when WHO search came up empty and PathOutlines answered "Diagnostic
- * criteria for classic Hodgkin lymphoma", the model put its own "Essential" /
- * "Desirable" labels over a marker dump, CD45 included. Anything else falls
- * back to the paragraph it got before.
- */
-export function formatForPassages(format: AnswerFormat, passages: string[]): AnswerFormat {
-  if (format !== "criteria") return format;
-  // "Essential: …" itself, not the bare heading: WHO's CMML page has only
-  // "Essential and desirable diagnostic criteria See Box 2.19" (its criteria
-  // are prerequisite/supporting, in a box the corpus lacks), and the model
-  // made up an essential/desirable split.
-  return passages.some((p) => /\bEssential:\s*\S/i.test(p)) ? "criteria" : "paragraph";
-}
-
 /** What Dr. Albright says instead of searching, for out-of-scope questions. */
 export const SCOPE_REPLY: Record<Exclude<PlanScope, "ok" | "chat">, string> = {
   off_topic:
@@ -281,9 +264,8 @@ export const FORMAT_INSTRUCTION: Record<AnswerFormat, string> = {
   // answer had wandered through thymic carcinoma and mucicarmine instead.
   marker:
     'Answer as short bullets ("- ") under these bold labels, in this order, each on its own line: "**Positive — normal tissue:**", "**Negative — normal tissue:**", "**Positive — tumors:**", "**Negative — tumors:**". One tissue or tumor per bullet with its key detail (pattern, % if given), and cite every bullet. At most 12 bullets per label, the tumors most often met in practice first. Omit a label the sources say nothing about. No other labels, no tables.',
-  // WHO lists essential and desirable criteria separately; a paragraph ran
-  // them together. Only used when a passage has that wording
-  // (formatForPassages); other schemes (Milan…) get a paragraph.
+  // Never sent: criteria answers are parsed from the WHO passage
+  // (who-criteria.ts), or become a paragraph when no passage lists them.
   criteria:
     'Answer as short bullets ("- "), one criterion per bullet, each cited, under "**Essential:**" and "**Desirable:**" on their own lines, in that order. List only what a source itself calls an essential or desirable criterion, under the label that source gives it; never move a criterion between the two, and never add other findings, markers or numbers. Keep each criterion whole, as the source states it: its findings stay on one line, separated by commas; never split one criterion into several bullets or repeat a lead-in ("Immunophenotype:") across bullets. After the last bullet only the Follow-ups line: no summary and no sentence about what the sources leave out. No tables.',
   table:
