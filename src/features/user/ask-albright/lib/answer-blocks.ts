@@ -134,3 +134,25 @@ export function parseAnswerBlocks(
   if (streaming && last?.kind === "table") last.pending = true;
   return blocks;
 }
+
+/** A run of inline text, or a link to a page on this site. */
+export type InlinePiece = { text: string; href?: string };
+
+/**
+ * Split text into plain runs and in-site links: Markdown `[label](/path)` and
+ * the bare words "About page" (the small-talk prompt names it). Only paths on
+ * this site (starting with one "/") become links — an answer must never send a
+ * reader off-site through a model-written URL; anything else stays plain text.
+ */
+export function inlineLinks(text: string): InlinePiece[] {
+  const out: InlinePiece[] = [];
+  const re = /\[([^\]\n]{1,80})\]\((\/(?!\/)[\w\-./?=&#%]*)\)|\bAbout page\b/gi;
+  let last = 0;
+  for (const m of text.matchAll(re)) {
+    if (m.index > last) out.push({ text: text.slice(last, m.index) });
+    out.push(m[1] ? { text: m[1], href: m[2] } : { text: m[0], href: "/about" });
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push({ text: text.slice(last) });
+  return out;
+}
