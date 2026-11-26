@@ -119,3 +119,20 @@ describe("applyPicks", () => {
     expect(applyPicks(list, ["gone"], 2)).toEqual(list.slice(0, 2));
   });
 });
+
+describe("profileLists — p53-style calls", () => {
+  it("keeps aberrant and wildtype out of positive/negative", () => {
+    const lists = profileLists(
+      [
+        { entity_id: "a", call: "aberrant", pooled_pct: null, sources: 2 },
+        { entity_id: "b", call: "wildtype", pooled_pct: null, sources: 1 },
+        { entity_id: "c", call: "positive", pooled_pct: null, sources: 1 },
+      ],
+      names
+    );
+    expect(lists.aberrant).toEqual(["Lung adenocarcinoma"]);
+    expect(lists.wildtype).toEqual(["Thyroid papillary carcinoma"]);
+    expect(lists.positive).toEqual(["Mesothelioma"]);
+    expect(lists.negative).toEqual([]);
+  });
+});

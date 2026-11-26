@@ -41,6 +41,12 @@ const STYLE: Record<string, { label: string; short: string; className: string }>
     className: "border-teal-300 bg-teal-50 text-teal-700",
   },
   wildtype: { label: "Wildtype", short: "wt", className: "border-sky-300 bg-sky-50 text-sky-700" },
+  // p53-style mutation-type staining: overexpression, null or cytoplasmic.
+  aberrant: {
+    label: "Aberrant",
+    short: "ab",
+    className: "border-orange-300 bg-orange-50 text-orange-700",
+  },
   mixed: { label: "Mixed", short: "±", className: "border-amber-300 bg-amber-50 text-amber-700" },
 };
 

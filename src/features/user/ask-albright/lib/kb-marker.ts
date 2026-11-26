@@ -75,7 +75,7 @@ export async function markerProfile(marker: {
       .from("marker_summary")
       .select("entity_id, call, pooled_pct, sources")
       .eq("marker_id", marker.id)
-      .in("call", ["positive", "negative", "mixed", "loss", "retained"])
+      .in("call", ["positive", "negative", "mixed", "loss", "retained", "aberrant", "wildtype"])
       .order("entity_id")
       .limit(500)
       .abortSignal(AbortSignal.timeout(TIMEOUT_MS));
@@ -95,7 +95,14 @@ export async function markerProfile(marker: {
     );
 
     const lists = profileLists(rows, names);
-    if (lists.positive.length + lists.negative.length === 0) return null;
+    if (
+      lists.positive.length +
+        lists.negative.length +
+        lists.aberrant.length +
+        lists.wildtype.length ===
+      0
+    )
+      return null;
     const picks = await picksPromise;
     const positive = applyPicks(lists.positive, picks.positive, PICK_POSITIVE);
     const negative = applyPicks(lists.negative, picks.negative, PICK_NEGATIVE);
@@ -103,6 +110,13 @@ export async function markerProfile(marker: {
       `${marker.name} in the Pathology Bites knowledge base (WHO-derived evidence, pooled across sources; tumours only, no normal-tissue data).`,
       positive.length ? `Positive in tumours: ${positive.join("; ")}.` : "",
       negative.length ? `Negative in tumours: ${negative.join("; ")}.` : "",
+      // p53-style stains: the pattern, not presence, is the finding.
+      lists.aberrant.length
+        ? `Aberrant (mutation-type) pattern in tumours: ${lists.aberrant.slice(0, PICK_NEGATIVE).join("; ")}.`
+        : "",
+      lists.wildtype.length
+        ? `Wild-type pattern in tumours: ${lists.wildtype.slice(0, PICK_NEGATIVE).join("; ")}.`
+        : "",
     ]
       .filter(Boolean)
       .join(" ");

@@ -37,6 +37,7 @@ function callOf(a: MarkerAttestation): string {
     a.nuance === "loss" ||
     a.nuance === "retained" ||
     a.nuance === "wildtype" ||
+    a.nuance === "aberrant" ||
     a.nuance === "index"
   ) {
     return a.nuance;

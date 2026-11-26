@@ -31,17 +31,24 @@ export const PICK_NEGATIVE = 8;
 // Exported for dev/scripts/ask-albright/precompute-marker-picks.mts (gitignored, so knip can't see it).
 export const SELECT_MODEL = "@cf/openai/gpt-oss-120b";
 
-/** Positive/negative tumour lists from summary rows, best-sourced first (pure). */
+/**
+ * Positive/negative tumour lists from summary rows, best-sourced first (pure).
+ * `aberrant` / `wildtype` (p53-style stains) get lists of their own: an
+ * aberrant p53 can be a NULL pattern — no staining at all — so it is neither
+ * "positive" nor "negative", and a wild-type pattern is not "positive" either.
+ */
 export function profileLists(
   rows: SummaryRow[],
   names: Map<string, string>
-): { positive: string[]; negative: string[] } {
+): { positive: string[]; negative: string[]; aberrant: string[]; wildtype: string[] } {
   const ranked = [...rows].sort(
     (a, b) => (b.sources ?? 0) - (a.sources ?? 0) || (b.pooled_pct ?? -1) - (a.pooled_pct ?? -1)
   );
   const seen = new Set<string>();
   const positive: string[] = [];
   const negative: string[] = [];
+  const aberrant: string[] = [];
+  const wildtype: string[] = [];
   for (const r of ranked) {
     const name = names.get(r.entity_id)?.replace(/:\s*general overview$/i, "");
     if (!name || seen.has(name.toLowerCase())) continue;
@@ -52,10 +59,14 @@ export function profileLists(
       positive.push(`${name} (variable)`);
     } else if ((r.call === "negative" || r.call === "loss") && negative.length < MAX_NEGATIVE) {
       negative.push(`${name}${r.call === "loss" ? " (loss)" : ""}`);
+    } else if (r.call === "aberrant" && aberrant.length < MAX_NEGATIVE) {
+      aberrant.push(`${name}${pct}`);
+    } else if (r.call === "wildtype" && wildtype.length < MAX_NEGATIVE) {
+      wildtype.push(name);
     } else continue;
     seen.add(name.toLowerCase());
   }
-  return { positive, negative };
+  return { positive, negative, aberrant, wildtype };
 }
 
 /**
