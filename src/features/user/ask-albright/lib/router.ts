@@ -215,10 +215,17 @@ export function tidyAnswer(text: string): string {
 export function dropUnaskedGaps(answer: string): string {
   const GAP =
     /\s*(?:However,\s*)?(?:the (?:provided )?sources?|it is) (?:do(?:es)? not|don't|doesn't|is not|are not)\b[^.\n]*\.\s*$/i;
-  let out = answer;
+  // The model can loop on them until the token cap cuts it mid-word ("What is
+  // HER2-low?" ran "…a p-value. The sources do not give a po"): drop that
+  // unfinished tail first, or the full-stop pattern below never matches.
+  const cut = answer.replace(
+    /\s*(?:the (?:provided )?sources?) (?:do(?:es)? not|don't|doesn't)\b[^.\n]*$/i,
+    ""
+  );
+  let out = /\[\d/.test(cut) ? cut : answer;
   // A comparison table can trail one per empty cell ("…typical site for CHL. …
   // key morphology for PMBL. …"); the cells already say "not stated".
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 40; i++) {
     const m = out.match(GAP);
     if (!m || m.index === undefined) break;
     const rest = out.slice(0, m.index);

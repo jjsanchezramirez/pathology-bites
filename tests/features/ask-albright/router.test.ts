@@ -164,6 +164,21 @@ describe("dropUnaskedGaps", () => {
       )
     ).toBe(table);
   });
+  it("drops a looping run of them cut off mid-word by the token cap", () => {
+    const loop = Array.from({ length: 18 }, (_, i) => `The sources do not give item ${i}.`).join(
+      " "
+    );
+    expect(
+      dropUnaskedGaps(
+        `HER2-low is IHC 1+ or 2+ with ISH not amplified [1]. ${loop} The sources do not give a po`
+      )
+    ).toBe("HER2-low is IHC 1+ or 2+ with ISH not amplified [1].");
+  });
+  it("keeps an uncited, unfinished 'not covered' answer whole", () => {
+    expect(dropUnaskedGaps("The sources do not discuss TRPS1 in")).toBe(
+      "The sources do not discuss TRPS1 in"
+    );
+  });
   it("keeps a whole-answer 'not covered' (nothing cited)", () => {
     const t = "The sources do not discuss TRPS1 in triple-negative carcinoma.";
     expect(dropUnaskedGaps(t)).toBe(t);
