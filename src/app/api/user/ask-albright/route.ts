@@ -198,7 +198,8 @@ export async function POST(request: NextRequest) {
 
   const minute = perMinute.checkLimit(auth.userId, "ask-albright");
   if (!minute.allowed) return limited(minute.resetTime, "Slow down — try again in a minute.");
-  const reservation = await reserveQuestion(auth.userId);
+  // Admins have no per-user daily cap; the global budget still applies to them.
+  const reservation = await reserveQuestion(auth.userId, { uncapped: auth.role === "admin" });
   if (!reservation.allowed) {
     if (reservation.reason === "unavailable")
       return apiError("Dr. Albright is unavailable right now", 503);

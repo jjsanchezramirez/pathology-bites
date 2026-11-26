@@ -670,6 +670,14 @@ describe("POST /api/user/ask-albright", () => {
     }
   );
 
+  it("reserves admins without the per-user cap, everyone else with it", async () => {
+    const { POST } = await loadRoute();
+    await POST(ask("What stains for oncocytoma?", "admin-7", { "x-user-role": "admin" }));
+    expect(reserveQuestion).toHaveBeenLastCalledWith("admin-7", { uncapped: true });
+    await POST(ask("What stains for chromophobe?", "user-8", { "x-user-role": "user" }));
+    expect(reserveQuestion).toHaveBeenLastCalledWith("user-8", { uncapped: false });
+  });
+
   it("does not take a daily question for a repeat answered from history", async () => {
     vi.mocked(findInHistory).mockResolvedValue({
       id: "hist-9",

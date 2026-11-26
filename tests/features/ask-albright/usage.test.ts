@@ -65,4 +65,14 @@ describe("daily usage limits", () => {
     rpc.mockResolvedValue({ data: null, error: { message: "down" } });
     await expect(recordCost("u1", 0.0005)).resolves.toBeUndefined();
   });
+
+  it("gives admins no per-user cap but keeps the global budget", async () => {
+    rpc.mockResolvedValue({ data: { allowed: true }, error: null });
+    await reserveQuestion("admin-1", { uncapped: true });
+    expect(rpc).toHaveBeenLastCalledWith("ask_albright_reserve", {
+      p_user: "admin-1",
+      p_user_max: 2_000_000_000,
+      p_global_max: 1000,
+    });
+  });
 });
