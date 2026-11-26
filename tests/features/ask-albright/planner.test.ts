@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   FORMAT_INSTRUCTION,
+  CHAT_SYSTEM,
   PLANNER_SYSTEM,
   answerSystem,
   fallbackPlan,
@@ -153,6 +154,24 @@ describe("planner prompt and answer system", () => {
   it("puts no concrete findings or numbers in the answer rules (they leak into answers)", () => {
     // "positive in 9 of 10 cases", meant as an example, came back as an HPV table cell.
     expect(ANSWER_RULES.replace(/\[\d\]/g, "")).not.toMatch(/\d/);
+  });
+
+  it("treats questions about what Dr. Albright is as chat", () => {
+    for (const q of [
+      "What are you?",
+      "What is Dr. Albright?",
+      "What can you do?",
+      "How do you work?",
+      "How does this work?",
+      "Are you an AI?",
+      "Are you a real doctor?",
+      "What is this?",
+    ])
+      expect(isChat(q)).toBe(true);
+    expect(isChat("What is this lesion?")).toBe(false);
+    expect(isChat("What is it that stains with CD117 in GIST?")).toBe(false);
+    expect(CHAT_SYSTEM).toMatch(/you are a neuron/);
+    expect(CHAT_SYSTEM).toMatch(/you are an AI assistant, not a person or a real doctor/);
   });
 
   it("treats short small talk and questions about the site as chat, nothing else", () => {
