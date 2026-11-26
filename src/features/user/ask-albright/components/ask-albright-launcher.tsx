@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ExternalLink, LoaderCircle, SendHorizontal, ThumbsDown, ThumbsUp, X } from "lucide-react";
 
@@ -31,7 +32,19 @@ interface AskResponse {
   drawing?: boolean;
   /** The one visual, if any: a diagram, library images or a linked published figure. */
   visual?: AskVisual;
+  /** Signed-out teaser only: free questions this browser has left. */
+  remaining?: number;
 }
+
+/** Signed-out teaser state, from GET /api/public/ask-albright. */
+interface PublicStatus {
+  signedIn: boolean;
+  enabled: boolean;
+  remaining: number;
+  limit: number;
+}
+
+const plural = (n: number) => `${n} free question${n === 1 ? "" : "s"}`;
 
 /**
  * The text so far, without the model's trailing "Follow-ups:" line, which only
@@ -572,8 +585,46 @@ function RecentQuestions({
  * footer: opening grows the card up and out from the corner (no overlay, no
  * blur — the page stays usable), closing shrinks it back to the pill.
  */
-export function AskAlbrightLauncher() {
+/** Shown in place of the input once a signed-out visitor's free questions are used. */
+function SignUpCard() {
+  return (
+    <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4 text-center">
+      <p className="text-sm font-semibold">You&apos;ve used your free questions</p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Sign up free to keep asking — 50 questions a day, with your history saved.
+      </p>
+      <div className="mt-3 flex justify-center gap-2">
+        <Link
+          href="/signup"
+          className="rounded-full bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+        >
+          Sign up free
+        </Link>
+        <Link
+          href="/login"
+          className="rounded-full border px-4 py-1.5 text-sm font-medium hover:bg-muted"
+        >
+          Log in
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * variant "user" (dashboard): the member's account, history and ratings.
+ * variant "public" (homepage): a few free questions for signed-out visitors,
+ * counted down, then a sign-up card. A visitor who turns out to be signed in
+ * gets the member experience.
+ */
+export function AskAlbrightLauncher({ variant = "user" }: { variant?: "user" | "public" }) {
   const pathname = usePathname();
+  const [status, setStatus] = useState<PublicStatus | null>(null);
+  /** Anonymous teaser in effect (false once a public visitor turns out signed in). */
+  const anon = variant === "public" && !status?.signedIn;
+  const remaining = anon ? (status?.remaining ?? null) : null;
+  const outOfFree = anon && remaining === 0;
+  const honeypot = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
@@ -601,14 +652,28 @@ export function AskAlbrightLauncher() {
   // History is fetched once, as soon as the user reaches for the pill (hover,
   // focus) — and opening waits for it, so the card grows once to its final
   // size instead of opening and then jumping when "Recent questions" lands.
+  // On the homepage the same moment fetches the free-question status instead
+  // (which also issues the visitor cookie the public POST needs); a signed-in
+  // visitor then gets their history like on the dashboard.
   const historyLoad = useRef<Promise<void> | null>(null);
   const loadHistory = useCallback(() => {
-    historyLoad.current ??= fetch("/api/user/ask-albright/history?limit=20")
-      .then((r) => (r.ok ? r.json() : { entries: [] }))
-      .then((d: { entries?: HistoryEntry[] }) => setHistory(d.entries ?? []))
-      .catch(() => setHistory([]));
+    const fetchHistory = () =>
+      fetch("/api/user/ask-albright/history?limit=20")
+        .then((r) => (r.ok ? r.json() : { entries: [] }))
+        .then((d: { entries?: HistoryEntry[] }) => setHistory(d.entries ?? []))
+        .catch(() => setHistory([]));
+    historyLoad.current ??=
+      variant === "user"
+        ? fetchHistory()
+        : fetch("/api/public/ask-albright", { cache: "no-store" })
+            .then((r) => (r.ok ? (r.json() as Promise<PublicStatus>) : null))
+            .then((st) => {
+              if (st) setStatus(st);
+              return st?.signedIn ? fetchHistory() : setHistory([]);
+            })
+            .catch(() => setHistory([]));
     return historyLoad.current;
-  }, []);
+  }, [variant]);
 
   if (pathname && HIDDEN.some((re) => re.test(pathname))) return null;
 
@@ -625,7 +690,7 @@ export function AskAlbrightLauncher() {
 
   async function ask(text: string = question) {
     const q = text.trim();
-    if (q.length < 2 || loading || isShowing(q)) return;
+    if (q.length < 2 || loading || isShowing(q) || outOfFree) return;
     const saved = history?.find((e) => normalizeQuestion(e.question) === normalizeQuestion(q));
     if (saved) {
       setQuestion(saved.question);
@@ -646,6 +711,10 @@ export function AskAlbrightLauncher() {
     setResult(null);
     const finish = (data: AskResponse) => {
       setResult({ ...data, streaming: false, feedback: data.feedback ?? null });
+      if (typeof data.remaining === "number") {
+        const left = data.remaining;
+        setStatus((st) => (st ? { ...st, remaining: left } : st));
+      }
       setAnsweredQuestion(q);
       setJustAnswered(!data.repeated);
       if (data.historyId) {
@@ -662,15 +731,22 @@ export function AskAlbrightLauncher() {
       }
     };
     try {
-      const res = await fetch("/api/user/ask-albright", {
+      if (anon) await loadHistory(); // the visitor cookie must be set first
+      const res = await fetch(anon ? "/api/public/ask-albright" : "/api/user/ask-albright", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/x-ndjson" },
-        body: JSON.stringify({ question: q }),
+        body: JSON.stringify(
+          anon ? { question: q, referral_source: honeypot.current?.value ?? "" } : { question: q }
+        ),
       });
       // Errors, limits and repeats come back as plain JSON; fresh answers stream.
       if (!(res.headers.get("content-type") ?? "").includes("ndjson")) {
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
+          // Out of free questions: the sign-up card replaces the input.
+          if (anon && ["visitor", "ip", "global"].includes(data.reason)) {
+            setStatus((st) => (st ? { ...st, remaining: 0 } : st));
+          }
           setError(data.error ?? "Something went wrong. Try again.");
           return;
         }
@@ -789,10 +865,17 @@ export function AskAlbrightLauncher() {
           !open
             ? "w-[160px]"
             : hasTable
-              ? "w-[min(600px,calc(100vw-2rem))] md:w-[min(600px,calc(100vw-18rem))]"
+              ? "w-[min(600px,calc(100vw-2rem))]"
               : longLines
-                ? "w-[min(500px,calc(100vw-2rem))] md:w-[min(500px,calc(100vw-18rem))]"
-                : "w-[min(400px,calc(100vw-2rem))] md:w-[min(400px,calc(100vw-18rem))]"
+                ? "w-[min(500px,calc(100vw-2rem))]"
+                : "w-[min(400px,calc(100vw-2rem))]",
+          open && variant === "user" && hasTable && "md:w-[min(600px,calc(100vw-18rem))]",
+          open && variant === "user" && longLines && "md:w-[min(500px,calc(100vw-18rem))]",
+          open &&
+            variant === "user" &&
+            !hasTable &&
+            !longLines &&
+            "md:w-[min(400px,calc(100vw-18rem))]"
         )}
       >
         {/* Body: grid-rows 0fr→1fr animates height without measuring it. */}
@@ -812,6 +895,13 @@ export function AskAlbrightLauncher() {
                   <p className="text-xs text-muted-foreground">
                     Cited answers from PathOutlines, PubMed, WHO &amp; Pathology Bites
                   </p>
+                  {anon && remaining !== null && !result && remaining > 0 && (
+                    <p className="mt-1 text-xs font-medium text-primary">
+                      {remaining === status?.limit
+                        ? `Try ${plural(remaining)} — no account needed`
+                        : `You have ${plural(remaining)} left`}
+                    </p>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -823,13 +913,28 @@ export function AskAlbrightLauncher() {
                 </button>
               </div>
 
+              {outOfFree && !result && <SignUpCard />}
+
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   void ask();
                 }}
-                className="relative"
+                className={cn("relative", outOfFree && "hidden")}
               >
+                {anon && (
+                  // Honeypot: off-screen and skipped by keyboard and screen
+                  // readers; only form-filling bots put anything in it.
+                  <input
+                    ref={honeypot}
+                    type="text"
+                    name="referral_source"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden
+                    className="absolute -left-[9999px] h-px w-px opacity-0"
+                  />
+                )}
                 <textarea
                   ref={inputRef}
                   value={question}
@@ -860,7 +965,7 @@ export function AskAlbrightLauncher() {
                 </button>
               </form>
 
-              {error && <p className="text-sm text-destructive">{error}</p>}
+              {error && !outOfFree && <p className="text-sm text-destructive">{error}</p>}
 
               {!result && !loading && !error && history && (
                 <RecentQuestions
@@ -919,7 +1024,7 @@ export function AskAlbrightLauncher() {
                       />
                     );
                   })}
-                  {(result.followUps?.length ?? 0) > 0 && (
+                  {(result.followUps?.length ?? 0) > 0 && !outOfFree && (
                     <div
                       className="flex flex-wrap gap-1.5"
                       aria-label="Suggested follow-up questions"
@@ -965,6 +1070,29 @@ export function AskAlbrightLauncher() {
                   {!result.streaming && result.historyId && !result.scope && (
                     <Feedback value={result.feedback ?? null} onRate={(r) => void rate(r)} />
                   )}
+                  {anon && !result.streaming && typeof result.remaining === "number" && (
+                    <p className="rounded-lg bg-primary/5 px-3 py-2 text-xs text-foreground/80">
+                      {result.remaining > 0 ? (
+                        <>
+                          You have <span className="font-semibold">{plural(result.remaining)}</span>{" "}
+                          left.{" "}
+                          <Link href="/signup" className="font-medium text-primary hover:underline">
+                            Sign up free
+                          </Link>{" "}
+                          for 50 a day.
+                        </>
+                      ) : (
+                        <>
+                          That was your last free question —{" "}
+                          <span className="font-semibold">0 left</span>.{" "}
+                          <Link href="/signup" className="font-medium text-primary hover:underline">
+                            Sign up free
+                          </Link>{" "}
+                          for 50 a day.
+                        </>
+                      )}
+                    </p>
+                  )}
                   <p className="mt-3 border-t pt-2.5 text-center text-[11px] text-muted-foreground">
                     Dr. Albright can make mistakes. Check the sources; not for diagnostic use.
                   </p>
@@ -976,13 +1104,19 @@ export function AskAlbrightLauncher() {
 
         {/* The pill: always visible, becomes the card's footer when open. */}
         <div className={cn("flex h-14 items-center", open && "border-t")}>
-          <button
-            type="button"
-            onClick={() => void newQuestion()}
-            className={cn(barButton, "text-sm font-medium")}
-          >
-            {open && (result || error) ? "New question" : "Ask a question"}
-          </button>
+          {open && outOfFree ? (
+            <Link href="/signup" className={cn(barButton, "text-sm font-medium text-primary")}>
+              Sign up for more questions
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => void newQuestion()}
+              className={cn(barButton, "text-sm font-medium")}
+            >
+              {open && (result || error) ? "New question" : "Ask a question"}
+            </button>
+          )}
         </div>
       </div>
     </div>
