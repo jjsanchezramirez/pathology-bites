@@ -306,10 +306,19 @@ function AnswerText({
                   ))}
                 </p>
               ) : (
-                <ul className="list-disc space-y-1 pl-4">
+                // Compact bullets: a small muted dot and a narrow hanging
+                // indent instead of list-disc's wide gutter, tighter leading
+                // and gaps. Wrapped lines still align under the text.
+                <ul className="space-y-0.5 leading-snug">
                   {b.items.map((item, k) => (
-                    <li key={k}>
-                      <Inline text={item} citations={citations} />
+                    <li key={k} className="flex gap-2">
+                      <span
+                        aria-hidden
+                        className="mt-[0.55em] size-1 shrink-0 rounded-full bg-muted-foreground/50"
+                      />
+                      <span className="min-w-0">
+                        <Inline text={item} citations={citations} />
+                      </span>
                     </li>
                   ))}
                 </ul>
