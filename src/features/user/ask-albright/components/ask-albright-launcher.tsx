@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ExternalLink, LoaderCircle, SendHorizontal, ThumbsDown, ThumbsUp, X } from "lucide-react";
 
@@ -213,15 +212,23 @@ function CiteSup({ cites }: { cites: AskResponse["citations"] }) {
   );
 }
 
-/** In-site links in a reply (see inlineLinks): page names the guide or small talk point to. */
+/** In-site links in a reply (see inlineLinks), opened in a new tab: page names the guide or small talk point to. */
 function SiteLinks({ text }: { text: string }) {
   return (
     <>
       {inlineLinks(text).map((p, j) =>
         p.href ? (
-          <Link key={j} href={p.href} className="text-primary underline underline-offset-2">
+          // A new tab, like every other link in the card: same-tab navigation
+          // would close the chat mid-conversation.
+          <a
+            key={j}
+            href={p.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline underline-offset-2"
+          >
             {p.text}
-          </Link>
+          </a>
         ) : (
           p.text
         )
