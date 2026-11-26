@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  comparisonFollowUps,
   buildAnswerPrompt,
   heuristicSource,
   normalizeQuestion,
@@ -155,8 +156,39 @@ describe("dropUnaskedGaps", () => {
       )
     ).toBe("Barrett is columnar metaplasia [1].");
   });
+  it("drops a run of them after a cited table", () => {
+    const table = "| Feature | CHL | PMBL |\n|---|---|---|\n| CD30 | Positive [1] | Frequent [3] |";
+    expect(
+      dropUnaskedGaps(
+        `${table}\nThe sources do not cover the typical site for CHL. The sources do not cover the key morphology for PMBL. The sources do not cover CD20 in PMBL.`
+      )
+    ).toBe(table);
+  });
   it("keeps a whole-answer 'not covered' (nothing cited)", () => {
     const t = "The sources do not discuss TRPS1 in triple-negative carcinoma.";
     expect(dropUnaskedGaps(t)).toBe(t);
+  });
+});
+
+describe("comparisonFollowUps", () => {
+  it("offers the aspects a bare comparison did not name", () => {
+    expect(comparisonFollowUps("CHL vs NLPHL vs PMBL")).toEqual([
+      "IHC of CHL vs NLPHL vs PMBL",
+      "Molecular findings of CHL vs NLPHL vs PMBL",
+    ]);
+  });
+  it("skips the aspect already asked about, and its wording", () => {
+    expect(comparisonFollowUps("IHC of CHL vs NLPHL?")).toEqual([
+      "Molecular findings of CHL vs NLPHL",
+      "Morphology of CHL vs NLPHL",
+    ]);
+  });
+  it("strips a leading 'difference between'", () => {
+    expect(comparisonFollowUps("What is the difference between DLBCL and Burkitt?")[0]).toBe(
+      "IHC of DLBCL and Burkitt"
+    );
+  });
+  it("returns nothing for a non-comparison", () => {
+    expect(comparisonFollowUps("What is CD30?")).toEqual([]);
   });
 });

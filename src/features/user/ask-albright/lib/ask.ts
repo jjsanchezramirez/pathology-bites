@@ -29,6 +29,7 @@ import {
   buildAnswerPrompt,
   normalizeQuestion,
   splitFollowUps,
+  comparisonFollowUps,
   hitTokenCap,
   tidyAnswer,
   dropUnaskedGaps,
@@ -394,8 +395,35 @@ export function coversItem(title: string, item: string): boolean {
   if (words.length === 0) return false;
   const t = title.toLowerCase();
   const hit = words.filter((w) => new RegExp(`(^|[^a-z0-9])${w}`).test(t)).length;
-  return hit / words.length >= 0.7;
+  if (hit / words.length >= 0.7) return true;
+  // PathologyOutlines shortens some titles: its PMBL page is titled just
+  // "primary mediastinal", which holds 2 of the 5 words above — so the right
+  // page was refused and the gray-zone page took PMBL's column. A title of 2+
+  // words that all appear in the item names it too.
+  const tw = (t.match(/[a-z0-9]+/g) ?? ([] as string[])).filter(
+    (w) => w.length >= 3 && !ITEM_STOP.has(w)
+  );
+  return (
+    tw.length >= 2 &&
+    tw.some((w) => !GENERIC_TITLE_WORDS.has(w)) &&
+    tw.every((w) => words.some((iw) => iw.startsWith(w)))
+  );
 }
+
+/** Words that name no diagnosis on their own ("large cell", "B cell lymphoma"). */
+const GENERIC_TITLE_WORDS = new Set([
+  "cell",
+  "cells",
+  "large",
+  "small",
+  "lymphoma",
+  "carcinoma",
+  "sarcoma",
+  "tumor",
+  "tumour",
+  "neoplasm",
+  "disease",
+]);
 
 function maxTokensFor(format: AnswerFormat): number {
   if (format === "marker") return MARKER_MAX_TOKENS;
@@ -1066,9 +1094,12 @@ export async function* askAlbrightStream(
         new Promise<null>((r) => setTimeout(() => r(null), 2_000)),
       ]);
   const result: AskResult = {
-    ...(({ answer, followUps }) => ({ answer: dropUnaskedGaps(answer), followUps }))(
-      splitFollowUps(tidyAnswer(answerText))
-    ),
+    ...(({ answer, followUps }) => ({
+      answer: dropUnaskedGaps(answer),
+      // Tables rarely carry the model's follow-ups; offer the unasked aspects instead.
+      followUps:
+        followUps.length || finalFormat !== "table" ? followUps : comparisonFollowUps(question),
+    }))(splitFollowUps(tidyAnswer(answerText))),
     source: top,
     sourceLabel: SOURCE_LABEL[top],
     // Links come from retrieval, never from the model, so they cannot be invented.

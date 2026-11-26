@@ -190,3 +190,25 @@ describe("inlineLinks", () => {
     expect(inlineLinks("CD30 is positive [1].")).toEqual([{ text: "CD30 is positive [1]." }]);
   });
 });
+
+describe("comparison tables", () => {
+  it("drops rows where no item has a value, keeps rows with one", () => {
+    const text = [
+      "| Feature | CHL | NLPHL | PMBL |",
+      "| --- | --- | --- | --- |",
+      "| CD30 | Positive [1] | 27% [4] | 90-100% [3] |",
+      "| CD23 | not stated | not stated | Positive [3] |",
+      "| CD274 | not stated | Not stated | not stated [2] |",
+      "| CD8 | — | N/A | not stated. |",
+    ].join("\n");
+    const [t] = parseAnswerBlocks(text);
+    expect(t).toMatchObject({ kind: "table" });
+    expect((t as { rows: string[][] }).rows.map((r) => r[0])).toEqual(["CD30", "CD23"]);
+  });
+
+  it("drops a table whose every row was empty, without leaving raw pipes", () => {
+    const text =
+      "Intro.\n| Feature | A | B |\n| --- | --- | --- |\n| X | not stated | not stated |";
+    expect(parseAnswerBlocks(text)).toEqual([{ kind: "p", text: "Intro." }]);
+  });
+});
