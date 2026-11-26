@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { ExternalLink, LoaderCircle, SendHorizontal, ThumbsDown, ThumbsUp, X } from "lucide-react";
 
 import { cn } from "@/shared/utils";
-import { inlineLinks, parseAnswerBlocks } from "../lib/answer-blocks";
+import { hasLongLines, inlineLinks, parseAnswerBlocks } from "../lib/answer-blocks";
 import type { AskVisual } from "../lib/visuals";
 import { MAX_QUESTION_CHARS, normalizeQuestion } from "../lib/router";
 import { AlbrightAvatar } from "./albright-avatar";
@@ -736,13 +736,12 @@ export function AskAlbrightLauncher() {
     inputRef.current?.focus();
   }
 
-  // Tables need room: widen the card for them, up to ~600px.
+  // Tables need room: widen the card for them, up to ~600px. Long lines
+  // (long bullets, long answers) get a middle width; short answers stay compact.
+  const blocks = result ? parseAnswerBlocks(result.answer, { streaming: result.streaming }) : [];
   const hasTable =
-    !!result &&
-    ((result.tables?.length ?? 0) > 0 ||
-      parseAnswerBlocks(result.answer, { streaming: result.streaming }).some(
-        (b) => b.kind === "table"
-      ));
+    !!result && ((result.tables?.length ?? 0) > 0 || blocks.some((b) => b.kind === "table"));
+  const longLines = !hasTable && hasLongLines(blocks);
 
   const barButton =
     "flex h-full w-full items-center justify-center text-foreground/80 transition-colors hover:text-primary focus-visible:outline-none focus-visible:text-primary";
@@ -790,7 +789,9 @@ export function AskAlbrightLauncher() {
             ? "w-[160px]"
             : hasTable
               ? "w-[min(600px,calc(100vw-2rem))] md:w-[min(600px,calc(100vw-18rem))]"
-              : "w-[min(400px,calc(100vw-2rem))] md:w-[min(400px,calc(100vw-18rem))]"
+              : longLines
+                ? "w-[min(500px,calc(100vw-2rem))] md:w-[min(500px,calc(100vw-18rem))]"
+                : "w-[min(400px,calc(100vw-2rem))] md:w-[min(400px,calc(100vw-18rem))]"
         )}
       >
         {/* Body: grid-rows 0fr→1fr animates height without measuring it. */}

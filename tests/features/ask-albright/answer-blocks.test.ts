@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  hasLongLines,
   inlineLinks,
   mergeLeadIns,
   parseAnswerBlocks,
@@ -248,5 +249,17 @@ describe("comparison tables", () => {
     const text =
       "Intro.\n| Feature | A | B |\n| --- | --- | --- |\n| X | not stated | not stated |";
     expect(parseAnswerBlocks(text)).toEqual([{ kind: "p", text: "Intro." }]);
+  });
+});
+
+describe("hasLongLines", () => {
+  it("widens for a long bullet or a long answer, not for short ones", () => {
+    const long = parseAnswerBlocks(
+      "**Essential:**\n- HRS cells and variants in a reactive microenvironment composed of varying proportions of small lymphocytes [1]"
+    );
+    expect(hasLongLines(long)).toBe(true);
+    expect(hasLongLines(parseAnswerBlocks("- CD30 [1]\n- CD15 [1]\n- PAX5 weak [1]"))).toBe(false);
+    expect(hasLongLines(parseAnswerBlocks("CHL is CD30 positive [1]."))).toBe(false);
+    expect(hasLongLines(parseAnswerBlocks("word ".repeat(100)))).toBe(true);
   });
 });
