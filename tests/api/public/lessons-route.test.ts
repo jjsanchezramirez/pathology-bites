@@ -4,8 +4,8 @@ import { NextRequest } from "next/server";
 const calls: { eq: [string, unknown][]; select?: string } = { eq: [] };
 let row: unknown = null;
 
-vi.mock("@/shared/services/service-role-client", () => ({
-  createServiceRoleClient: () => {
+vi.mock("@/shared/services/server", () => ({
+  createClient: async () => {
     const q = {
       select: (cols: string) => {
         calls.select = cols;

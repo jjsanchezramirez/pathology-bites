@@ -69,8 +69,10 @@ under `narration-parts/<run id>/`. When every part is done, `narration/finish`
 joins them, encodes a 48 kb/s MP3, refines word times with Whisper if asked and
 configured, records the track in `audio`, and deletes the parts. Slide cues are
 slide-relative, so only word times move when parts are joined
-(`joinNarrationParts`). Parts from a run that never finished stay in R2; they're
-small and safe to delete.
+(`joinNarrationParts`). Parts from a run that never finished (a closed tab, a failed
+request) are deleted by an R2 lifecycle rule on the `pathology-bites-audio`
+bucket, "Expire narration parts after 1 day" (prefix `narration-parts/`), so
+nothing in the code has to clean up after failures.
 
 Code: `src/shared/lesson/narration.ts` (pure: assembly, batching, joining,
 retiming), `src/shared/services/gemini-tts.ts`, `src/shared/services/mp3.ts`.
@@ -78,7 +80,7 @@ retiming), `src/shared/services/gemini-tts.ts`, `src/shared/services/mp3.ts`.
 ## Storage
 
 `interactive_sequences.sequence_data` holds the Lesson JSON; `status` is
-`draft` or `published`. The public API reads with the service role, pinned to published rows: the table's RLS read policy calls `internal.is_current_user_admin()`, which `anon` can't execute, so a signed-out read through RLS fails. Rows saved by the
+`draft` or `published`. RLS: anonymous visitors read published rows only, signed-in users read published rows, admins read and write everything ([migration](./migrations/20261126120000_interactive_sequences_rls.sql), tested by `supabase/tests/interactive-sequences-rls/run.sh`). Rows saved by the
 retired script studio (`format: "script-lesson"`) are converted to canvas when
 read (`normalizeStoredSequence`), narration included, and saving one writes the
 canvas version back to the same row.
