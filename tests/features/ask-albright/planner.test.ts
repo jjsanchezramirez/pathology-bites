@@ -71,6 +71,21 @@ describe("parsePlan", () => {
     expect(namesMarker("Reed Sternberg cell markers")).toBe(false);
   });
 
+  it("answers a stain asked about within one diagnosis as a paragraph", () => {
+    const marker = JSON.stringify({ format: "marker", query: "x y z" });
+    expect(
+      parsePlan(
+        marker,
+        "What is the p16 staining pattern in HPV-associated squamous cell carcinoma?"
+      ).format
+    ).toBe("paragraph");
+    expect(parsePlan(marker, "SOX10 expression in desmoplastic melanoma").format).toBe("paragraph");
+    expect(parsePlan(marker, "What is p16 positive in?").format).toBe("marker");
+    expect(parsePlan(marker, "Which tumours are TTF-1 positive in the lung?").format).toBe(
+      "marker"
+    );
+  });
+
   it("answers a yes/no marker question directly, not as a whole marker profile", () => {
     const marker = JSON.stringify({ format: "marker", query: "x y z" });
     expect(parsePlan(marker, "Is CD117 positive in renal oncocytoma?").format).toBe("sentence");

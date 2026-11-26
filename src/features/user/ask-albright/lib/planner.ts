@@ -94,6 +94,15 @@ function wantsCriteria(question: string): boolean {
   return CRITERIA.test(question) && !YES_NO.test(question) && !COMPARES.test(question);
 }
 
+/**
+ * "… in / of <a named diagnosis>": the stain is asked about within one tumour,
+ * so the four-group marker format (the stain's whole profile) is the wrong
+ * shape. A bare "What is p16 positive in?" or "TTF-1 positive tumours" names
+ * no diagnosis and keeps it.
+ */
+export const IN_DIAGNOSIS =
+  /\b(?:in|of)\s+(?:an?\s+|the\s+)?(?:[\w-]+\s+){0,6}?(?:\w+omas?|carcinomas?|sarcomas?|lymphomas?|leuka?emias?|tumou?rs?|lesions?|na?evus|na?evi|neoplasms?|dysplasias?|hyperplasias?|diseases?|syndromes?|polyps?|cysts?)\b/i;
+
 /** A marker name in the question: CD99, TTF-1, S100, p63, SOX10… or desmin, calretinin. */
 export function namesMarker(question: string): boolean {
   return (question.match(/[A-Za-z0-9][A-Za-z0-9-]*/g) ?? ([] as string[])).some(
@@ -208,6 +217,11 @@ export function parsePlan(raw: string, question: string): Plan {
     // "CD117 is negative in renal oncocytoma".
     format = "sentence";
   } else if (format === "table" && items.length < 2 && !COMPARES.test(question)) {
+    format = "paragraph";
+  } else if (format === "marker" && IN_DIAGNOSIS.test(question)) {
+    // "p16 staining pattern in HPV-associated squamous cell carcinoma" asks
+    // about one diagnosis: the marker format searched the stain broadly and
+    // the answer drifted to Buschke-Löwenstein and Bartholin gland carcinoma.
     format = "paragraph";
   } else if (format === "marker" && !namesMarker(question)) {
     // "Reed Sternberg cell markers" asks about a cell, not a marker: the

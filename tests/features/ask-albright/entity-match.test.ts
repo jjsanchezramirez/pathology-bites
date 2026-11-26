@@ -56,6 +56,47 @@ describe("entity matching", () => {
   });
 });
 
+describe("site-qualified names answer to their stem", () => {
+  const e = (id: string, name: string) => ({ id, slug: id, name });
+  const idx = buildEntityIndex(
+    [
+      e("lgsc-ov", "Low-grade serous carcinoma of the ovary"),
+      e("lgsc-pe", "Low-grade serous carcinoma of the peritoneum"),
+      e("scc", "Squamous cell carcinoma"),
+      e("scc-lung", "Squamous cell carcinoma of the lung"),
+      e("a1", "Adenocarcinoma of the ampulla"),
+      e("ac1", "Acinar cell carcinoma of the pancreas"),
+      e("ac2", "Acinar cell carcinoma of the salivary gland"),
+      e("ac3", "Acinar cell carcinoma of the breast"),
+      e("ac4", "Acinar cell carcinoma of the prostate"),
+      e("ccsk", "Clear cell sarcoma of the kidney"),
+      e("ccs-st", "Clear cell sarcoma of soft tissue"),
+      e("mc", "Mixed carcinoma of the ovary"),
+    ],
+    []
+  );
+  const ids = (q: string) => findEntities(idx, q).flatMap((f) => f.entities.map((x) => x.id));
+
+  it("finds both site variants from the bare name", () => {
+    expect(ids("Is p53 wildtype in low-grade serous carcinoma?").sort()).toEqual([
+      "lgsc-ov",
+      "lgsc-pe",
+    ]);
+  });
+  it("leaves a stem that an entity already owns to that entity", () => {
+    expect(ids("p40 in squamous cell carcinoma")).toEqual(["scc"]);
+  });
+  it("skips short stems and stems shared by many sites", () => {
+    expect(ids("adenocarcinoma markers")).toEqual([]);
+    expect(ids("mixed carcinoma markers")).toEqual([]);
+    expect(ids("acinar cell carcinoma markers")).toEqual([]);
+  });
+  it("skips a stem that another tumour's name starts with", () => {
+    // Clear cell sarcoma of the kidney is not clear cell sarcoma of soft tissue.
+    expect(ids("Is S100 positive in clear cell sarcoma?")).toEqual([]);
+  });
+});
+
 describe("entityProfileText", () => {
   const row = (
     name: string,
@@ -87,7 +128,7 @@ describe("entityProfileText", () => {
     expect(text).toContain("Negative: Chromogranin.");
     expect(text).toContain("Loss of expression (stain lost in the tumour cells): Trypsin.");
     expect(text).toContain("Molecular: CTNNB1 exon 3 mutation.");
-    expect(text).not.toContain("KRAS");
+    expect(text).toContain("Molecular, reported absent: KRAS mutation.");
     expect(text).not.toContain("Ki-67");
     // Read as a verdict, the lists misled (calretinin "reliable in both").
     expect(text).toMatch(/not how often or how strongly/);
@@ -118,6 +159,15 @@ describe("entityProfileText", () => {
     ])!;
     expect(text).toMatch(/Loss of expression[^:]*: SDHB\./);
     expect(text).toMatch(/Retained expression[^:]*: SDHB \(100%\)\./);
+  });
+
+  it("lists molecular findings reported absent on a line of their own", () => {
+    const text = entityProfileText("ACP", [
+      row("CTNNB1 exon 3", "mutation", "positive"),
+      row("BRAF p.V600E", "mutation", "negative", 2),
+    ])!;
+    expect(text).toContain("Molecular: CTNNB1 exon 3 mutation.");
+    expect(text).toContain("Molecular, reported absent: BRAF p.V600E mutation.");
   });
 
   it("profiles an entity whose only findings are pattern calls", () => {
