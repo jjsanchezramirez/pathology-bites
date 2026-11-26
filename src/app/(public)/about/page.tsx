@@ -76,6 +76,12 @@ export default function AboutPage() {
                 The goal: make effective board preparation available to every resident, regardless
                 of their program's resources.
               </p>
+              <p className="border-t pt-6 text-base text-muted-foreground leading-relaxed">
+                Founded by{" "}
+                <span className="font-medium text-foreground">Juan Jose Sanchez Ramirez, MD</span>,
+                hematopathology fellow, and built with the pathology community: the residents,
+                fellows and pathologists who write, review and improve the questions.
+              </p>
             </div>
           </div>
         </section>

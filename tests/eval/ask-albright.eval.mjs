@@ -4,7 +4,7 @@
  * Ask Dr. Albright answer-quality eval. Not part of `npm test` (it calls live
  * PathTalk and Workers AI): run against the local dev server —
  *
- *   node tests/eval/ask-albright.eval.mjs [--base http://localhost:3000] [--out report.json]
+ *   node tests/eval/ask-albright.eval.mjs [--base http://localhost:3000] [--out report.json] [--only regex]
  *
  * Needs a dev identity for the private API (DEBUG_USER_ID in .env.local) and
  * uses the dev-only `x-ask-albright-eval: 1` header (fresh answers: no history,
@@ -142,26 +142,79 @@ const CASES = [
   },
 ];
 
+// Owner QA, 2026-11-25: "Hans algorithm" was declined as off-topic; the
+// DLBCL version invented the GCB branches and borrowed a machine-learning
+// classifier's "~92%" accuracy. Only what the sources state, no stray figure.
+CASES.push(
+  {
+    q: "Hans algorithm",
+    must: [/CD10/i, /MUM1|IRF4/i],
+    not: [/only help with pathology/i],
+  },
+  {
+    q: "Hans algorithm for DLBCL",
+    must: [/CD10/i, /BCL6/i, /MUM1|IRF4/i],
+    not: [/92\s?%/, /CD10\+\s*\/\s*BCL6[+-]\s*\/\s*MUM1-/i],
+  }
+);
+
 const args = process.argv.slice(2);
 const base = args.includes("--base") ? args[args.indexOf("--base") + 1] : "http://localhost:3000";
 const out = args.includes("--out") ? args[args.indexOf("--out") + 1] : null;
+/** --only <regex>: run the matching cases only (quick iteration). */
+const only = args.includes("--only") ? new RegExp(args[args.indexOf("--only") + 1], "i") : null;
 
+/**
+ * Streams the answer (NDJSON), as the launcher does: `first` is when text
+ * first appears — the launch target (≤3 s most, ≤10 s hard) — and `ms` when
+ * the answer is complete.
+ */
 async function run(c) {
   const t0 = Date.now();
-  let res;
+  let first = 0;
+  let d = {};
+  let status = 0;
+  let ok = false;
   try {
-    res = await fetch(`${base}/api/user/ask-albright`, {
+    const res = await fetch(`${base}/api/user/ask-albright`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-ask-albright-eval": "1" },
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/x-ndjson",
+        "x-ask-albright-eval": "1",
+      },
       // A stuck request fails the case instead of stalling the whole run.
       signal: AbortSignal.timeout(60_000),
       body: JSON.stringify({ question: c.q }),
     });
+    status = res.status;
+    ok = res.ok;
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = "";
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let nl;
+      while ((nl = buf.indexOf("\n")) >= 0) {
+        const ev = JSON.parse(buf.slice(0, nl));
+        buf = buf.slice(nl + 1);
+        if (ev.type === "delta" && !first) first = Date.now() - t0;
+        if (ev.type === "done") d = ev;
+        if (ev.type === "error") {
+          ok = false;
+          status = ev.status;
+        }
+      }
+    }
   } catch (err) {
-    res = { ok: false, status: `error: ${err.message}`, json: async () => ({}) };
+    status = `error: ${err.message}`;
   }
   const ms = Date.now() - t0;
-  const d = await res.json().catch(() => ({}));
+  // Declined questions have no stream of text: the reply is the first text.
+  if (!first) first = ms;
+  const res = { ok, status };
   const answer = d.answer ?? "";
   const notCovered = NOT_COVERED.test(answer);
   const missing = c.must.filter((re) => !re.test(answer)).map(String);
@@ -173,6 +226,10 @@ async function run(c) {
     status: res.status,
     ms,
     tokens: d.tokens ?? 0,
+    first,
+    cost: d.costUsd ?? 0,
+    format: d.format ?? d.scope ?? "-",
+    timings: d.timings ?? null,
     notCovered,
     missing,
     wrong,
@@ -181,20 +238,33 @@ async function run(c) {
   };
 }
 
+/** "p800 s1200x1 k300 f2100" — plan, search (count), knowledge base, first token ms (server). */
+const stages = (t) =>
+  t
+    ? `p${t.plan} s${t.search}x${t.searches} k${t.profile} f${t.firstToken}`.padEnd(30)
+    : "".padEnd(30);
+
 const results = [];
 // One at a time: measures what a single user sees, and PathTalk handles
 // searches roughly serially, so parallel cases would just queue.
-for (const c of CASES) results.push(await run(c));
+for (const c of CASES) if (!only || only.test(c.q)) results.push(await run(c));
 const passed = results.filter((r) => r.pass).length;
 const avg = (k) => Math.round(results.reduce((s, r) => s + r[k], 0) / results.length);
 for (const r of results) {
   console.log(
-    `${r.pass ? "PASS" : "FAIL"}  ${String(r.ms).padStart(5)}ms ${String(r.tokens).padStart(5)}tok  ${r.q}`
+    `${r.pass ? "PASS" : "FAIL"} first ${String(r.first).padStart(5)}ms  done ${String(r.ms).padStart(5)}ms  ${(r.cost * 100).toFixed(3)}¢  ${r.format.padEnd(9)} ${stages(r.timings)}  ${r.q}`
   );
   if (!r.pass)
     console.log(
       `      missing=${JSON.stringify(r.missing)} wrong=${JSON.stringify(r.wrong)} notCovered=${r.notCovered} status=${r.status}\n      ${r.answer.slice(0, 220).replace(/\n/g, " ")}`
     );
 }
-console.log(`\nSCORE ${passed}/${results.length}  avg ${avg("ms")}ms  avg ${avg("tokens")} tokens`);
+const sorted = results.map((r) => r.first).sort((a, b) => a - b);
+const pct = (p) => sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))];
+const maxCost = Math.max(...results.map((r) => r.cost));
+console.log(
+  `\nSCORE ${passed}/${results.length}  first-text p50 ${pct(0.5)}ms p80 ${pct(0.8)}ms max ${sorted[sorted.length - 1]}ms  ` +
+    `≤3s ${results.filter((r) => r.first <= 3000).length}/${results.length}  done avg ${avg("ms")}ms  ` +
+    `cost avg ${((results.reduce((s, r) => s + r.cost, 0) / results.length) * 100).toFixed(3)}¢ max ${(maxCost * 100).toFixed(3)}¢`
+);
 if (out) writeFileSync(out, JSON.stringify({ passed, total: results.length, results }, null, 2));

@@ -9,12 +9,16 @@
  * it — at any indent — belongs to it. A group of 3+ short items (a stain
  * panel) is marked `inline`, to flow on one line instead of one per row: the
  * CCRCC immunophenotype ran to 25 single-word bullets.
+ *
+ * `streaming`: the text is still arriving. A table row being written is held
+ * back (it showed as raw "| CD30 | Posi" text), a table is shown from its
+ * header on, and a table still at the end of the text is marked `pending`.
  */
 
 export type AnswerBlock =
   | { kind: "p"; text: string }
   | { kind: "list"; title: string | null; items: string[]; inline: boolean }
-  | { kind: "table"; header: string[]; rows: string[][] };
+  | { kind: "table"; header: string[]; rows: string[][]; pending?: boolean };
 
 const BULLET = /^\s*(?:[-*•]|\d+[.)])\s+/;
 /** Short enough to flow inline (citations and bold don't count). */
@@ -63,9 +67,14 @@ function cells(line: string): string[] {
     .map((c) => c.trim());
 }
 
-export function parseAnswerBlocks(text: string): AnswerBlock[] {
-  const lines = text
-    .split(/\n+/)
+export function parseAnswerBlocks(
+  text: string,
+  { streaming = false }: { streaming?: boolean } = {}
+): AnswerBlock[] {
+  const raw = text.split(/\n+/);
+  // The last line has no newline yet: if it is a table row, it is half written.
+  if (streaming && !/\n\s*$/.test(text) && raw[raw.length - 1]?.trim().startsWith("|")) raw.pop();
+  const lines = raw
     // Indentation is dropped: a group is everything under its label, so
     // nesting depth adds nothing (and splitting on it produced empty lines).
     .map((l) => l.trim())
@@ -83,7 +92,8 @@ export function parseAnswerBlocks(text: string): AnswerBlock[] {
       while (i < lines.length && isTableLine(lines[i].trim())) group.push(lines[i++].trim());
       const rows = group.filter((l) => !isSeparator(l)).map(cells);
       // A real table has a header and at least one row; otherwise keep the text.
-      if (rows.length >= 2) {
+      // While streaming, the header alone is enough: the rows are on their way.
+      if (rows.length >= 2 || (streaming && rows.length === 1 && rows[0].length >= 2)) {
         const width = rows[0].length;
         blocks.push({
           kind: "table",
@@ -120,5 +130,7 @@ export function parseAnswerBlocks(text: string): AnswerBlock[] {
     blocks.push({ kind: "p", text: line });
     i++;
   }
+  const last = blocks[blocks.length - 1];
+  if (streaming && last?.kind === "table") last.pending = true;
   return blocks;
 }

@@ -3,7 +3,12 @@ import { describe, it, expect, vi } from "vitest";
 vi.mock("@/shared/services/server", () => ({ createClient: vi.fn() }));
 vi.mock("@/shared/services/openai-compat", () => ({ callOpenAICompatText: vi.fn() }));
 
-import { keepPicked, numbered, profileLists } from "@/features/user/ask-albright/lib/kb-marker";
+import {
+  applyPicks,
+  keepPicked,
+  numbered,
+  profileLists,
+} from "@/features/user/ask-albright/lib/marker-picks";
 import { keepCutOff, tidyAnswer } from "@/features/user/ask-albright/lib/router";
 
 const names = new Map([
@@ -92,5 +97,25 @@ describe("tidyAnswer", () => {
     expect(tidyAnswer("- Myeloid sarcoma: [4]\n- CIC sarcoma: patchy [1]\n- X: [3], [4]")).toBe(
       "- Myeloid sarcoma [4]\n- CIC sarcoma: patchy [1]\n- X [3], [4]"
     );
+  });
+});
+
+describe("applyPicks", () => {
+  const list = [
+    "Lung adenocarcinoma (75%)",
+    "Thyroid papillary carcinoma (98%)",
+    "Rare thing",
+    "Other",
+  ];
+
+  it("keeps stored picks that are still listed, in pick order, with live labels", () => {
+    expect(
+      applyPicks(list, ["thyroid papillary carcinoma", "gone tumour", "lung adenocarcinoma"], 12)
+    ).toEqual(["Thyroid papillary carcinoma (98%)", "Lung adenocarcinoma (75%)"]);
+  });
+
+  it("falls back to the best-sourced head without picks, or when none survive", () => {
+    expect(applyPicks(list, undefined, 2)).toEqual(list.slice(0, 2));
+    expect(applyPicks(list, ["gone"], 2)).toEqual(list.slice(0, 2));
   });
 });

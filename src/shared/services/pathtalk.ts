@@ -38,6 +38,16 @@ export interface PathTalkHit {
   body: string;
 }
 
+/** A published figure from search_pathology_figures (legend search). */
+export interface PathTalkFigure {
+  legend: string;
+  /** PathTalk's copy of the figure image. */
+  imageUrl: string;
+  /** The source paper (DOI link). */
+  href: string;
+  doi?: string;
+}
+
 export function parseSse(text: string): Array<Record<string, unknown>> {
   const out: Array<Record<string, unknown>> = [];
   for (const line of text.split("\n")) {
@@ -51,8 +61,8 @@ export function parseSse(text: string): Array<Record<string, unknown>> {
   return out;
 }
 
-/** Unwrap a tools/call frame into hits. Exported for tests. */
-export function hitsFromFrames(frames: Array<Record<string, unknown>>): PathTalkHit[] {
+/** The JSON items of a tools/call reply. Throws on a missing or error frame. */
+function itemsFromFrames(frames: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
   const frame = frames.find((f) => f.result || f.error) as
     | {
         result?: { content?: Array<{ type: string; text?: string }> };
@@ -63,26 +73,48 @@ export function hitsFromFrames(frames: Array<Record<string, unknown>>): PathTalk
   // treating it as [] silently lost PubMed from an answer. Throw so it retries.
   if (!frame) throw new Error("pathtalk: no result frame");
   if (frame.error) throw new Error(`pathtalk: ${frame.error.message ?? "tool error"}`);
-  const out: PathTalkHit[] = [];
+  const out: Array<Record<string, unknown>> = [];
   for (const c of frame.result?.content ?? []) {
     if (c.type !== "text" || !c.text) continue;
     try {
       const parsed = JSON.parse(c.text);
       for (const item of Array.isArray(parsed) ? parsed : [parsed]) {
-        if (item && typeof item.href === "string" && typeof item.body === "string") {
-          out.push({
-            title: String(item.title ?? ""),
-            source: item.source,
-            href: item.href,
-            body: item.body,
-          });
-        }
+        if (item && typeof item === "object") out.push(item as Record<string, unknown>);
       }
     } catch {
       /* not a JSON block */
     }
   }
   return out;
+}
+
+/** Unwrap a tools/call frame into hits. Exported for tests. */
+export function hitsFromFrames(frames: Array<Record<string, unknown>>): PathTalkHit[] {
+  return itemsFromFrames(frames)
+    .filter((item) => typeof item.href === "string" && typeof item.body === "string")
+    .map((item) => ({
+      title: String(item.title ?? ""),
+      source: item.source as string | undefined,
+      href: item.href as string,
+      body: item.body as string,
+    }));
+}
+
+/** Unwrap a search_pathology_figures reply into figures. Exported for tests. */
+export function figuresFromFrames(frames: Array<Record<string, unknown>>): PathTalkFigure[] {
+  return itemsFromFrames(frames)
+    .filter(
+      (item) =>
+        typeof item.legend === "string" &&
+        typeof item.image_url === "string" &&
+        typeof item.href === "string"
+    )
+    .map((item) => ({
+      legend: item.legend as string,
+      imageUrl: item.image_url as string,
+      href: item.href as string,
+      doi: typeof item.doi === "string" ? item.doi : undefined,
+    }));
 }
 
 async function post(body: unknown, session: string | null, timeoutMs: number): Promise<Response> {
@@ -133,13 +165,13 @@ async function connect(timeoutMs: number): Promise<string> {
 
 let nextId = 100;
 
-async function callTool(
+async function callToolFrames(
   session: string,
-  tool: PathTalkTool,
+  tool: string,
   query: string,
   limit: number,
   timeoutMs: number
-): Promise<PathTalkHit[]> {
+): Promise<Array<Record<string, unknown>>> {
   const res = await post(
     {
       jsonrpc: "2.0",
@@ -151,7 +183,26 @@ async function callTool(
     timeoutMs
   );
   if (!res.ok) throw new Error(`pathtalk ${tool}: HTTP ${res.status}`);
-  return hitsFromFrames(parseSse(await res.text()));
+  return parseSse(await res.text());
+}
+
+/** One tool call on the instance's session; on any failure reconnects and tries once more. */
+async function withSession<T>(
+  tool: string,
+  query: string,
+  limit: number,
+  timeoutMs: number,
+  parse: (frames: Array<Record<string, unknown>>) => T
+): Promise<T> {
+  const current = getSession(timeoutMs);
+  try {
+    return parse(await callToolFrames(await current, tool, query, limit, timeoutMs));
+  } catch {
+    // Drop the session only if nobody has replaced it yet, so a burst of
+    // failures triggers one reconnect, not one each.
+    if (sessionPromise === current) sessionPromise = null;
+    return parse(await callToolFrames(await getSession(timeoutMs), tool, query, limit, timeoutMs));
+  }
 }
 
 /**
@@ -163,13 +214,13 @@ export async function searchPathTalk(
   query: string,
   { limit = 3, timeoutMs = 8_000 }: { limit?: number; timeoutMs?: number } = {}
 ): Promise<PathTalkHit[]> {
-  const current = getSession(timeoutMs);
-  try {
-    return await callTool(await current, tool, query, limit, timeoutMs);
-  } catch {
-    // Drop the session only if nobody has replaced it yet, so a burst of
-    // failures triggers one reconnect, not one each.
-    if (sessionPromise === current) sessionPromise = null;
-    return callTool(await getSession(timeoutMs), tool, query, limit, timeoutMs);
-  }
+  return withSession(tool, query, limit, timeoutMs, hitsFromFrames);
+}
+
+/** Published figures whose legend matches the query (search_pathology_figures). */
+export async function searchPathTalkFigures(
+  query: string,
+  { limit = 5, timeoutMs = 6_000 }: { limit?: number; timeoutMs?: number } = {}
+): Promise<PathTalkFigure[]> {
+  return withSession("search_pathology_figures", query, limit, timeoutMs, figuresFromFrames);
 }

@@ -119,3 +119,48 @@ describe("parseAnswerBlocks", () => {
     ]);
   });
 });
+
+describe("parseAnswerBlocks while streaming", () => {
+  const head = "| Marker | CHL | NLPHL |\n|---|---|---|\n";
+
+  it("shows a table from its header on, pending, without the row being written", () => {
+    const blocks = parseAnswerBlocks(`Intro.\n${head}| CD30 | Posi`, { streaming: true });
+    expect(blocks).toEqual([
+      { kind: "p", text: "Intro." },
+      { kind: "table", header: ["Marker", "CHL", "NLPHL"], rows: [], pending: true },
+    ]);
+  });
+
+  it("adds rows as they complete and stops pending once text follows the table", () => {
+    const mid = parseAnswerBlocks(`${head}| CD30 | + | - |\n| CD20 |`, { streaming: true });
+    expect(mid).toEqual([
+      {
+        kind: "table",
+        header: ["Marker", "CHL", "NLPHL"],
+        rows: [["CD30", "+", "-"]],
+        pending: true,
+      },
+    ]);
+    const after = parseAnswerBlocks(`${head}| CD30 | + | - |\nCHL is CD30+ [1].`, {
+      streaming: true,
+    });
+    expect(after[0]).toMatchObject({ kind: "table" });
+    expect(after[0]).not.toHaveProperty("pending");
+  });
+
+  it("never shows raw pipes for a half-written header or separator", () => {
+    for (const partial of ["| Mar", "| Marker | CHL |\n|--", "| Marker | CHL |\n|---|---|\n| C"]) {
+      const text = parseAnswerBlocks(partial, { streaming: true })
+        .filter((b) => b.kind === "p")
+        .map((b) => (b as { text: string }).text)
+        .join(" ");
+      expect(text).not.toContain("|");
+    }
+  });
+
+  it("leaves finished answers unchanged (a lone header line is still plain text)", () => {
+    expect(parseAnswerBlocks("| Marker | CHL |")).toEqual([
+      { kind: "p", text: "| Marker | CHL |" },
+    ]);
+  });
+});

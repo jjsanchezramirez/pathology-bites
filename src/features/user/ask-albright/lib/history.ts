@@ -19,6 +19,8 @@ export interface HistoryEntry {
   question: string;
   result: AskResult;
   createdAt: string;
+  /** The user's thumbs on this answer: 1 up, -1 down, null none. */
+  feedback: -1 | 1 | null;
 }
 
 /** Rows kept per user; older ones are pruned on write. */
@@ -76,18 +78,25 @@ export async function saveHistory(
 export async function listHistory(userId: string, limit = 20): Promise<HistoryEntry[]> {
   const { data, error } = await db()
     .from(TABLE)
-    .select("id, question, result, created_at")
+    .select("id, question, result, created_at, feedback")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
     .limit(limit);
   if (error) throw error;
   return (data ?? []).map(
-    (r: { id: string; question: string; result: AskResult; created_at: string }) => ({
+    (r: {
+      id: string;
+      question: string;
+      result: AskResult;
+      created_at: string;
+      feedback: -1 | 1 | null;
+    }) => ({
       id: r.id,
       question: r.question,
       result: r.result,
       createdAt: r.created_at,
+      feedback: r.feedback ?? null,
     })
   );
 }
@@ -112,4 +121,26 @@ export async function clearHistory(userId: string, id?: string): Promise<void> {
   if (id) q = q.eq("id", id);
   const { error } = await q;
   if (error) throw error;
+}
+
+/**
+ * Thumbs up (1), down (-1) or cleared (0) on one of the user's saved answers.
+ * False when no entry of theirs has that id.
+ */
+export async function setFeedback(
+  userId: string,
+  id: string,
+  rating: -1 | 0 | 1
+): Promise<boolean> {
+  const { data, error } = await db()
+    .from(TABLE)
+    .update({
+      feedback: rating === 0 ? null : rating,
+      feedback_at: rating === 0 ? null : new Date().toISOString(),
+    })
+    .eq("user_id", userId)
+    .eq("id", id)
+    .select("id");
+  if (error) throw error;
+  return (data ?? []).length > 0;
 }

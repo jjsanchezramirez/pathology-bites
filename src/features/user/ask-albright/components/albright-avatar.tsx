@@ -15,12 +15,12 @@ const QUIPS = {
   idle: [
     "Got a differential?",
     "Ask me about a stain.",
-    "WHO, PubMed or PathologyOutlines. I read all three.",
+    "WHO, PubMed or PathOutlines. I read all three.",
     "No question too basic.",
     "Stuck on an IHC panel?",
   ],
   thinking: [
-    "Checking PathologyOutlines…",
+    "Checking PathOutlines…",
     "Consulting the WHO…",
     "Searching PubMed…",
     "Reading the stains…",

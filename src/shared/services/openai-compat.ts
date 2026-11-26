@@ -86,6 +86,8 @@ export interface OpenAICompatResult {
     prompt_tokens: number;
     completion_tokens: number;
     total_tokens: number;
+    /** Workers AI's billing unit ($0.011 per 1,000), when the provider reports it. */
+    neurons?: number;
   };
 }
 
@@ -179,6 +181,7 @@ export async function callOpenAICompatChat(
           prompt_tokens: data.usage.prompt_tokens || 0,
           completion_tokens: data.usage.completion_tokens || 0,
           total_tokens: data.usage.total_tokens || 0,
+          ...(typeof data.usage.neurons === "number" ? { neurons: data.usage.neurons } : {}),
         }
       : undefined,
   };
@@ -197,4 +200,103 @@ export async function callOpenAICompatText(
     { role: "user", content: prompt },
   ];
   return callOpenAICompatChat(provider, model, apiKey, messages, options);
+}
+
+/** One piece of a streamed completion: text as it arrives, then the usage once at the end. */
+export type OpenAICompatStreamChunk =
+  | { delta: string }
+  | { usage: NonNullable<OpenAICompatResult["tokenUsage"]> };
+
+/**
+ * Streamed text completion (`stream: true`, usage requested in the last
+ * chunk). Yields `{ delta }` as tokens arrive and `{ usage }` once at the end.
+ * Same options as callOpenAICompatText; the timeout covers the whole stream.
+ */
+export async function* streamOpenAICompatText(
+  provider: string,
+  model: string,
+  apiKey: string,
+  prompt: string,
+  options: OpenAICompatOptions = {}
+): AsyncGenerator<OpenAICompatStreamChunk> {
+  const endpoint = endpointFor(provider);
+  if (!endpoint) throw new Error(`Not an OpenAI-compatible provider: ${provider}`);
+  const { maxTokens = 4000, temperature = 0.7, timeoutMs = 20_000, signal, system } = options;
+  const messages: ChatMessage[] = [
+    ...(system ? [{ role: "system", content: system } as ChatMessage] : []),
+    { role: "user", content: prompt },
+  ];
+  const controller = signal ? undefined : new AbortController();
+  const timeoutId = controller ? setTimeout(() => controller.abort(), timeoutMs) : undefined;
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      signal: signal ?? controller!.signal,
+      body: JSON.stringify({
+        model,
+        messages,
+        temperature,
+        max_completion_tokens: maxTokens,
+        stream: true,
+        stream_options: { include_usage: true },
+      }),
+    });
+    if (!response.ok || !response.body) {
+      const raw = await response.text().catch(() => "");
+      throw new Error(`${provider} API error: ${response.status} — ${raw.slice(0, 200)}`);
+    }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let nl: number;
+      while ((nl = buffer.indexOf("\n")) >= 0) {
+        const line = buffer.slice(0, nl).trim();
+        buffer = buffer.slice(nl + 1);
+        if (!line.startsWith("data:")) continue;
+        const payload = line.slice(5).trim();
+        if (payload === "[DONE]") return;
+        let data: {
+          // Workers AI sends a token that is only digits as a JSON number
+          // ("content":0), so "V600E" arrives as "V", 6, 0, 0, "E".
+          choices?: Array<{ delta?: { content?: string | number | null } }>;
+          usage?: {
+            prompt_tokens?: number;
+            completion_tokens?: number;
+            total_tokens?: number;
+            neurons?: number;
+          };
+        };
+        try {
+          data = JSON.parse(payload);
+        } catch {
+          continue;
+        }
+        const raw = data.choices?.[0]?.delta?.content;
+        const delta = raw == null ? "" : String(raw);
+        if (delta) yield { delta };
+        if (data.usage) {
+          yield {
+            usage: {
+              prompt_tokens: data.usage.prompt_tokens || 0,
+              completion_tokens: data.usage.completion_tokens || 0,
+              total_tokens: data.usage.total_tokens || 0,
+              ...(typeof data.usage.neurons === "number" ? { neurons: data.usage.neurons } : {}),
+            },
+          };
+        }
+      }
+    }
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError" && !signal) {
+      throw new Error(`${provider} API timeout after ${Math.round(timeoutMs / 1000)}s`);
+    }
+    throw error;
+  } finally {
+    if (timeoutId !== undefined) clearTimeout(timeoutId);
+  }
 }
