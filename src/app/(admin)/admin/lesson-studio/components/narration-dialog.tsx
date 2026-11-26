@@ -1,7 +1,9 @@
 "use client";
 
 // Generate the lesson's voiceover from each slide's narration script with
-// Gemini, store it in the audio library, and retime slides to it.
+// Gemini, store it in the audio library (MP3), and retime slides to it.
+// Long lessons are spoken in parts, a few whole slides per request, and joined
+// on the server at the end.
 
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -17,7 +19,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Loader2, Mic, Sparkles, Trash2 } from "lucide-react";
 import { useEditorStore } from "../model/store";
-import type { SlideCue } from "@/shared/lesson/narration";
+import { batchNarration, type SlideCue } from "@/shared/lesson/narration";
 import type { LessonAudio } from "../model/types";
 
 interface VoiceOption {
@@ -32,7 +34,14 @@ interface VoicesResponse {
   models: { id: string; label: string }[];
   defaultModel: string;
   whisper: boolean;
+  /** Sentences one narration request may speak. */
+  maxLinesPerRequest?: number;
   warning?: string;
+}
+
+interface NarrationPartResponse {
+  part: { key: string; duration: number; transcript: string; wordTimings: unknown[] };
+  slides: SlideCue[];
 }
 
 /** Gemini's own one-word descriptions of the prebuilt voices that suit teaching. */
@@ -56,8 +65,8 @@ const DEFAULT_STYLE =
 
 const PREFERRED_DEFAULTS = ["mako", "charon"];
 
-/** One slide (or scene) of script for the narration route. */
-export interface NarrationSlideRequest {
+/** One slide of script for the narration route. */
+interface NarrationSlideRequest {
   slideId: string;
   duration: number;
   lines: { id: string; text: string }[];
@@ -70,8 +79,6 @@ interface NarrationDialogBaseProps {
   /** Voice used last time, preselected when present. */
   previousVoice?: string;
   slides: NarrationSlideRequest[];
-  /** What a slide is called in this editor ("slides" or "scenes"). */
-  unit: string;
   onNarrated: (audio: LessonAudio, cues: SlideCue[]) => void;
 }
 
@@ -80,7 +87,7 @@ interface NarrationDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-/** Classic canvas studio: narrates each slide's script and retimes the slides. */
+/** Narrates each slide's script and retimes the slides to the voice. */
 export function NarrationDialog({ open, onOpenChange }: NarrationDialogProps) {
   const lesson = useEditorStore((s) => s.lesson);
   const slides = useMemo(
@@ -99,20 +106,18 @@ export function NarrationDialog({ open, onOpenChange }: NarrationDialogProps) {
       title={lesson.title}
       previousVoice={lesson.audio?.voice}
       slides={slides}
-      unit="slides"
       onNarrated={(audio, cues) => useEditorStore.getState().applyNarration(audio, cues)}
     />
   );
 }
 
-/** Voice picker and narration request, shared by the classic and script studios. */
-export function NarrationDialogBase({
+/** Voice picker and the narration requests. */
+function NarrationDialogBase({
   open,
   onOpenChange,
   title,
   previousVoice,
   slides,
-  unit,
   onNarrated,
 }: NarrationDialogBaseProps) {
   const [meta, setMeta] = useState<VoicesResponse | null>(null);
@@ -124,6 +129,7 @@ export function NarrationDialogBase({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
+  const [progress, setProgress] = useState<string | null>(null);
 
   const [designOpen, setDesignOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -215,45 +221,70 @@ export function NarrationDialogBase({
     }
   }
 
+  async function post<T>(path: string, body: unknown): Promise<T> {
+    const r = await fetch(`/api/admin/lesson-studio/narration/${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error ?? `Narration failed (HTTP ${r.status})`);
+    return j as T;
+  }
+
   async function generate() {
     setBusy(true);
     setError(null);
     setResult(null);
     try {
-      const r = await fetch("/api/admin/lesson-studio/narration/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: title || "Untitled lesson",
+      const batches = batchNarration(slides, meta?.maxLinesPerRequest ?? 40);
+      const session = crypto.randomUUID();
+      const parts: NarrationPartResponse["part"][] = [];
+      const cues: SlideCue[] = [];
+      for (let i = 0; i < batches.length; i++) {
+        setProgress(
+          batches.length > 1 ? `Speaking part ${i + 1} of ${batches.length}…` : "Speaking…"
+        );
+        const j = await post<NarrationPartResponse>("generate", {
           voice,
           style,
           model,
+          session,
+          part: i,
+          slides: batches[i],
+        });
+        parts.push(j.part);
+        cues.push(...j.slides);
+      }
+      setProgress(
+        align === "whisper" ? "Joining, aligning with Whisper and saving…" : "Joining and saving…"
+      );
+      const { audio, timingNote } = await post<{ audio: LessonAudio; timingNote?: string }>(
+        "finish",
+        {
+          title: title || "Untitled lesson",
+          voice,
           align,
-          slides,
-        }),
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error ?? "Narration failed");
-      const {
-        audio,
-        slides: cues,
-        timingNote,
-      } = j as {
-        audio: LessonAudio;
-        slides: SlideCue[];
-        timingNote?: string;
-      };
+          session,
+          parts: parts.map(({ key, transcript, wordTimings }) => ({
+            key,
+            transcript,
+            wordTimings,
+          })),
+        }
+      );
       onNarrated(audio, cues);
       const total = audio.duration ?? 0;
       setResult(
         `Narration ready: ${Math.floor(total / 60)}:${String(Math.round(total % 60)).padStart(2, "0")}, ` +
-          `${unit} retimed to the voice. ${timingNote ?? "Word times are estimated from each sentence."} ` +
+          `slides retimed to the voice. ${timingNote ?? "Word times are estimated from each sentence."} ` +
           `Saved to the audio library; save the lesson to keep it.`
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
+      setProgress(null);
     }
   }
 
@@ -268,13 +299,13 @@ export function NarrationDialogBase({
           <DialogHeader>
             <DialogTitle>Narrate with Gemini</DialogTitle>
             <DialogDescription>
-              Speaks the script one sentence at a time, times every sentence, and fits the {unit} to
+              Speaks the script one sentence at a time, times every sentence, and fits the slides to
               the voice.
             </DialogDescription>
           </DialogHeader>
 
           <div className="text-sm text-muted-foreground">
-            {scripted.length} of {slides.length} {unit} have a script · {words} words · about{" "}
+            {scripted.length} of {slides.length} slides have a script · {words} words · about{" "}
             {Math.round((words / 150) * 60)} s of speech. Gemini speaks one sentence at a time
             within its rate limit, so this takes about{" "}
             {Math.max(1, Math.ceil((sentences * 6.2) / 60))} min.
@@ -427,6 +458,12 @@ export function NarrationDialogBase({
             </div>
           </div>
 
+          {progress && (
+            <p className="flex items-center text-sm text-muted-foreground">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {progress}
+            </p>
+          )}
           {error && <p className="text-sm text-red-600">{error}</p>}
           {result && <p className="text-sm text-green-700">{result}</p>}
 

@@ -434,6 +434,92 @@ export function assembleNarration(
 }
 
 // ---------------------------------------------------------------------------
+// Long lessons: narrate in parts
+// ---------------------------------------------------------------------------
+
+/**
+ * Group slides, in order, into requests of at most `maxLines` sentences each.
+ * A slide is never split (its timing is laid out as one piece), so a single
+ * slide with more sentences than `maxLines` can't be narrated: that's an error.
+ * Slides with no sentences ride along with their neighbours (they become silence).
+ */
+export function batchNarration<T extends { lines: unknown[] }>(
+  slides: T[],
+  maxLines: number
+): T[][] {
+  const batches: T[][] = [];
+  let current: T[] = [];
+  let count = 0;
+  for (const slide of slides) {
+    const n = slide.lines.length;
+    if (n > maxLines) {
+      throw new Error(
+        `One slide has ${n} sentences; the most one slide can have is ${maxLines}. Split it into two slides.`
+      );
+    }
+    if (count + n > maxLines && current.length) {
+      batches.push(current);
+      current = [];
+      count = 0;
+    }
+    current.push(slide);
+    count += n;
+  }
+  if (current.length) batches.push(current);
+  return batches;
+}
+
+export interface NarrationPart {
+  pcm: Pcm16;
+  /** Word times, seconds from the start of this part. */
+  wordTimings: WordTiming[];
+  transcript: string;
+}
+
+/**
+ * Join parts narrated separately into one track. Each part holds whole slides,
+ * and slide cues are slide-relative, so only the word times need moving: each
+ * part's are shifted by the length of the parts before it.
+ */
+export function joinNarrationParts(parts: NarrationPart[]): AssembledTrack {
+  if (!parts.length) throw new Error("No narration parts to join");
+  const sampleRate = parts[0].pcm.sampleRate;
+  const total = parts.reduce((n, p) => n + resample(p.pcm, sampleRate).samples.length, 0);
+  const samples = new Int16Array(total);
+  const wordTimings: WordTiming[] = [];
+  let offset = 0;
+  for (const part of parts) {
+    const pcm = resample(part.pcm, sampleRate).samples;
+    samples.set(pcm, offset);
+    const shift = offset / sampleRate;
+    for (const w of part.wordTimings) {
+      wordTimings.push({
+        text: w.text,
+        start: round3(w.start + shift),
+        end: round3(w.end + shift),
+      });
+    }
+    offset += pcm.length;
+  }
+  return {
+    pcm: { sampleRate, samples },
+    duration: round3(total / sampleRate),
+    wordTimings,
+    transcript: parts
+      .map((p) => p.transcript.trim())
+      .filter(Boolean)
+      .join(" "),
+  };
+}
+
+export interface AssembledTrack {
+  pcm: Pcm16;
+  duration: number;
+  wordTimings: WordTiming[];
+  transcript: string;
+}
+
+// ---------------------------------------------------------------------------
 // Apply cues to the lesson
 // ---------------------------------------------------------------------------
 

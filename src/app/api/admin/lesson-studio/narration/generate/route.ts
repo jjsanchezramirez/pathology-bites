@@ -1,44 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/shared/services/server";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
-import { deleteFromR2, generateAudioStoragePath, uploadToR2 } from "@/shared/services/r2-storage";
-import { mapLimit, synthesize } from "@/shared/services/gemini-tts";
-import { transcribeWords, whisperAvailable } from "@/shared/services/whisper-align";
+import { uploadToR2 } from "@/shared/services/r2-storage";
+import { TTS_MAX_LINES_PER_REQUEST, mapLimit, synthesize } from "@/shared/services/gemini-tts";
 import {
   DEFAULT_PACING,
   assembleNarration,
   encodeWav,
-  refineWordTimings,
   trimSilence,
   type ClipInput,
 } from "@/shared/lesson/narration";
-import type { LessonAudio } from "@/shared/lesson/types";
-import type { Json } from "@/shared/types/supabase";
+import { NARRATION_BUCKET, narrationPartKey } from "@/shared/lesson/narration-parts";
 import { log } from "@/shared/utils/logging";
 
-// One TTS call per sentence. Calls are spaced to Gemini's per-minute limit
-// (see gemini-tts.ts), about 6 s apart on the 10-a-minute tier, so a 2-minute
-// lesson of ~25 sentences takes about 2.5 minutes and fits this budget.
-// 300 s needs Fluid Compute (`"fluid": true` in vercel.json): without it the
-// Hobby plan caps functions at 60 s and the production build fails.
+// One TTS call per sentence, spaced to Gemini's per-minute limit (about 6 s
+// apart on the 10-a-minute tier), so one request speaks at most
+// TTS_MAX_LINES_PER_REQUEST sentences. The studio narrates longer lessons in
+// several of these requests, then joins them with narration/finish.
+// 300 s needs Fluid Compute (`"fluid": true` in vercel.json).
 export const maxDuration = 300;
 
 const SAMPLE_RATE = 24000;
-// At ~6 s a sentence, 45 sentences is the most that fits in maxDuration.
-const MAX_LINES = Math.max(
-  1,
-  Math.floor(280 / (60 / Math.max(1, Number(process.env.GEMINI_TTS_RPM) || 10)))
-);
 const MAX_CHARS = 12_000;
 
 const schema = z.object({
-  title: z.string().trim().min(1).max(200),
   voice: z.string().trim().min(1).max(100),
   style: z.string().trim().max(500).optional(),
   model: z.string().trim().max(80).optional(),
-  align: z.enum(["estimate", "whisper"]).default("estimate"),
+  /** Groups the parts of one narration run (client-generated). */
+  session: z.string().uuid(),
+  /** This part's position in the run, from 0. */
+  part: z.number().int().min(0).max(199),
   pacing: z
     .object({
       leadIn: z.number().min(0).max(5),
@@ -66,8 +59,8 @@ const schema = z.object({
  * @swagger
  * /api/admin/lesson-studio/narration/generate:
  *   post:
- *     summary: Generate lesson narration with Gemini
- *     description: Speaks each slide's narration lines with Gemini TTS (one call per sentence), assembles one WAV track in slide order, stores it in the audio library (R2 + audio table), and returns the track with per-slide cues (new slide durations and each line's start/end) and word timings (estimated per sentence, or refined with Whisper when requested and configured). Requires admin role.
+ *     summary: Narrate one part of a lesson with Gemini
+ *     description: Speaks each slide's narration lines with Gemini TTS (one call per sentence) and lays them out with fixed pauses into one part of the narration track, kept in R2 until narration/finish joins the parts. Returns the part's key, its per-slide cues (slide durations and each line's start/end, slide-relative) and its word timings (relative to the part). A lesson longer than maxLinesPerRequest sentences (see narration/voices) is sent as several parts, whole slides each. Requires admin role.
  *     tags:
  *       - Admin - Lesson Studio
  *     security:
@@ -78,13 +71,13 @@ const schema = z.object({
  *         application/json:
  *           schema:
  *             type: object
- *             required: [title, voice, slides]
+ *             required: [voice, session, part, slides]
  *             properties:
- *               title: { type: string }
  *               voice: { type: string, description: "Prebuilt voice name or designed voice id" }
  *               style: { type: string, description: "Delivery instructions (not spoken)" }
  *               model: { type: string, example: "gemini-3.8-flash-tts" }
- *               align: { type: string, enum: [estimate, whisper] }
+ *               session: { type: string, format: uuid }
+ *               part: { type: integer }
  *               slides:
  *                 type: array
  *                 items:
@@ -101,18 +94,11 @@ const schema = z.object({
  *                           text: { type: string }
  *     responses:
  *       200:
- *         description: Narration track (LessonAudio) plus per-slide cues
+ *         description: "{ part: { key, duration, transcript, wordTimings }, slides: cues }"
  *       400:
- *         description: No script, or script too long
+ *         description: No script, or too many sentences for one part
  *       502:
- *         description: Gemini, storage or database failure
- */
-
-/**
- * POST: narrate a lesson. Speaks each script line with Gemini, builds one WAV
- * track in slide order, stores it in the audio library, and returns the track
- * plus per-slide cues (new slide durations and each line's start/end) for the
- * editor to retime slides and elements.
+ *         description: Gemini or storage failure
  */
 export async function POST(request: NextRequest) {
   const auth = requireAdmin(request);
@@ -123,20 +109,19 @@ export async function POST(request: NextRequest) {
   const jobs = body.slides.flatMap((s) =>
     s.lines.map((l) => ({ slideId: s.slideId, lineId: l.id, text: l.text }))
   );
-  if (!jobs.length)
-    return NextResponse.json({ error: "No script to narrate yet." }, { status: 400 });
-  if (jobs.length > MAX_LINES) {
+  if (jobs.length > TTS_MAX_LINES_PER_REQUEST) {
     return NextResponse.json(
-      { error: `Too many lines (${jobs.length}); the limit is ${MAX_LINES}.` },
+      {
+        error: `Too many sentences for one part (${jobs.length}); the limit is ${TTS_MAX_LINES_PER_REQUEST}.`,
+      },
       { status: 400 }
     );
   }
   const chars = jobs.reduce((n, j) => n + j.text.length, 0);
   if (chars > MAX_CHARS) {
-    return NextResponse.json({ error: `Script too long (${chars} characters).` }, { status: 400 });
+    return NextResponse.json({ error: `Part too long (${chars} characters).` }, { status: 400 });
   }
 
-  let storagePath: string | null = null;
   try {
     const started = Date.now();
     const clips: ClipInput[] = await mapLimit(jobs, 2, async (job) => {
@@ -147,91 +132,34 @@ export async function POST(request: NextRequest) {
       });
       return { ...job, pcm: trimSilence(pcm) };
     });
-    log.info(`[narration] ${clips.length} lines spoken in ${Date.now() - started}ms`);
+    log.info(`[narration] part ${body.part}: ${clips.length} lines in ${Date.now() - started}ms`);
 
-    const pacing = { ...DEFAULT_PACING, ...body.pacing };
-    const fallback = Object.fromEntries(body.slides.map((s) => [s.slideId, s.duration]));
     const track = assembleNarration(
       body.slides.map((s) => s.slideId),
       clips,
-      fallback,
-      pacing,
+      Object.fromEntries(body.slides.map((s) => [s.slideId, s.duration])),
+      { ...DEFAULT_PACING, ...body.pacing },
       SAMPLE_RATE
     );
-    const wav = encodeWav(track.pcm);
-
-    let wordTimings = track.wordTimings;
-    let timingSource: LessonAudio["timingSource"] = "estimated";
-    let timingNote: string | undefined;
-    if (body.align === "whisper") {
-      if (!whisperAvailable()) {
-        timingNote = "Whisper isn't set up on the server, so word times are estimated.";
-      } else if (wav.length > 24 * 1024 * 1024) {
-        timingNote = "Track is too long for Whisper, so word times are estimated.";
-      } else {
-        try {
-          const heard = await transcribeWords(wav, track.transcript);
-          const refined = refineWordTimings(track.wordTimings, heard);
-          wordTimings = refined.timings;
-          timingSource = "whisper";
-          timingNote = `Whisper matched ${refined.matched} of ${track.wordTimings.length} words.`;
-        } catch (error) {
-          log.warn("[narration] Whisper failed, keeping estimates:", error);
-          timingNote = "Whisper failed, so word times are estimated.";
-        }
-      }
-    }
-
-    storagePath = generateAudioStoragePath(`${body.title} narration`, "wav");
-    const upload = await uploadToR2(Buffer.from(wav), storagePath, {
+    const key = narrationPartKey(body.session, body.part);
+    await uploadToR2(Buffer.from(encodeWav(track.pcm)), key, {
       contentType: "audio/wav",
-      cacheControl: "public, max-age=31536000, immutable",
-      bucket: "pathology-bites-audio",
-      metadata: {
-        uploadedBy: auth.userId,
-        uploadedAt: new Date().toISOString(),
-        voice: body.voice.replace(/[^\x20-\x7E]/g, "_"),
-      },
+      cacheControl: "no-store",
+      bucket: NARRATION_BUCKET,
+      metadata: { uploadedBy: auth.userId, uploadedAt: new Date().toISOString() },
     });
 
-    const supabase = await createClient();
-    const { data: row, error: dbError } = await supabase
-      .from("audio")
-      .insert({
-        url: upload.url,
-        storage_path: storagePath,
-        title: `${body.title} (narration)`,
-        description: `Gemini narration, voice ${body.voice}`,
-        file_type: "audio/wav",
-        file_size_bytes: wav.length,
-        duration_seconds: track.duration,
-        generated_text: track.transcript,
-        word_timings: wordTimings as unknown as Json,
-        created_by: auth.userId,
-      })
-      .select("id")
-      .single();
-    if (dbError) {
-      await deleteFromR2(storagePath, "pathology-bites-audio").catch(() => {});
-      storagePath = null;
-      throw new Error(`Failed to save audio record: ${dbError.message}`);
-    }
-    storagePath = null;
-
-    const audio: LessonAudio = {
-      url: upload.url,
-      title: `${body.title} (narration)`,
-      transcript: track.transcript,
-      duration: track.duration,
-      wordTimings,
-      timingSource,
-      voice: body.voice,
-      audioId: row.id,
-    };
-    return NextResponse.json({ audio, slides: track.slides, timingNote });
+    return NextResponse.json({
+      part: {
+        key,
+        duration: track.duration,
+        transcript: track.transcript,
+        wordTimings: track.wordTimings,
+      },
+      slides: track.slides,
+    });
   } catch (error) {
-    log.error("[narration] generation failed:", error);
-    if (storagePath) await deleteFromR2(storagePath, "pathology-bites-audio").catch(() => {});
+    log.error("[narration] part failed:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Narration failed" },
       { status: 502 }
