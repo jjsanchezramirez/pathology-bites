@@ -5,6 +5,7 @@ import {
   PLANNER_SYSTEM,
   answerSystem,
   fallbackPlan,
+  formatForPassages,
   isChat,
   namesMarker,
   parsePlan,
@@ -76,6 +77,42 @@ describe("parsePlan", () => {
     expect(parsePlan(marker, "Is CD117 positive in renal oncocytoma?").format).toBe("sentence");
     expect(parsePlan(marker, "Does TTF-1 stain mesothelioma?").format).toBe("sentence");
     expect(parsePlan(marker, "What does INSM1 immunostaining indicate?").format).toBe("marker");
+  });
+
+  it("lists diagnostic criteria as grouped bullets, whatever the planner chose", () => {
+    for (const format of ["paragraph", "table", "sentence"]) {
+      const plan = JSON.stringify({ format, query: "x y z" });
+      expect(parsePlan(plan, "WHO diagnostic criteria for CHL").format).toBe("criteria");
+      expect(parsePlan(plan, "Milan criteria for hepatocellular carcinoma").format).toBe(
+        "criteria"
+      );
+    }
+    const para = JSON.stringify({ format: "paragraph", query: "x y z" });
+    // A yes/no or a comparison keeps its own shape.
+    expect(parsePlan(para, "Does this case meet criteria for CHL?").format).toBe("paragraph");
+    expect(
+      parsePlan(
+        JSON.stringify({ format: "table", items: ["CHL", "NLPHL"] }),
+        "Compare criteria for CHL and NLPHL"
+      ).format
+    ).toBe("table");
+    // Also when the planner misses its deadline and the fallback plan is used.
+    expect(fallbackPlan("WHO criteria for classic Hodgkin lymphoma").format).toBe("criteria");
+    expect(FORMAT_INSTRUCTION.criteria).toMatch(/\*\*Essential:\*\*.*\*\*Desirable:\*\*/);
+    expect(PLANNER_SYSTEM).not.toMatch(/"criteria"\|/);
+  });
+
+  it("keeps the criteria format only when a passage lists essential/desirable criteria", () => {
+    const who = "Diagnostic criteria Essential: CD30+ HRS cells. Desirable: CD15+.";
+    expect(formatForPassages("criteria", ["morphology", who])).toBe("criteria");
+    expect(formatForPassages("criteria", ["Mixed inflammatory background; CD30+, CD15+"])).toBe(
+      "paragraph"
+    );
+    expect(formatForPassages("table", ["no criteria here"])).toBe("table");
+    // A heading that points to a box is not a list.
+    expect(
+      formatForPassages("criteria", ["Essential and desirable diagnostic criteria See Box 2.19."])
+    ).toBe("paragraph");
   });
 
   it("turns an explicit 'X vs Y' into a table, but not a yes/no question", () => {

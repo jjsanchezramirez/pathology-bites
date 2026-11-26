@@ -40,6 +40,7 @@ import {
 import {
   type AnswerFormat,
   answerSystem,
+  formatForPassages,
   CHAT_SYSTEM,
   PLANNER_HEDGE_MODEL,
   isJoke,
@@ -427,7 +428,7 @@ const GENERIC_TITLE_WORDS = new Set([
 
 function maxTokensFor(format: AnswerFormat): number {
   if (format === "marker") return MARKER_MAX_TOKENS;
-  return format === "table" ? TABLE_MAX_TOKENS : ANSWER_MAX_TOKENS;
+  return format === "table" || format === "criteria" ? TABLE_MAX_TOKENS : ANSWER_MAX_TOKENS;
 }
 
 /** The knowledge-base profile of the marker the question names (first match with an id). */
@@ -920,7 +921,10 @@ export async function* askAlbrightStream(
     }
     return kept;
   });
-  const format = plan.format;
+  const format = formatForPassages(
+    plan.format,
+    chosen.map((c) => c.page.body)
+  );
   const wantsDiagram = plan.visual === "diagram";
   const systemFor = (fmt: AnswerFormat) =>
     wantsDiagram ? `${answerSystem(fmt)} ${DIAGRAM_INSTRUCTION}` : answerSystem(fmt);
@@ -1079,7 +1083,7 @@ export async function* askAlbrightStream(
   timings.total = since();
 
   log.info(
-    `[ask-albright] ms=${JSON.stringify(timings)} cost=$${budget.spent.toFixed(6)} plan ${plan.source}/${plan.format} q="${plan.query}" items=${plan.items.join("|") || "-"} searched=${searched.join("+")} visual=${plan.visual} top=${chosen[0]?.score.toFixed(2)} markers=${aliasGroups.map((g) => g.name).join(",") || "none"} kb=${profiles.length}`
+    `[ask-albright] ms=${JSON.stringify(timings)} cost=$${budget.spent.toFixed(6)} plan ${plan.source}/${format} q="${plan.query}" items=${plan.items.join("|") || "-"} searched=${searched.join("+")} visual=${plan.visual} top=${chosen[0]?.score.toFixed(2)} markers=${aliasGroups.map((g) => g.name).join(",") || "none"} kb=${profiles.length}`
   );
 
   // The diagram comes off before anything else touches the text (tidyAnswer

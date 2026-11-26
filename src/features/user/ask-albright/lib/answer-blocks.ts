@@ -37,7 +37,14 @@ function headingOf(line: string): string | null {
   if (md) return plain(md[1]).replace(/:$/, "");
   const body = line.replace(BULLET, "").trim();
   const p = plain(body);
-  if (p.endsWith(":") && p.length <= 60 && (body.startsWith("**") || !BULLET.test(line))) {
+  // "- Essential:" is a title even unbolded: the criteria format's labels,
+  // which the model sometimes writes as plain bullets.
+  const criteriaLabel = /^(essential|desirable):$/i.test(p);
+  if (
+    p.endsWith(":") &&
+    p.length <= 60 &&
+    (body.startsWith("**") || !BULLET.test(line) || criteriaLabel)
+  ) {
     return p.slice(0, -1).trim();
   }
   return null;
@@ -59,11 +66,67 @@ export function dropEmptyRows(rows: string[][]): string[][] {
 /** Placeholder bullets the model writes for empty groups ("- None"). */
 const EMPTY_ITEM = /^(none|not stated|n\/a|nil|none reported|none mentioned)\.?$/i;
 
+const CITES_AT_END = /\s*((?:\[\d+(?:,\s*\d+)*\]\s*)+)\.?$/;
+
+/**
+ * Consecutive criteria bullets that repeat one lead-in become one bullet:
+ * "Immunophenotype of HRS cells: CD30+ [2]", "…: PAX5+ [2]" →
+ * "Immunophenotype of HRS cells: CD30+, PAX5+ [2]". The model splits a WHO
+ * criterion this way on some runs whatever the prompt says.
+ */
+export function mergeLeadIns(items: string[]): string[] {
+  const out: string[] = [];
+  let lead: string | null = null;
+  let parts: string[] = [];
+  let cites: string[] = [];
+  let first = "";
+  const flush = () => {
+    if (lead === null) return;
+    // A lead-in that occurs once is left exactly as written.
+    if (parts.length === 1) {
+      out.push(first);
+      lead = null;
+      parts = [];
+      cites = [];
+      return;
+    }
+    const uniq = [...new Set(cites)];
+    const c = uniq.length ? `[${uniq.join(", ")}]` : "";
+    out.push(`${lead}: ${parts.join(", ")}${c ? ` ${c}` : ""}`);
+    lead = null;
+    parts = [];
+    cites = [];
+  };
+  for (const item of items) {
+    const m = item.match(/^([^:]{3,50}):\s+(.+)$/);
+    if (!m) {
+      flush();
+      out.push(item);
+      continue;
+    }
+    const cite = m[2].match(CITES_AT_END);
+    const body = cite ? m[2].slice(0, cite.index).trim() : m[2].trim();
+    const nums = cite ? (cite[1].match(/\d+/g) ?? []) : [];
+    if (lead !== m[1]) {
+      flush();
+      first = item;
+    }
+    lead = m[1];
+    parts.push(body.replace(/[.;]$/, ""));
+    cites.push(...nums);
+  }
+  flush();
+  return out;
+}
+
 function listBlock(title: string | null, items: string[]): AnswerBlock {
+  if (/^(essential|desirable)$/i.test(title ?? "")) items = mergeLeadIns(items);
   // Mostly-short panels flow inline; one longer note ("CAIX (diffuse,
   // membranous in 75–100%)") shouldn't push the whole panel back to one per line.
   const lens = items.map((it) => plain(it).length);
+  // Criteria are read one per line, never flowed ("Essential" / "Desirable").
   const inline =
+    !/^(essential|desirable)$/i.test(title ?? "") &&
     items.length >= 3 &&
     lens.filter((n) => n <= INLINE_ITEM_MAX).length >= items.length * 0.75 &&
     lens.every((n) => n <= INLINE_ITEM_HARD_MAX);
