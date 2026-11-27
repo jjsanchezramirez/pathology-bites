@@ -585,13 +585,13 @@ function RecentQuestions({
  * footer: opening grows the card up and out from the corner (no overlay, no
  * blur — the page stays usable), closing shrinks it back to the pill.
  */
-/** Shown in place of the input once a signed-out visitor's free questions are used. */
+/** Shown in place of the input once a signed-out visitor's free questions for today are used. */
 function SignUpCard() {
   return (
     <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4 text-center">
-      <p className="text-sm font-semibold">You&apos;ve used your free questions</p>
+      <p className="text-sm font-semibold">You&apos;ve used today&apos;s free questions</p>
       <p className="mt-1 text-xs text-muted-foreground">
-        Sign up free to keep asking — 50 questions a day, with your history saved.
+        Come back tomorrow, or sign up free for 50 questions a day, with your history saved.
       </p>
       <div className="mt-3 flex justify-center gap-2">
         <Link
@@ -909,8 +909,8 @@ export function AskAlbrightLauncher({ variant = "user" }: { variant?: "user" | "
                 {anon && remaining !== null && !result && remaining > 0 && (
                   <p className="mt-1 text-xs font-medium text-primary">
                     {remaining === status?.limit
-                      ? `Try ${plural(remaining)} — no account needed`
-                      : `You have ${plural(remaining)} left`}
+                      ? `Try ${plural(remaining)} a day — no account needed`
+                      : `You have ${plural(remaining)} left today`}
                   </p>
                 )}
               </div>
@@ -1077,7 +1077,7 @@ export function AskAlbrightLauncher({ variant = "user" }: { variant?: "user" | "
                       {result.remaining > 0 ? (
                         <>
                           You have <span className="font-semibold">{plural(result.remaining)}</span>{" "}
-                          left.{" "}
+                          left today.{" "}
                           <Link href="/signup" className="font-medium text-primary hover:underline">
                             Sign up free
                           </Link>{" "}
@@ -1085,7 +1085,7 @@ export function AskAlbrightLauncher({ variant = "user" }: { variant?: "user" | "
                         </>
                       ) : (
                         <>
-                          That was your last free question —{" "}
+                          That was your last free question today —{" "}
                           <span className="font-semibold">0 left</span>.{" "}
                           <Link href="/signup" className="font-medium text-primary hover:underline">
                             Sign up free
