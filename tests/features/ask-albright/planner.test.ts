@@ -1,9 +1,11 @@
 import { describe, it, expect } from "vitest";
 import {
   FORMAT_INSTRUCTION,
+  CHAT_SYSTEM,
   PLANNER_SYSTEM,
   answerSystem,
   fallbackPlan,
+  isChat,
   namesMarker,
   parsePlan,
 } from "@/features/user/ask-albright/lib/planner";
@@ -21,6 +23,7 @@ describe("parsePlan", () => {
       focus: "J chain status in HRS cells",
       format: "sentence",
       items: [],
+      visual: "none",
     });
     expect(parsePlan(raw, Q)).toEqual({
       scope: "ok",
@@ -30,7 +33,20 @@ describe("parsePlan", () => {
       focus: "J chain status in HRS cells",
       format: "sentence",
       items: [],
+      visual: "none",
     });
+  });
+
+  it("lets clear wording decide the visual, and the planner add one otherwise", () => {
+    const plan = (v: unknown, q = "x y z") => parsePlan(JSON.stringify({ visual: v }), q).visual;
+    expect(plan("diagram")).toBe("diagram");
+    expect(plan("images")).toBe("images");
+    expect(plan("sculpture")).toBe("none");
+    // The planner said none; the wording says algorithm.
+    expect(plan("none", "Hans algorithm for DLBCL")).toBe("diagram");
+    expect(plan(undefined, "Hans algorithm for DLBCL")).toBe("diagram");
+    expect(plan(undefined, "What does a granular cell tumor look like?")).toBe("images");
+    expect(plan(undefined, "Is CD117 positive in oncocytoma?")).toBe("none");
   });
 
   it("only allows a table for real comparisons", () => {
@@ -53,6 +69,51 @@ describe("parsePlan", () => {
     expect(parsePlan(marker, "desmin positive tumors").format).toBe("marker");
     expect(parsePlan(marker, "Reed Sternberg cell markers").format).toBe("bullets");
     expect(namesMarker("Reed Sternberg cell markers")).toBe(false);
+  });
+
+  it("answers a stain asked about within one diagnosis as a paragraph", () => {
+    const marker = JSON.stringify({ format: "marker", query: "x y z" });
+    expect(
+      parsePlan(
+        marker,
+        "What is the p16 staining pattern in HPV-associated squamous cell carcinoma?"
+      ).format
+    ).toBe("paragraph");
+    expect(parsePlan(marker, "SOX10 expression in desmoplastic melanoma").format).toBe("paragraph");
+    expect(parsePlan(marker, "What is p16 positive in?").format).toBe("marker");
+    expect(parsePlan(marker, "Which tumours are TTF-1 positive in the lung?").format).toBe(
+      "marker"
+    );
+  });
+
+  it("answers a yes/no marker question directly, not as a whole marker profile", () => {
+    const marker = JSON.stringify({ format: "marker", query: "x y z" });
+    expect(parsePlan(marker, "Is CD117 positive in renal oncocytoma?").format).toBe("sentence");
+    expect(parsePlan(marker, "Does TTF-1 stain mesothelioma?").format).toBe("sentence");
+    expect(parsePlan(marker, "What does INSM1 immunostaining indicate?").format).toBe("marker");
+  });
+
+  it("lists diagnostic criteria as grouped bullets, whatever the planner chose", () => {
+    for (const format of ["paragraph", "table", "sentence"]) {
+      const plan = JSON.stringify({ format, query: "x y z" });
+      expect(parsePlan(plan, "WHO diagnostic criteria for CHL").format).toBe("criteria");
+      expect(parsePlan(plan, "Milan criteria for hepatocellular carcinoma").format).toBe(
+        "criteria"
+      );
+    }
+    const para = JSON.stringify({ format: "paragraph", query: "x y z" });
+    // A yes/no or a comparison keeps its own shape.
+    expect(parsePlan(para, "Does this case meet criteria for CHL?").format).toBe("paragraph");
+    expect(
+      parsePlan(
+        JSON.stringify({ format: "table", items: ["CHL", "NLPHL"] }),
+        "Compare criteria for CHL and NLPHL"
+      ).format
+    ).toBe("table");
+    // Also when the planner misses its deadline and the fallback plan is used.
+    expect(fallbackPlan("WHO criteria for classic Hodgkin lymphoma").format).toBe("criteria");
+    expect(FORMAT_INSTRUCTION.criteria).toMatch(/\*\*Essential:\*\*.*\*\*Desirable:\*\*/);
+    expect(PLANNER_SYSTEM).not.toMatch(/"criteria"\|/);
   });
 
   it("turns an explicit 'X vs Y' into a table, but not a yes/no question", () => {
@@ -118,8 +179,99 @@ describe("planner prompt and answer system", () => {
   it("adds the planned format to the shared answer rules", () => {
     expect(answerSystem("bullets")).toBe(`${ANSWER_RULES} ${FORMAT_INSTRUCTION.bullets}`);
   });
+  it("tells the planner a bare eponym or named algorithm is in scope", () => {
+    expect(PLANNER_SYSTEM).toMatch(/off_topic only if clearly not/);
+    expect(PLANNER_SYSTEM).toMatch(/named algorithm/);
+  });
+
+  it("forbids completing a partly stated rule and moving numbers between subjects", () => {
+    expect(ANSWER_RULES).toMatch(/never work out the missing branches/);
+    expect(ANSWER_RULES).toMatch(/never move a figure/);
+  });
+
+  it("forbids answering about a different diagnosis or inventing a classification", () => {
+    expect(ANSWER_RULES).toMatch(
+      /finding in a different diagnosis, even a related one, is not an answer/
+    );
+    expect(ANSWER_RULES).toMatch(
+      /Never say one diagnosis is a type, subtype or variant of another/
+    );
+  });
+
   it("puts no concrete findings or numbers in the answer rules (they leak into answers)", () => {
     // "positive in 9 of 10 cases", meant as an example, came back as an HPV table cell.
     expect(ANSWER_RULES.replace(/\[\d\]/g, "")).not.toMatch(/\d/);
+  });
+
+  it("treats joke requests as chat, and keeps the joke rules in the persona", () => {
+    for (const q of [
+      "Tell me a joke",
+      "Tell me something funny",
+      "Can you tell me a pathology joke?",
+      "Tell me a joke about pathology residents please",
+      "Make me laugh",
+      "Got any jokes?",
+      "Another pun",
+    ])
+      expect(isChat(q)).toBe(true);
+    expect(isChat("Tell me something about CD30")).toBe(false);
+    expect(isChat("Is a joke stain a real thing in histotechnology labs today?")).toBe(false);
+    // Jokes come from the list, so the model is never asked for one.
+    expect(CHAT_SYSTEM).not.toMatch(/joke/i);
+  });
+
+  it("treats questions about what Dr. Albright is as chat", () => {
+    for (const q of [
+      "What are you?",
+      "What is Dr. Albright?",
+      "What can you do?",
+      "How do you work?",
+      "How does this work?",
+      "Are you an AI?",
+      "Are you a real doctor?",
+      "What is this?",
+    ])
+      expect(isChat(q)).toBe(true);
+    expect(isChat("What is this lesion?")).toBe(false);
+    expect(isChat("What is it that stains with CD117 in GIST?")).toBe(false);
+    expect(CHAT_SYSTEM).toMatch(/you are a neuron/);
+    // "Dr." and "MD" both say physician: chat uses "Dr. <name>"; the About page uses "<name>, MD".
+    expect(CHAT_SYSTEM).toMatch(/founded by Dr\. Juan Jose Sanchez Ramirez, a hematopathology/);
+    expect(CHAT_SYSTEM).not.toMatch(/Sanchez Ramirez, MD/);
+    expect(CHAT_SYSTEM).toMatch(/you are an AI assistant, not a person or a real doctor/);
+  });
+
+  it("treats short small talk and questions about the site as chat, nothing else", () => {
+    for (const q of ["Hi", "Hey there", "How are you?", "What's on your mind?", "Thanks!"])
+      expect(isChat(q)).toBe(true);
+    expect(isChat("Who developed this site? I really like the question bank")).toBe(true);
+    for (const q of [
+      "Histology of Barrett esophagus",
+      "Yolk sac tumor IHC",
+      "What is this lesion?",
+      "Hi, what does a granular cell tumor look like on H&E?",
+    ])
+      expect(isChat(q)).toBe(false);
+    expect(parsePlan(JSON.stringify({ scope: "off_topic" }), "Hey").scope).toBe("chat");
+    // The planner can't turn a pathology question into small talk.
+    expect(
+      parsePlan(
+        JSON.stringify({ scope: "chat" }),
+        "What does diffuse large B-cell lymphoma look like?"
+      ).scope
+    ).toBe("ok");
+  });
+
+  it("allows one visual only: a table, or a diagram/images/figure", () => {
+    // Asked for an algorithm, planned as a table: the diagram wins, without a table.
+    const algo = parsePlan(JSON.stringify({ format: "table" }), "Algorithm for MMR testing");
+    expect(algo.visual).toBe("diagram");
+    expect(algo.format).not.toBe("table");
+    // Asked for a comparison: the table wins, no diagram.
+    const cmp = parsePlan(
+      JSON.stringify({ format: "table", items: ["A x", "B y"] }),
+      "Compare the workup of A vs B"
+    );
+    expect(cmp).toMatchObject({ visual: "none", format: "table" });
   });
 });

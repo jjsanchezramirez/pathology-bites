@@ -20,7 +20,7 @@ export const SOURCE_TOOL: Record<AskSource, PathTalkTool> = {
 };
 
 export const SOURCE_LABEL: Record<AskSource, string> = {
-  outlines: "PathologyOutlines",
+  outlines: "PathOutlines",
   pubmed: "PubMed",
   who: "WHO Classification",
   literature: "Literature",
@@ -158,9 +158,13 @@ export function relevantExcerpt(body: string, question: string, max = PASSAGE_CH
  * comparison table, the model filled cells the sources never covered — it
  * wrote MEF2B "not expressed" in PMBL when its own source reported 14/15
  * positive. A gap must read as a gap.
+ *
+ * "Is CD200 expressed in CHL?": the only CD200 Hodgkin source was about
+ * NLPHL, and the answer moved it to CHL by calling NLPHL "a type of
+ * classical Hodgkin lymphoma" — a made-up classification bridging the gap.
  */
 export const ANSWER_RULES =
-  'You are Dr. Albright, a concise pathology tutor. Use only the numbered sources; read them fully and attribute each number or finding to the item it belongs to. A source answers the question even when worded differently (a percentage of cases staining positive answers a question about sensitivity). Cite as [1], [2], [3]. Lead with the direct answer and stay on what was asked. Never fill a gap with a guess; if the sources do not answer the question, say so in one sentence, but do not list other things the sources leave out. End with one line: "Follow-ups: <question> | <question>" — two short questions a pathology learner might ask next.';
+  'You are Dr. Albright, a concise pathology tutor. Use only the numbered sources; read them fully and attribute each number or finding to the item it belongs to. A source answers the question even when worded differently (a percentage of cases staining positive answers a question about sensitivity). Cite as [1], [2], [3]. Lead with the direct answer and stay on what was asked. Never fill a gap with a guess; if the sources do not answer the question, say so in one sentence, but do not list other things the sources leave out. When a source gives only part of a rule, algorithm or set of criteria, give that part as written and say the rest is not in the sources; never work out the missing branches yourself. A number belongs only to what its own sentence measures: never move a figure from one method, study or group to another. Answer about the diagnosis the question names: a finding in a different diagnosis, even a related one, is not an answer about it; if no source covers the named diagnosis, say so first, then you may give the related finding under the name of the diagnosis it belongs to. When a source does cover the named diagnosis, do not add findings about other diagnoses (no \"the sources do not cover X\" about a diagnosis nobody asked about). In the Pathology Bites profile, a marker listed under Negative, Loss of expression or \"Molecular, reported absent\" is NOT present in that diagnosis: never write it as present or positive, in prose or in a table cell. Never say one diagnosis is a type, subtype or variant of another unless a source says so. In the differential diagnosis section of a page, each finding belongs to the differential it is listed under, not to the diagnosis the page is about. End with one line: "Follow-ups: <question> | <question>" — two short questions a pathology learner might ask next.';
 
 /** True when an answer used (almost) its whole output budget, i.e. was cut off. */
 export function hitTokenCap(
@@ -215,8 +219,17 @@ export function tidyAnswer(text: string): string {
 export function dropUnaskedGaps(answer: string): string {
   const GAP =
     /\s*(?:However,\s*)?(?:the (?:provided )?sources?|it is) (?:do(?:es)? not|don't|doesn't|is not|are not)\b[^.\n]*\.\s*$/i;
-  let out = answer;
-  for (let i = 0; i < 2; i++) {
+  // The model can loop on them until the token cap cuts it mid-word ("What is
+  // HER2-low?" ran "…a p-value. The sources do not give a po"): drop that
+  // unfinished tail first, or the full-stop pattern below never matches.
+  const cut = answer.replace(
+    /\s*(?:the (?:provided )?sources?) (?:do(?:es)? not|don't|doesn't)\b[^.\n]*$/i,
+    ""
+  );
+  let out = /\[\d/.test(cut) ? cut : answer;
+  // A comparison table can trail one per empty cell ("…typical site for CHL. …
+  // key morphology for PMBL. …"); the cells already say "not stated".
+  for (let i = 0; i < 40; i++) {
     const m = out.match(GAP);
     if (!m || m.index === undefined) break;
     const rest = out.slice(0, m.index);
@@ -249,6 +262,41 @@ export function splitFollowUps(text: string): { answer: string; followUps: strin
     .slice(0, 3);
   const keep = /^[.!?]/.test(m[0]) ? 1 : 0; // keep the sentence's own full stop
   return { answer: text.slice(0, (m.index ?? 0) + keep).trim(), followUps };
+}
+
+const ASPECTS: Array<{ named: RegExp; ask: string }> = [
+  { named: /\b(ihc|immuno\w*|stains?|staining|markers?|panel)\b/i, ask: "IHC of" },
+  {
+    named: /\b(molecular|genetic\w*|mutations?|fusions?|translocations?|cytogenetic\w*)\b/i,
+    ask: "Molecular findings of",
+  },
+  { named: /\b(morpholog\w*|histolog\w*|microscop\w*|features?)\b/i, ask: "Morphology of" },
+];
+
+/**
+ * Follow-ups for a comparison the model gave none for: the aspects the
+ * question did not name ("CHL vs NLPHL vs PMBL" → "IHC of CHL vs NLPHL vs
+ * PMBL", "Molecular findings of …"). A bare comparison is answered across
+ * domains rather than first asking which one the reader meant; these let them
+ * drill into one with a click (pure, zero-token).
+ */
+export function comparisonFollowUps(question: string): string[] {
+  const q = question
+    .trim()
+    .replace(/[?.!\s]+$/, "")
+    .replace(
+      /^(?:compare|comparison of|what(?:'s| is) the difference between|difference between|how (?:do|does) you (?:tell apart|distinguish))\s+/i,
+      ""
+    )
+    // "IHC of CHL vs NLPHL" → "CHL vs NLPHL", so the next aspect reads cleanly.
+    .replace(
+      /^(?:the\s+)?(?:ihc|immunohistochemistry|immunophenotypes?|stains?|markers?|molecular(?: findings)?|genetics|morphology|histology)\s+(?:of|in|for)\s+/i,
+      ""
+    );
+  if (q.length > 80 || !/\b(vs\.?|versus|and|or)\b/i.test(q)) return [];
+  return ASPECTS.filter((a) => !a.named.test(question))
+    .slice(0, 2)
+    .map((a) => `${a.ask} ${q}`);
 }
 
 export function buildAnswerPrompt(

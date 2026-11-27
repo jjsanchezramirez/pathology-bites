@@ -9,7 +9,7 @@ export interface PublicStats {
 // Hardcoded public stats — refreshed at build time (see commit-workflow). Each is a floored
 // "N+" figure so the displayed number never overstates the live database.
 const PUBLIC_STATS: PublicStats = {
-  expertQuestions: 400, // "400+" — live: 411 published questions, floored to nearest 50
+  expertQuestions: 400, // "400+" — live: 408 published questions, floored to nearest 50
   images: 1300, // "1,300+" — live: 1,350 images, floored to nearest 100
 };
 

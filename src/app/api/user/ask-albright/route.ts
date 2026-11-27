@@ -2,10 +2,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import {
+  type AskEvent,
+  type AskResult,
   NoPassagesError,
   askAlbright,
+  askAlbrightStream,
   isAskAlbrightAvailable,
 } from "@/features/user/ask-albright/lib/ask";
+import { recordCost, reserveQuestion } from "@/features/user/ask-albright/lib/usage";
 import { findInHistory, saveHistory } from "@/features/user/ask-albright/lib/history";
 import { MAX_QUESTION_CHARS } from "@/features/user/ask-albright/lib/router";
 import { requireUser } from "@/shared/utils/api/api-guard";
@@ -14,13 +18,50 @@ import { apiError, parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
 
 const bodySchema = z.object({
-  question: z.string().trim().min(5, "Ask a full question").max(MAX_QUESTION_CHARS),
+  question: z.string().trim().min(2, "Ask a question").max(MAX_QUESTION_CHARS),
 });
 
-// Cost guards. In-memory, so per instance (see api-rate-limiter.ts) — a soft
-// cap on spend, not a security boundary. It is off unless NEXT_PUBLIC_ASK_ALBRIGHT_ENABLED=true (lib/enabled.ts).
+// Burst guard, in memory (per instance). The real limits are durable and
+// daily (lib/usage.ts): per user, and a global budget; each answer is capped
+// at 0.20¢ (lib/cost.ts).
 const perMinute = new APIRateLimiter({ windowMs: 60_000, maxRequests: 10 });
-const perDay = new APIRateLimiter({ windowMs: 24 * 60 * 60 * 1000, maxRequests: 50 });
+
+const NDJSON = "application/x-ndjson";
+
+/** One JSON object per line: meta, delta…, then done (with historyId) or error. */
+function streamResponse(
+  events: AsyncGenerator<AskEvent>,
+  finish: (result: AskResult) => Promise<Record<string, unknown>>
+): Response {
+  const enc = new TextEncoder();
+  const body = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const send = (obj: unknown) => controller.enqueue(enc.encode(`${JSON.stringify(obj)}\n`));
+      try {
+        for await (const ev of events) {
+          if (ev.type === "done") send({ type: "done", ...(await finish(ev.result)) });
+          else send(ev);
+        }
+      } catch (err) {
+        if (err instanceof NoPassagesError)
+          send({ type: "error", status: 404, error: err.message });
+        else {
+          log.error("[ask-albright] failed", err);
+          send({
+            type: "error",
+            status: 502,
+            error: "Dr. Albright couldn't answer that right now",
+          });
+        }
+      } finally {
+        controller.close();
+      }
+    },
+  });
+  return new Response(body, {
+    headers: { "Content-Type": NDJSON, "Cache-Control": "no-store", "X-Accel-Buffering": "no" },
+  });
+}
 
 function limited(resetTime: number, message: string): NextResponse {
   const retryAfter = Math.max(1, Math.ceil((resetTime - Date.now()) / 1000));
@@ -38,7 +79,11 @@ function limited(resetTime: number, message: string): NextResponse {
  *     description: >
  *       Routes the question to one source (PathologyOutlines, PubMed or WHO via
  *       PathTalk) with a small Workers AI model, retrieves the top passages, and
- *       returns a brief cited answer. Rate limited per user (10/min, 50/day).
+ *       returns a brief cited answer. Each answer costs at most $0.002. Send
+ *       `Accept: application/x-ndjson` to stream it: one JSON object per line —
+ *       `meta` (citations, tables), `delta` (text), `reset`, then `done` (the
+ *       full answer below) or `error`. Limited per user (10/min, and a daily
+ *       cap) and by a global daily budget.
  *     tags:
  *       - User - Ask Dr. Albright
  *     security:
@@ -98,7 +143,7 @@ function limited(resetTime: number, message: string): NextResponse {
  *       400: { description: Invalid question }
  *       401: { description: Not signed in }
  *       404: { description: No passages found for the question }
- *       429: { description: Rate limit reached }
+ *       429: { description: Per-minute, daily, or global daily limit reached }
  *       502: { description: Upstream AI or search failure }
  *       503: { description: Feature switched off or not configured }
  */
@@ -113,11 +158,18 @@ export async function POST(request: NextRequest) {
   const body = await parseBody(request, bodySchema);
   if (body instanceof NextResponse) return body;
 
+  const wantsStream = (request.headers.get("accept") ?? "").includes(NDJSON);
+
   // Dev-only eval mode (tests/eval/ask-albright.eval.mjs): a fresh answer every
-  // time — no history, no cache, no rate limit. Ignored in production.
+  // time — no history, no cache, no limits. Ignored in production.
   const evalMode =
     process.env.NODE_ENV !== "production" && request.headers.get("x-ask-albright-eval") === "1";
   if (evalMode) {
+    if (wantsStream) {
+      return streamResponse(askAlbrightStream(body.question, { noCache: true }), async (r) => ({
+        ...r,
+      }));
+    }
     try {
       return NextResponse.json(await askAlbright(body.question, { noCache: true }));
     } catch (err) {
@@ -136,6 +188,7 @@ export async function POST(request: NextRequest) {
         cached: true,
         tokens: 0,
         historyId: prior.id,
+        feedback: prior.feedback,
         repeated: true,
       });
     }
@@ -145,17 +198,39 @@ export async function POST(request: NextRequest) {
 
   const minute = perMinute.checkLimit(auth.userId, "ask-albright");
   if (!minute.allowed) return limited(minute.resetTime, "Slow down — try again in a minute.");
-  const day = perDay.checkLimit(auth.userId, "ask-albright");
-  if (!day.allowed) return limited(day.resetTime, "Daily question limit reached.");
+  // Admins have no per-user daily cap; the global budget still applies to them.
+  const reservation = await reserveQuestion(auth.userId, { uncapped: auth.role === "admin" });
+  if (!reservation.allowed) {
+    if (reservation.reason === "unavailable")
+      return apiError("Dr. Albright is unavailable right now", 503);
+    const midnight = new Date();
+    midnight.setUTCHours(24, 0, 0, 0);
+    return limited(
+      midnight.getTime(),
+      reservation.reason === "global"
+        ? "Dr. Albright has reached today's limit. Try again tomorrow."
+        : "Daily question limit reached. Try again tomorrow."
+    );
+  }
+
+  // Saved to the user's account history and costed (neither fails the answer).
+  const finish = async (result: AskResult) => {
+    log.info(
+      `[ask-albright] source=${result.source} cached=${result.cached} tokens=${result.tokens} cost=${result.costUsd ?? 0}`
+    );
+    // Declines aren't saved: a repeat would replay the decline from history
+    // instead of planning again ("Hans algorithm" stuck as off-topic).
+    const [historyId] = await Promise.all([
+      result.scope ? Promise.resolve(null) : saveHistory(auth.userId, body.question, result),
+      recordCost(auth.userId, result.costUsd ?? 0),
+    ]);
+    return { ...result, historyId };
+  };
+
+  if (wantsStream) return streamResponse(askAlbrightStream(body.question), finish);
 
   try {
-    const result = await askAlbright(body.question);
-    log.info(
-      `[ask-albright] source=${result.source} cached=${result.cached} tokens=${result.tokens}`
-    );
-    // Saved to the user's account history (never fails the answer).
-    const historyId = await saveHistory(auth.userId, body.question, result);
-    return NextResponse.json({ ...result, historyId });
+    return NextResponse.json(await finish(await askAlbright(body.question)));
   } catch (err) {
     if (err instanceof NoPassagesError) return apiError(err.message, 404);
     log.error("[ask-albright] failed", err);

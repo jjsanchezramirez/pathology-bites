@@ -10,6 +10,8 @@
  * IMPORTANT: Keep these in sync with the database function!
  */
 
+import { DEFAULT_DASHBOARD_THEME_ID } from "@/shared/config/dashboard-themes";
+
 /**
  * Default quiz settings for new users
  */
@@ -35,8 +37,8 @@ export const DEFAULT_NOTIFICATION_SETTINGS = {
  *
  * Field explanations:
  * - text_zoom: Zoom level multiplier (0.8 to 1.5)
- * - dashboard_theme_admin: Dashboard theme for the admin area (always 'default')
- * - dashboard_theme_user: Dashboard theme for student mode (default 'tangerine'; also 'sage-garden', 'notebook' or 'default')
+ * - dashboard_theme_admin: Dashboard theme for the admin area (default 'sage-garden'; any theme)
+ * - dashboard_theme_user: Dashboard theme for student mode (default 'sage-garden'; also 'tangerine', 'notebook' or 'default')
  * - theme: Color mode preference ('light', 'dark', or 'system') - synced with next-themes
  * - welcome_message_seen: Whether user has seen the welcome message
  * - v1_release_dismissed: Whether user has dismissed the v1.0 release announcement
@@ -46,8 +48,8 @@ export const DEFAULT_NOTIFICATION_SETTINGS = {
  */
 export const DEFAULT_UI_SETTINGS = {
   text_zoom: 1.0,
-  dashboard_theme_admin: "default",
-  dashboard_theme_user: "tangerine",
+  dashboard_theme_admin: DEFAULT_DASHBOARD_THEME_ID,
+  dashboard_theme_user: DEFAULT_DASHBOARD_THEME_ID,
   theme: "system",
   welcome_message_seen: false,
   v1_release_dismissed: false,

@@ -5,8 +5,18 @@ vi.mock("@/shared/utils/logging", () => ({
   log: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 vi.mock("@/shared/config/ai-keys", () => ({ getApiKey: vi.fn(() => "test-token") }));
-vi.mock("@/shared/services/openai-compat", () => ({ callOpenAICompatText: vi.fn() }));
-vi.mock("@/shared/services/pathtalk", () => ({ searchPathTalk: vi.fn() }));
+vi.mock("@/shared/services/openai-compat", () => ({
+  callOpenAICompatText: vi.fn(),
+  streamOpenAICompatText: vi.fn(),
+}));
+vi.mock("@/shared/services/pathtalk", () => ({
+  searchPathTalk: vi.fn(),
+  searchPathTalkFigures: vi.fn(async () => []),
+}));
+vi.mock("@/shared/services/image-search", () => ({
+  searchImagesForDiagnosis: vi.fn(async () => []),
+}));
+vi.mock("@/shared/services/service-role-client", () => ({ createServiceRoleClient: vi.fn() }));
 vi.mock("@/features/user/ask-albright/lib/rerank", () => ({ rerankScores: vi.fn() }));
 vi.mock("@/features/user/ask-albright/lib/history", () => ({
   saveHistory: vi.fn(async () => "hist-1"),
@@ -15,18 +25,39 @@ vi.mock("@/features/user/ask-albright/lib/history", () => ({
 vi.mock("@/features/user/ask-albright/lib/marker-aliases", () => ({
   lookupMarkerAliases: vi.fn(async () => []),
 }));
+vi.mock("@/features/user/ask-albright/lib/usage", () => ({
+  reserveQuestion: vi.fn(async () => ({ allowed: true })),
+  recordCost: vi.fn(async () => {}),
+}));
+vi.mock("@/features/user/ask-albright/lib/kb-entity", () => ({
+  entityProfiles: vi.fn(async () => []),
+  warmEntityIndex: vi.fn(),
+}));
 
 import { getApiKey } from "@/shared/config/ai-keys";
-import { callOpenAICompatText } from "@/shared/services/openai-compat";
-import { searchPathTalk } from "@/shared/services/pathtalk";
+import { callOpenAICompatText, streamOpenAICompatText } from "@/shared/services/openai-compat";
+import { recordCost, reserveQuestion } from "@/features/user/ask-albright/lib/usage";
+import { entityProfiles } from "@/features/user/ask-albright/lib/kb-entity";
+import { searchPathTalk, searchPathTalkFigures } from "@/shared/services/pathtalk";
+import { searchImagesForDiagnosis } from "@/shared/services/image-search";
+import { validDiagram } from "@/features/user/ask-albright/lib/visuals";
 import { rerankScores } from "@/features/user/ask-albright/lib/rerank";
 import { lookupMarkerAliases } from "@/features/user/ask-albright/lib/marker-aliases";
 import { findInHistory, saveHistory } from "@/features/user/ask-albright/lib/history";
-import { clearAskCache, coversItem } from "@/features/user/ask-albright/lib/ask";
+import { clearAskCache, coversItem, fitPassages } from "@/features/user/ask-albright/lib/ask";
+import { COST_CAP_USD, estimateTokens, worstCase } from "@/features/user/ask-albright/lib/cost";
+import { PLANNER_HEDGE_MODEL, answerSystem } from "@/features/user/ask-albright/lib/planner";
 import { FORMAT_INSTRUCTION, SCOPE_REPLY } from "@/features/user/ask-albright/lib/planner";
 import { TABLE_MAX_TOKENS } from "@/features/user/ask-albright/lib/router";
 
 const ai = vi.mocked(callOpenAICompatText);
+// The answer streams; in tests it is the same mock as the planner, replayed as
+// one delta then usage, so every model call stays in `ai.mock.calls`.
+vi.mocked(streamOpenAICompatText).mockImplementation(async function* (...args) {
+  const r = await ai(...args);
+  yield { delta: r.content };
+  if (r.tokenUsage) yield { usage: r.tokenUsage };
+});
 const search = vi.mocked(searchPathTalk);
 const rerank = vi.mocked(rerankScores);
 
@@ -97,13 +128,25 @@ const plannerCalls = () => ai.mock.calls.filter((c) => c[4]?.jsonMode);
 const answerCall = () => ai.mock.calls.find((c) => !c[4]?.jsonMode);
 
 let n = 0;
-function ask(question: unknown, userId: string | null = `user-${n}`) {
+function ask(
+  question: unknown,
+  userId: string | null = `user-${n}`,
+  extra: Record<string, string> = {}
+) {
   return createMockRequest({
     method: "POST",
     url: "http://localhost:3000/api/user/ask-albright",
-    headers: userId ? { "x-user-id": userId } : {},
+    headers: { ...(userId ? { "x-user-id": userId } : {}), ...extra },
     body: { question },
   });
+}
+
+/** The NDJSON events of a streamed response. */
+async function events(res: Response): Promise<Array<Record<string, unknown>>> {
+  return (await res.text())
+    .split("\n")
+    .filter(Boolean)
+    .map((l) => JSON.parse(l));
 }
 
 // Re-import per test so the module-level rate limiters start empty.
@@ -119,6 +162,15 @@ describe("POST /api/user/ask-albright", () => {
     vi.mocked(getApiKey).mockReturnValue("test-token");
     vi.mocked(findInHistory).mockResolvedValue(null);
     vi.mocked(lookupMarkerAliases).mockResolvedValue([]);
+    vi.mocked(reserveQuestion).mockResolvedValue({ allowed: true });
+    vi.mocked(entityProfiles).mockResolvedValue([]);
+    vi.mocked(searchPathTalkFigures).mockResolvedValue([]);
+    vi.mocked(searchImagesForDiagnosis).mockResolvedValue([]);
+    vi.mocked(streamOpenAICompatText).mockImplementation(async function* (...args) {
+      const r = await ai(...args);
+      yield { delta: r.content };
+      if (r.tokenUsage) yield { usage: r.tokenUsage };
+    });
     process.env.NEXT_PUBLIC_ASK_ALBRIGHT_ENABLED = "true";
     clearAskCache();
     searchBy({ search_pathology_outlines: HITS });
@@ -135,7 +187,7 @@ describe("POST /api/user/ask-albright", () => {
 
   it("400s on a too-short or too-long question", async () => {
     const { POST } = await loadRoute();
-    expect((await POST(ask("hi"))).status).toBe(400);
+    expect((await POST(ask("h"))).status).toBe(400); // "Hi" is small talk now, not too short
     expect((await POST(ask("x".repeat(301)))).status).toBe(400);
     expect(ai).not.toHaveBeenCalled();
   });
@@ -160,12 +212,14 @@ describe("POST /api/user/ask-albright", () => {
     const body = await getResponseJson(res);
 
     expect(res.status).toBe(200);
-    // Plan: one JSON call. Search: once, in the planned corpus, with the planned query.
+    // Plan: one JSON call. Search: once — started alongside the plan, with the
+    // question itself, in the corpus the question's words suggest; the planner
+    // agreed (outlines), so no second search.
     expect(plannerCalls()).toHaveLength(1);
     expect(search).toHaveBeenCalledTimes(1);
     expect(search).toHaveBeenCalledWith(
       "search_pathology_outlines",
-      "chromophobe oncocytoma CK7",
+      "Compare CK7 in chromophobe RCC and oncocytoma",
       expect.objectContaining({ limit: 3 })
     );
 
@@ -181,13 +235,13 @@ describe("POST /api/user/ask-albright", () => {
 
     expect(body).toMatchObject({
       source: "outlines",
-      sourceLabel: "PathologyOutlines",
+      sourceLabel: "PathOutlines",
       format: "table",
       cached: false,
       tokens: 340 + 2060,
     });
     expect(body.citations).toHaveLength(3);
-    expect(body.citations[0]).toMatchObject({ sourceLabel: "PathologyOutlines" });
+    expect(body.citations[0]).toMatchObject({ sourceLabel: "PathOutlines" });
   });
 
   it("searches the fallback corpus only when the first one misses (NLPHL / J chain case)", async () => {
@@ -238,7 +292,8 @@ describe("POST /api/user/ask-albright", () => {
     });
     scoreBy((t) => (/TRPS1/.test(t) ? 0.95 : 0.85));
     const { POST } = await loadRoute();
-    const body = await getResponseJson(await POST(ask("Is TRPS1 sensitive for TNBC?")));
+    // "studies" points the first search at PubMed, which misses TRPS1.
+    const body = await getResponseJson(await POST(ask("Is TRPS1 sensitive for TNBC in studies?")));
     expect(search).toHaveBeenCalledTimes(2);
     expect(body.citations[0].href).toBe("https://po/subtypes");
   });
@@ -310,13 +365,17 @@ describe("POST /api/user/ask-albright", () => {
   it.each([
     ["off_topic", "What's a good recipe for banana bread?"],
     ["too_broad", "Explain all of soft tissue pathology"],
-  ] as const)("declines %s questions without searching", async (scope, q) => {
+  ] as const)("declines %s questions without answering", async (scope, q) => {
     mockAi({ scope });
     const { POST } = await loadRoute();
     const body = await getResponseJson(await POST(ask(q)));
     expect(body).toMatchObject({ answer: SCOPE_REPLY[scope], scope, citations: [], tokens: 340 });
-    expect(search).not.toHaveBeenCalled();
+    // The first search starts alongside the plan and is discarded; no answer call.
     expect(answerCall()).toBeUndefined();
+    // Not saved, and not cached: a wrong decline must not stick.
+    expect(saveHistory).not.toHaveBeenCalled();
+    await POST(ask(q));
+    expect(plannerCalls()).toHaveLength(2);
   });
 
   it("falls back to searching as asked when the planner fails", async () => {
@@ -442,7 +501,7 @@ describe("POST /api/user/ask-albright", () => {
     await POST(ask("Is CD117 positive in oncocytoma?"));
     expect(search).toHaveBeenCalledWith(
       "search_pathology_outlines",
-      "CD117 oncocytoma (CD117 / KIT / c-KIT)",
+      "Is CD117 positive in oncocytoma? (CD117 / KIT / c-KIT)",
       expect.anything()
     );
     expect(answerCall()![3]).toContain("Same marker: CD117 = KIT = c-KIT.");
@@ -492,11 +551,11 @@ describe("POST /api/user/ask-albright", () => {
       return answers === 1
         ? {
             content: "| Feature / Diagnosis" + " ".repeat(300) + "| Morphology",
-            tokenUsage: { prompt_tokens: 1500, completion_tokens: 600, total_tokens: 2100 },
+            tokenUsage: { prompt_tokens: 500, completion_tokens: 600, total_tokens: 1100 },
           }
         : {
             content: "Endometrial carcinoma is ER-positive [1].",
-            tokenUsage: { prompt_tokens: 1500, completion_tokens: 30, total_tokens: 1530 },
+            tokenUsage: { prompt_tokens: 500, completion_tokens: 30, total_tokens: 530 },
           };
     });
     const { POST } = await loadRoute();
@@ -510,7 +569,7 @@ describe("POST /api/user/ask-albright", () => {
     expect(body).toMatchObject({
       answer: "Endometrial carcinoma is ER-positive [1].",
       format: "paragraph",
-      tokens: 2100 + 1530,
+      tokens: 1100 + 530,
     });
   });
 
@@ -560,5 +619,319 @@ describe("POST /api/user/ask-albright", () => {
     expect(res.headers.get("Retry-After")).toBeTruthy();
     // Another user is unaffected.
     expect((await POST(ask("Question about CK7", "calm"))).status).toBe(200);
+  });
+  it("streams meta, then text, then done with the history id, and records the cost", async () => {
+    mockAi(PLAN, "CK7 is diffuse in chromophobe [2].\nFollow-ups: What about CD117? | And S100A1?");
+    const { POST } = await loadRoute();
+    const res = await POST(
+      ask("Compare CK7 in chromophobe RCC and oncocytoma", undefined, {
+        accept: "application/x-ndjson",
+      })
+    );
+    expect(res.headers.get("content-type")).toContain("application/x-ndjson");
+    const evs = await events(res);
+    expect(evs.map((e) => e.type)).toEqual(["meta", "delta", "done"]);
+    expect(evs[0]).toMatchObject({ sourceLabel: "PathOutlines" });
+    expect((evs[0].citations as unknown[]).length).toBe(3);
+    expect(evs[2]).toMatchObject({
+      historyId: "hist-1",
+      answer: "CK7 is diffuse in chromophobe [2].",
+      followUps: ["What about CD117?", "And S100A1?"],
+    });
+    expect(evs[2].costUsd as number).toBeGreaterThan(0);
+    expect(evs[2].costUsd as number).toBeLessThanOrEqual(COST_CAP_USD);
+    expect(saveHistory).toHaveBeenCalledTimes(1);
+    expect(recordCost).toHaveBeenCalledWith(expect.any(String), evs[2].costUsd);
+  });
+
+  it("streams an error event when no passages are found", async () => {
+    searchBy({});
+    const { POST } = await loadRoute();
+    const evs = await events(
+      await POST(ask("What stains for oncocytoma?", undefined, { accept: "application/x-ndjson" }))
+    );
+    expect(evs.at(-1)).toMatchObject({ type: "error", status: 404 });
+    expect(saveHistory).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["user", 429, /Daily question limit/],
+    ["global", 429, /today's limit/],
+    ["unavailable", 503, /unavailable/],
+  ] as const)(
+    "refuses when the daily reservation says %s, without a model call",
+    async (reason, status, msg) => {
+      vi.mocked(reserveQuestion).mockResolvedValue({ allowed: false, reason });
+      const { POST } = await loadRoute();
+      const res = await POST(ask("What stains for oncocytoma?"));
+      expect(res.status).toBe(status);
+      expect((await getResponseJson(res)).error).toMatch(msg);
+      expect(ai).not.toHaveBeenCalled();
+    }
+  );
+
+  it("reserves admins without the per-user cap, everyone else with it", async () => {
+    const { POST } = await loadRoute();
+    await POST(ask("What stains for oncocytoma?", "admin-7", { "x-user-role": "admin" }));
+    expect(reserveQuestion).toHaveBeenLastCalledWith("admin-7", { uncapped: true });
+    await POST(ask("What stains for chromophobe?", "user-8", { "x-user-role": "user" }));
+    expect(reserveQuestion).toHaveBeenLastCalledWith("user-8", { uncapped: false });
+  });
+
+  it("does not take a daily question for a repeat answered from history", async () => {
+    vi.mocked(findInHistory).mockResolvedValue({
+      id: "hist-9",
+      question: "Q?",
+      createdAt: "2026-11-24T00:00:00Z",
+      feedback: 1,
+      result: { answer: "Saved [1].", citations: [], tables: [] } as never,
+    });
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(await POST(ask("What stains for oncocytoma?")));
+    expect(body).toMatchObject({ repeated: true, historyId: "hist-9", feedback: 1 });
+    expect(reserveQuestion).not.toHaveBeenCalled();
+  });
+
+  it("never lets an answer's worst case exceed the cost cap, however long the passages", async () => {
+    const huge = (t: string) => ({
+      title: t,
+      href: `https://po/${t}`,
+      body: `CK7 chromophobe oncocytoma ${t} EWSR1::FLI1 β 12345. `.repeat(400),
+    });
+    searchBy({ search_pathology_outlines: [huge("A"), huge("B"), huge("C")] });
+    mockAi({ format: "marker" });
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(
+      await POST(ask("Compare CK7 in chromophobe RCC and oncocytoma"))
+    );
+    const call = answerCall()!;
+    const answerWorst = worstCase(
+      "@cf/mistralai/mistral-small-3.1-24b-instruct",
+      estimateTokens(String(call[4]?.system) + String(call[3])),
+      call[4]!.maxTokens!
+    );
+    // Planner (340 tokens here) + the answer's worst case stays under the cap.
+    const plannerCost = 300 * 0.2e-6 + 40 * 0.3e-6;
+    expect(plannerCost + answerWorst).toBeLessThanOrEqual(COST_CAP_USD);
+    expect(body.costUsd).toBeLessThanOrEqual(COST_CAP_USD);
+    expect(String(call[3]).length).toBeLessThan(3 * 20_000);
+  });
+
+  it("adds knowledge-base entity profiles as cited sources for diagnosis questions", async () => {
+    vi.mocked(entityProfiles).mockResolvedValue([
+      { title: "Oncocytoma — knowledge base", href: "/tools/ihc", text: "Positive: CD117." },
+    ]);
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(
+      await POST(ask("Compare CK7 in chromophobe RCC and oncocytoma"))
+    );
+    expect(entityProfiles).toHaveBeenCalledWith(expect.stringContaining("oncocytoma"), 2);
+    expect(body.citations.at(-1)).toMatchObject({
+      n: 4,
+      sourceLabel: "Pathology Bites",
+      title: "Oncocytoma — knowledge base",
+    });
+    expect(answerCall()![3]).toContain("[4] Oncocytoma — knowledge base: Positive: CD117.");
+  });
+
+  it("asks the hedge planner when the first one stalls, and uses its plan", async () => {
+    ai.mockImplementation(async (_p, model, _k, _prompt, opts) => {
+      if (!opts?.jsonMode)
+        return {
+          content: "Grade 2 [1].",
+          tokenUsage: { prompt_tokens: 100, completion_tokens: 5, total_tokens: 105 },
+        };
+      if (model !== PLANNER_HEDGE_MODEL) {
+        // The first planner hangs until it is aborted.
+        return new Promise((_, reject) =>
+          opts.signal?.addEventListener("abort", () => reject(new Error("aborted")))
+        );
+      }
+      return {
+        content: JSON.stringify({ ...PLAN, format: "sentence" }),
+        tokenUsage: { prompt_tokens: 300, completion_tokens: 40, total_tokens: 340 },
+      };
+    });
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(await POST(ask("What stains for oncocytoma?")));
+    expect(plannerCalls().map((c) => c[1])).toContain(PLANNER_HEDGE_MODEL);
+    expect(body.format).toBe("sentence");
+    expect(answerCall()![4]?.system).toBe(answerSystem("sentence"));
+  }, 10_000);
+});
+
+describe("fitPassages", () => {
+  const page = (t: string, len: number) => ({
+    title: t,
+    prose: `${t} word `.repeat(len / 7),
+    tableText: "",
+  });
+
+  it("keeps everything when it fits", () => {
+    const fit = fitPassages([page("A", 700)], [{ title: "KB", text: "x" }], "A", 10_000)!;
+    expect(fit.pages).toHaveLength(1);
+    expect(fit.profiles).toHaveLength(1);
+  });
+
+  it("shortens, then drops pages from the end, then the profiles", () => {
+    const pages = [page("A", 4000), page("B", 4000), page("C", 4000)];
+    const kb = [{ title: "KB", text: "y".repeat(800) }];
+    const mid = fitPassages(pages, kb, "A", 900)!;
+    expect(mid.pages.length).toBeLessThan(3);
+    expect(mid.pages[0].title).toBe("A");
+    const tight = fitPassages(pages, kb, "A", 120)!;
+    expect(tight.profiles).toHaveLength(0);
+    expect(tight.pages).toHaveLength(1);
+  });
+
+  it("returns null when not even one shortest passage fits", () => {
+    expect(fitPassages([page("A", 4000)], [], "A", 10)).toBeNull();
+  });
+});
+
+describe("POST /api/user/ask-albright — visuals cascade", () => {
+  const FIG = {
+    legend:
+      "Figure 2. Decision algorithm described by Hans et al for classifying DLBCL into GCB and ABC.",
+    imageUrl: "https://api.pathtalk.io/fig.png",
+    href: "https://doi.org/10.1002/path.1924",
+    doi: "10.1002/path.1924",
+  };
+  const DIAGRAM = 'flowchart TD\n  A{"CD10?"} -->|Yes| B["GCB"]\n  A -->|No| C["Next"]';
+
+  beforeEach(() => {
+    n++;
+    vi.clearAllMocks();
+    vi.mocked(getApiKey).mockReturnValue("test-token");
+    vi.mocked(findInHistory).mockResolvedValue(null);
+    vi.mocked(lookupMarkerAliases).mockResolvedValue([]);
+    vi.mocked(reserveQuestion).mockResolvedValue({ allowed: true });
+    vi.mocked(entityProfiles).mockResolvedValue([]);
+    vi.mocked(searchPathTalkFigures).mockResolvedValue([FIG]);
+    vi.mocked(searchImagesForDiagnosis).mockResolvedValue([]);
+    vi.mocked(streamOpenAICompatText).mockImplementation(async function* (...args) {
+      const r = await ai(...args);
+      yield { delta: r.content };
+      if (r.tokenUsage) yield { usage: r.tokenUsage };
+    });
+    process.env.NEXT_PUBLIC_ASK_ALBRIGHT_ENABLED = "true";
+    clearAskCache();
+    searchBy({ search_pathology_outlines: HITS });
+    scoreBy();
+  });
+
+  it("diagram questions: the model's flowchart is split off the answer and asked for in the prompt", async () => {
+    mockAi(
+      { visual: "diagram", query: "Hans algorithm DLBCL" },
+      `CD10 first [1].\n\n\`\`\`mermaid\n${DIAGRAM}\n\`\`\`\nFollow-ups: What is GCB? | Why MUM1?`
+    );
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(await POST(ask("Hans algorithm for DLBCL")));
+    expect(answerCall()![4]?.system).toMatch(/Mermaid flowchart/);
+    expect(body.visual).toEqual({ kind: "diagram", code: validDiagram(DIAGRAM) });
+    expect(body.answer).toBe("CD10 first [1].");
+    expect(body.followUps).toEqual(["What is GCB?", "Why MUM1?"]);
+  });
+
+  it("diagram questions fall back to a linked published figure when no diagram comes back", async () => {
+    mockAi({ visual: "diagram", query: "Hans algorithm DLBCL" }, "CD10 first [1].");
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(await POST(ask("Hans algorithm for DLBCL")));
+    expect(body.visual).toMatchObject({ kind: "figure", href: FIG.href });
+    expect(body.visual).not.toHaveProperty("imageUrl"); // a link card, never the publisher's image
+  });
+
+  it("image questions use the library first, sent with the sources", async () => {
+    vi.mocked(searchImagesForDiagnosis).mockResolvedValue([
+      {
+        id: "1",
+        url: "https://img.pathologybites.com/a.jpg",
+        description: "d",
+        alt_text: "Oncocytoma",
+        source_ref: "Atlas X",
+      },
+    ]);
+    mockAi({ visual: "images", query: "oncocytoma histology", items: [] });
+    const { POST } = await loadRoute();
+    const evs = await events(
+      await POST(
+        ask("What does oncocytoma look like?", undefined, { accept: "application/x-ndjson" })
+      )
+    );
+    expect(searchImagesForDiagnosis).toHaveBeenCalledWith("oncocytoma", [], 12, undefined);
+    expect(evs[0]).toMatchObject({
+      type: "meta",
+      visual: {
+        kind: "images",
+        images: [
+          { url: "https://img.pathologybites.com/a.jpg", alt: "Oncocytoma", credit: "Atlas X" },
+        ],
+      },
+    });
+    expect(searchPathTalkFigures).not.toHaveBeenCalled();
+  });
+
+  it("image questions fall back to a figure only when it is clearly about the question", async () => {
+    mockAi({ visual: "images", query: "oncocytoma histology", items: [] });
+    const { POST } = await loadRoute();
+    // The Hans legend is not about oncocytoma: no visual at all.
+    const body = await getResponseJson(await POST(ask("What does oncocytoma look like?")));
+    expect(searchPathTalkFigures).toHaveBeenCalled();
+    expect(body.visual).toBeUndefined();
+  });
+
+  it("other questions look nothing up", async () => {
+    mockAi({ visual: "none" });
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(await POST(ask("Is CK7 positive in chromophobe RCC?")));
+    expect(searchPathTalkFigures).not.toHaveBeenCalled();
+    expect(searchImagesForDiagnosis).not.toHaveBeenCalled();
+    expect(body.visual).toBeUndefined();
+  });
+
+  it("chat: a short in-character reply with the chat prompt, no sources, nothing saved", async () => {
+    ai.mockImplementation(async (_p, _m, _k, _prompt, opts) =>
+      opts?.jsonMode
+        ? { content: JSON.stringify({ ...PLAN, scope: "chat" }) }
+        : {
+            content: "Hello! Ready for a pathology question?",
+            tokenUsage: { prompt_tokens: 150, completion_tokens: 12, total_tokens: 162 },
+          }
+    );
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(await POST(ask("How are you?")));
+    expect(body).toMatchObject({
+      answer: "Hello! Ready for a pathology question?",
+      scope: "chat",
+      citations: [],
+    });
+    expect(answerCall()![4]?.system).toMatch(/You are Dr\. Albright, the friendly pathology tutor/);
+    expect(saveHistory).not.toHaveBeenCalled();
+  });
+
+  it("hides the rebuilt source tables when the answer carries another visual", async () => {
+    searchBy({
+      search_pathology_outlines: [
+        {
+          title: "Panel",
+          href: "https://po/panel",
+          body: "Positive stains CK7 CD117 Negative stains CK20 vimentin. ".repeat(3),
+        },
+      ],
+    });
+    mockAi({ visual: "diagram", query: "workup" }, "Steps [1].");
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(await POST(ask("Workup of an oncocytic renal tumor")));
+    expect(body.tables).toEqual([]);
+  });
+
+  it("answers a joke request from the list: no planner, no search, nothing saved", async () => {
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(await POST(ask("Tell me a joke")));
+    expect(body).toMatchObject({ scope: "chat", citations: [], costUsd: 0 });
+    expect(body.answer.length).toBeGreaterThan(20);
+    expect(ai).not.toHaveBeenCalled();
+    expect(search).not.toHaveBeenCalled();
+    expect(saveHistory).not.toHaveBeenCalled();
   });
 });

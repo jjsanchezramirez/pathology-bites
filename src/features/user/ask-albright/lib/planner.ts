@@ -21,8 +21,15 @@
 import { ANSWER_RULES, type AskSource, heuristicSource } from "./router";
 import { KNOWN_STAINS } from "./tables";
 
-export type AnswerFormat = "sentence" | "bullets" | "paragraph" | "table" | "marker";
-export type PlanScope = "ok" | "off_topic" | "too_broad";
+export type AnswerFormat = "sentence" | "bullets" | "paragraph" | "table" | "marker" | "criteria";
+export type PlanScope = "ok" | "chat" | "off_topic" | "too_broad";
+/**
+ * The one visual an answer may carry — the cascade (ask.ts resolves it):
+ *   diagram → a Mermaid flowchart of the answer's steps; if it fails, a published figure
+ *   images  → the site's own image library;              if none match, a published figure
+ *   none    → nothing (most questions; no extra lookups)
+ */
+export type PlanVisual = "diagram" | "images" | "none";
 
 export interface Plan {
   scope: PlanScope;
@@ -34,22 +41,67 @@ export interface Plan {
   format: AnswerFormat;
   /** For comparisons: the diagnoses compared, spelled out (each gets a passage). */
   items: string[];
+  /** Which visual, if any (see PlanVisual). */
+  visual: PlanVisual;
 }
 
-/** Planner model (mistral-small made sound scope/source calls; llama-8b invented labels). */
-export const PLANNER_MODEL = "@cf/mistralai/mistral-small-3.1-24b-instruct";
+/**
+ * Planner model. gpt-oss-20b (Nov 2026): 0.6–1.1 s against mistral-small's
+ * 1.2–3 s on the same prompt (the plan holds up the answer's first token), and
+ * ~40% cheaper. mistral-small made sound scope/source calls too; llama-8b
+ * invented labels.
+ */
+export const PLANNER_MODEL = "@cf/openai/gpt-oss-20b";
+/** Asked too when the planner is slow (see planQuestion): a different model, so a stall in one rarely hits both. */
+export const PLANNER_HEDGE_MODEL = "@cf/mistralai/mistral-small-3.1-24b-instruct";
 
 export const PLANNER_SYSTEM = `You plan answers for a pathology Q&A tool. Reply with JSON only:
-{"scope":"ok"|"off_topic"|"too_broad","source":"who"|"outlines"|"pubmed"|"literature","fallback":"who"|"outlines"|"pubmed"|"literature","query":"...","focus":"...","format":"sentence"|"bullets"|"paragraph"|"table"|"marker","items":["..."]}
-- scope: off_topic if not about pathology or medicine; too_broad only if it asks about 5 or more diagnoses at once, or for a whole organ system or field (\"explain all of soft tissue pathology\"). Comparing 2-4 diagnoses (e.g. a three-way IHC table) is ok.
+{"scope":"ok"|"chat"|"off_topic"|"too_broad","source":"who"|"outlines"|"pubmed"|"literature","fallback":"who"|"outlines"|"pubmed"|"literature","query":"...","focus":"...","format":"sentence"|"bullets"|"paragraph"|"table"|"marker","items":["..."],"visual":"diagram"|"images"|"none"}
+- scope: chat only for greetings, thanks or small talk with no pathology in it; any question about a disease, finding, stain or test is ok. off_topic only if clearly not about pathology or medicine and not small talk. A bare term, eponym, named algorithm, score, classification or test (a person's name followed by "algorithm", "criteria", "classification") is ok: assume the pathology meaning. too_broad only if it asks about 5 or more diagnoses at once, or for a whole organ system or field (\"explain all of soft tissue pathology\"). Comparing 2-4 diagnoses (e.g. a three-way IHC table) is ok.
 - source: who = WHO classification, definitions, grading, diagnostic criteria; outlines = textbook morphology, immunostains, differentials, IHC panels; pubmed = study results, sensitivity/specificity, percentages, outcomes; literature = newer or detailed findings. fallback: the next best, different from source.
 - query: 3-8 search words: diagnosis, marker, gene or feature names (expand abbreviations, correct misspellings, keep marker names). For a marker question: the marker name plus \"immunostain\".
-- focus: what to look for in the sources, under 12 words. Never state an answer or a fact.
+- focus: what to look for in the sources, under 12 words. Never state an answer or a fact. A bare comparison that names no aspect ("A vs B vs C", "difference between A and B") needs the features that tell the items apart across clinical setting, morphology, immunophenotype and genetics, not immunostains alone; when the question names an aspect (IHC, stains, genetics, morphology), focus on that aspect.
 - format: marker when the question is about an immunostain itself (what it stains, where it is positive or negative), not about one diagnosis; table for comparing 2+ items, including any \"X vs Y\"; bullets for lists; sentence for a single fact; else paragraph. Marker questions use source outlines.
+- visual: diagram when the question asks for a stepwise algorithm, decision tree, workup or classification scheme; images when it asks what something looks like (histology, gross, cytology, morphology); none otherwise (most questions).
 - items: when comparing diagnoses, each one's full name, misspellings corrected; [] otherwise.`;
+
+const VISUALS: PlanVisual[] = ["diagram", "images", "none"];
+
+/** The visual clear wording asks for (it overrides the planner); none when the wording isn't clear. */
+function heuristicVisual(question: string): PlanVisual {
+  if (/\b(algorithm|work-?up|flow ?chart|decision tree|approach to|stepwise)\b/i.test(question))
+    return "diagram";
+  if (
+    /\b(look(s)? like|appearance|histolog(y|ic)|morpholog(y|ic)|gross|cytolog(y|ic))\b/i.test(
+      question
+    )
+  )
+    return "images";
+  return "none";
+}
 
 const COMPARES = /\b(compare|comparison|versus|vs\.?|table|differ|difference|distinguish)\b/i;
 const YES_NO = /^\s*(is|are|does|do|can|could|should|was|were|has|have)\b/i;
+/**
+ * Asking for a set of diagnostic criteria ("WHO diagnostic criteria for CHL").
+ * Decided by wording, not by the planner (it never sees the "criteria"
+ * format): the answer came back as one 170-word paragraph mixing essential
+ * and desirable criteria.
+ */
+const CRITERIA = /\b(criteria|criterion)\b/i;
+/** A criteria question the "criteria" format fits (not a yes/no or a comparison). */
+function wantsCriteria(question: string): boolean {
+  return CRITERIA.test(question) && !YES_NO.test(question) && !COMPARES.test(question);
+}
+
+/**
+ * "… in / of <a named diagnosis>": the stain is asked about within one tumour,
+ * so the four-group marker format (the stain's whole profile) is the wrong
+ * shape. A bare "What is p16 positive in?" or "TTF-1 positive tumours" names
+ * no diagnosis and keeps it.
+ */
+export const IN_DIAGNOSIS =
+  /\b(?:in|of)\s+(?:an?\s+|the\s+)?(?:[\w-]+\s+){0,6}?(?:\w+omas?|carcinomas?|sarcomas?|lymphomas?|leuka?emias?|tumou?rs?|lesions?|na?evus|na?evi|neoplasms?|dysplasias?|hyperplasias?|diseases?|syndromes?|polyps?|cysts?)\b/i;
 
 /** A marker name in the question: CD99, TTF-1, S100, p63, SOX10… or desmin, calretinin. */
 export function namesMarker(question: string): boolean {
@@ -60,19 +112,54 @@ export function namesMarker(question: string): boolean {
 
 const SOURCES: AskSource[] = ["who", "outlines", "pubmed", "literature"];
 const FORMATS: AnswerFormat[] = ["sentence", "bullets", "paragraph", "table", "marker"];
-const SCOPES: PlanScope[] = ["ok", "off_topic", "too_broad"];
+const SCOPES: PlanScope[] = ["ok", "chat", "off_topic", "too_broad"];
+
+/** Greetings and questions about the assistant or the site: chat, even when the planner fails. */
+const CHAT =
+  /^\s*(hi|hey|hello|hiya|yo|good (morning|afternoon|evening)|thanks|thank you|how are you|how's it going|what'?s up|what'?s on your mind|who (are you|made|built|developed|created|runs)|what are you|what'?s your name|what is your name|tell me about (yourself|you)|nice to meet you|good ?bye|bye|what is (dr\.? )?albright|what can you do|what do you do|how do (you|i use you)|how does (this|it|dr\.? albright) work|are you (an? )?(ai|bot|robot|human|person|real|doctor|real doctor|chatbot)|what kind of (ai|bot|assistant|model))\b/i;
+/** Asking for a joke: small talk at any (short) length — "tell me a joke about residents". */
+const JOKE =
+  /^\s*(?:(?:please|ok|okay|hi|hey)[, ]+)?(?:(?:can|could|would|will) you )?(?:tell|give|say) (?:me |us )?(?:a |another |one more |something |anything )?(?:pathology |medical |bad |good |quick )?(?:joke|pun|something funny|anything funny|funny)\b|^\s*(?:make me laugh|got any jokes|know any jokes|any jokes|(?:a |another )?(?:pathology )?(?:joke|pun)s?\b)/i;
+
+/** A request for a joke (answered from the curated list in jokes.ts, never by the model). */
+export function isJoke(question: string): boolean {
+  return JOKE.test(question) && question.trim().split(/\s+/).length <= 12;
+}
+
+/** "What is this?" on its own (not "What is this lesion?"). */
+const WHAT_IS_THIS = /^\s*what('?s| is) (this|that|it)\s*\??\s*$/i;
+
+/**
+ * Short small talk ("Hi", "How are you?") or a question about who made the
+ * site. A greeting in front of a real question ("Hi, what does a granular cell
+ * tumor look like?") is left to the planner.
+ */
+export function isChat(question: string): boolean {
+  if (WHAT_IS_THIS.test(question)) return true;
+  if (isJoke(question)) return true;
+  if (!CHAT.test(question)) return false;
+  const words = question.trim().split(/\s+/).length;
+  return words <= 6 || /^\s*who (made|built|developed|created|runs)\b/i.test(question);
+}
 
 /** The plan used when the planner call fails or returns junk: search as asked. */
 export function fallbackPlan(question: string): Plan {
   const source = heuristicSource(question);
   return {
-    scope: "ok",
+    scope: isChat(question) ? "chat" : "ok",
     source,
     fallback: source === "outlines" ? "pubmed" : "outlines",
     query: question,
     focus: "",
-    format: /\b(compare|versus|vs\.?|table)\b/i.test(question) ? "table" : "paragraph",
+    // Also the plan when the planner misses its deadline, so wording rules
+    // that must always hold (criteria) apply here too.
+    format: wantsCriteria(question)
+      ? "criteria"
+      : /\b(compare|versus|vs\.?|table)\b/i.test(question)
+        ? "table"
+        : "paragraph",
     items: [],
+    visual: heuristicVisual(question),
   };
 }
 
@@ -91,7 +178,12 @@ export function parsePlan(raw: string, question: string): Plan {
   }
   const pick = <T extends string>(v: unknown, allowed: readonly T[], dflt: T): T =>
     typeof v === "string" && (allowed as readonly string[]).includes(v) ? (v as T) : dflt;
-  const scope = pick(j.scope, SCOPES, "ok");
+  // Chat is decided by wording alone, both ways: "Hi" is chat whatever the
+  // planner says, and the planner can never make a question chat — it called
+  // "What does diffuse large B-cell lymphoma look like?" chat, and the reply
+  // answered pathology from memory, without sources.
+  const picked = pick(j.scope, SCOPES, "ok");
+  const scope = isChat(question) ? "chat" : picked === "chat" ? "ok" : picked;
   const source = pick(j.source, SOURCES, base.source);
   let fallback = pick(j.fallback, SOURCES, base.fallback);
   if (fallback === source) fallback = source === "outlines" ? "pubmed" : "outlines";
@@ -113,9 +205,23 @@ export function parsePlan(raw: string, question: string): Plan {
   // a table of "PPV: not stated" rows).
   // A yes/no question gets a direct answer unless a table was asked for: "Are
   // MEF2B and J chain useful in distinguishing NLPHL from CHL?" became a table.
-  if (format === "table" && YES_NO.test(question) && !/\btable\b/i.test(question)) {
+  if (wantsCriteria(question)) {
+    format = "criteria";
+  } else if (format === "table" && YES_NO.test(question) && !/\btable\b/i.test(question)) {
+    format = "sentence";
+  } else if (format === "marker" && YES_NO.test(question)) {
+    // "Is CD117 positive in renal oncocytoma?" asks about one pairing, not the
+    // stain's whole profile. gpt-oss-20b (the planner since Nov 2026) chose
+    // the four-group marker format for these; its large output reserve left
+    // the passages too little of the cost budget and one answer read
+    // "CD117 is negative in renal oncocytoma".
     format = "sentence";
   } else if (format === "table" && items.length < 2 && !COMPARES.test(question)) {
+    format = "paragraph";
+  } else if (format === "marker" && IN_DIAGNOSIS.test(question)) {
+    // "p16 staining pattern in HPV-associated squamous cell carcinoma" asks
+    // about one diagnosis: the marker format searched the stain broadly and
+    // the answer drifted to Buschke-Löwenstein and Bartholin gland carcinoma.
     format = "paragraph";
   } else if (format === "marker" && !namesMarker(question)) {
     // "Reed Sternberg cell markers" asks about a cell, not a marker: the
@@ -130,16 +236,35 @@ export function parsePlan(raw: string, question: string): Plan {
     // non-necrotizing granuloma causes" came back as a paragraph).
     format = "table";
   }
-  return { scope, source, fallback, query, focus, format, items };
+  // Clear wording always decides ("algorithm", "looks like"): the planner said
+  // "none" for "Hans algorithm for DLBCL". It only adds a visual for wording
+  // the keywords miss.
+  let visual = base.visual !== "none" ? base.visual : pick(j.visual, VISUALS, "none");
+  // One visual per answer: a table, or a diagram, images or a figure — never
+  // two. A question that asks for a table or a comparison keeps its table;
+  // otherwise the visual wins and the table becomes bullets.
+  if (visual !== "none" && format === "table") {
+    if (COMPARES.test(question)) visual = "none";
+    else format = "bullets";
+  }
+  return { scope, source, fallback, query, focus, format, items, visual };
 }
 
 /** What Dr. Albright says instead of searching, for out-of-scope questions. */
-export const SCOPE_REPLY: Record<Exclude<PlanScope, "ok">, string> = {
+export const SCOPE_REPLY: Record<Exclude<PlanScope, "ok" | "chat">, string> = {
   off_topic:
-    "I can only help with pathology questions. Try asking about a diagnosis, stain or finding.",
+    "I can help with pathology questions and with using Pathology Bites. Try asking about a diagnosis, stain or finding — or say “tell me something”.",
   too_broad:
     "That covers a lot at once. Try up to four diagnoses at a time, e.g. a specific differential or IHC panel.",
 };
+
+/**
+ * Small talk. Facts here are only what the site's About page says (including
+ * the founder credit the owner approved, Nov 2026: name, MD, hematopathology
+ * fellow, no institution); anything else must not be made up.
+ */
+export const CHAT_SYSTEM =
+  "You are Dr. Albright, the friendly pathology tutor on Pathology Bites, a free pathology education site with practice questions, explanations and study tools. It grew out of pathology residents sharing study materials; it was founded by Dr. Juan Jose Sanchez Ramirez, a hematopathology fellow, and is built with the pathology community. In character you are a neuron (a nerve cell) with a moustache and a pipe, and the site's mascot; behind the character you are an AI assistant, not a person or a real doctor: you answer short pathology questions with citations from PathOutlines, PubMed, the WHO Classification of Tumours and the Pathology Bites knowledge base, and can add a table, a diagram or images; you can make mistakes, so learners should check the sources, and you are for learning, not for diagnosing real patients. If asked what you are, say you are a neuron and also say plainly that the answers come from an AI; if asked how you work or what you can do, explain it simply. Reply in one to three short, warm sentences, in character, and end by inviting a pathology question. If asked who made you or the site, say the site was founded by Dr. Juan Jose Sanchez Ramirez (always write the name exactly like that, without 'MD' after it) and is built with the pathology community, that you are its assistant, and point to the About page (write the words 'About page' exactly; the app turns them into a link). Never invent other facts about the site, its people or yourself, and never give advice about a real patient.";
 
 /** The answer instruction for each format. */
 export const FORMAT_INSTRUCTION: Record<AnswerFormat, string> = {
@@ -153,8 +278,12 @@ export const FORMAT_INSTRUCTION: Record<AnswerFormat, string> = {
   // answer had wandered through thymic carcinoma and mucicarmine instead.
   marker:
     'Answer as short bullets ("- ") under these bold labels, in this order, each on its own line: "**Positive — normal tissue:**", "**Negative — normal tissue:**", "**Positive — tumors:**", "**Negative — tumors:**". One tissue or tumor per bullet with its key detail (pattern, % if given), and cite every bullet. At most 12 bullets per label, the tumors most often met in practice first. Omit a label the sources say nothing about. No other labels, no tables.',
+  // Never sent: criteria answers are parsed from the WHO passage
+  // (who-criteria.ts), or become a paragraph when no passage lists them.
+  criteria:
+    'Answer as short bullets ("- "), one criterion per bullet, each cited, under "**Essential:**" and "**Desirable:**" on their own lines, in that order. List only what a source itself calls an essential or desirable criterion, under the label that source gives it; never move a criterion between the two, and never add other findings, markers or numbers. Keep each criterion whole, as the source states it: its findings stay on one line, separated by commas; never split one criterion into several bullets or repeat a lead-in ("Immunophenotype:") across bullets. After the last bullet only the Follow-ups line: no summary and no sentence about what the sources leave out. No tables.',
   table:
-    "Answer as a compact Markdown table: at most 5 columns and 8 rows, cells under 10 words, no padding or alignment spaces (rows = items, columns = features). Cite in the cells too; write 'not stated' in any cell the sources do not cover, and in every cell for an item no source covers. Then one sentence that answers the question directly.",
+    "Answer as a compact Markdown table: at most 5 columns and 8 rows, cells under 10 words, no padding or alignment spaces (rows = items, columns = features). Choose the features that best tell the items apart; if the question names no aspect, cover more than one (e.g. typical patient or site, key morphology, key stains, genetics). Never add a feature no source covers for any item. Keep the question's items as the items, in its own words; never swap one for a different diagnosis a source is about (a gray zone lymphoma page is not PMBL). Cite in the cells too; write 'not stated' in any cell the sources do not cover, and in every cell for an item no source covers. Then one sentence that answers the question directly.",
 };
 
 /** The answer model's system prompt: shared rules plus the planned format. */
