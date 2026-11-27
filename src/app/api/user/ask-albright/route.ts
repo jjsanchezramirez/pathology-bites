@@ -11,6 +11,7 @@ import {
 import { budgetMessage, recordCost, reserveQuestion } from "@/features/user/ask-albright/lib/usage";
 import { findInHistory, saveHistory } from "@/features/user/ask-albright/lib/history";
 import { MAX_QUESTION_CHARS } from "@/features/user/ask-albright/lib/router";
+import { COST_CAP_USD } from "@/features/user/ask-albright/lib/cost";
 import { NDJSON, limited, streamResponse } from "@/features/user/ask-albright/lib/http";
 import { requireUser } from "@/shared/utils/api/api-guard";
 import { APIRateLimiter } from "@/shared/utils/api/api-rate-limiter";
@@ -182,11 +183,15 @@ export async function POST(request: NextRequest) {
     return { ...result, historyId };
   };
 
-  if (wantsStream) return streamResponse(askAlbrightStream(body.question), finish);
+  // A failure is charged the worst case: what it spent before failing isn't known.
+  const fail = () => recordCost(auth.userId, COST_CAP_USD);
+
+  if (wantsStream) return streamResponse(askAlbrightStream(body.question), finish, fail);
 
   try {
     return NextResponse.json(await finish(await askAlbright(body.question)));
   } catch (err) {
+    await fail();
     if (err instanceof NoPassagesError) return apiError(err.message, 404);
     log.error("[ask-albright] failed", err);
     return apiError("Dr. Albright couldn't answer that right now", 502);
