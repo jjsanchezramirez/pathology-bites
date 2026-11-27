@@ -125,7 +125,7 @@ const CONTRADICTS: Record<Call, CellClass[]> = {
 export function callLabel(marker: string, call: Call, molecular: boolean): string {
   if (molecular) return call === "negative" ? "Absent" : "Present";
   if (marker === BETA_CATENIN) {
-    if (call === "positive" || call === "aberrant") return "Nuclear (aberrant)";
+    if (call === "positive" || call === "aberrant") return "Aberrant (nuclear)";
     if (call === "negative") return "No nuclear staining";
     if (call === "wildtype" || call === "retained")
       return "Membranous only, no nuclear (normal pattern)";
@@ -168,12 +168,12 @@ const isSeparator = (l: string) => /^\|(\s*:?-{3,}:?\s*\|)+$/.test(l.trim());
 const MOLECULAR =
   /\b(mutation|fusion|amplification|deletion|rearrangement|translocation|v600e|methylation)\b/i;
 
-/** Short in-list forms: "β-catenin (nuclear)" inside "CK7+, SOX2+, β-catenin+". */
+/** Short in-list forms: "β-catenin (aberrant nuclear)" inside "CK7+, SOX2+, β-catenin+". */
 function inlineLabel(name: string, marker: string, call: Call): string {
   if (marker === BETA_CATENIN) {
     const how =
       call === "positive" || call === "aberrant"
-        ? "nuclear"
+        ? "aberrant nuclear"
         : call === "negative"
           ? "no nuclear"
           : call === "loss"
