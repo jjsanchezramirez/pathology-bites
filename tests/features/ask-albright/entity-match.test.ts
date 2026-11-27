@@ -133,6 +133,40 @@ describe("namesakes in different organ systems", () => {
   });
 });
 
+describe("namesakes from the knowledge base's homonym register", () => {
+  const e = (id: string, name: string, organs: string[]) => ({ id, slug: id, name, organs });
+  const idx = buildEntityIndex(
+    [
+      e("onc-sal", "Oncocytoma", ["Head and Neck"]),
+      e("onc-kid", "Oncocytoma of the kidney", ["Urinary and Male Genital"]),
+      e("idc-sg", "Intraductal carcinoma", ["Head and Neck"]),
+      e("idc-pr", "Intraductal carcinoma of the prostate", ["Urinary and Male Genital"]),
+      e("pgl", "Paraganglioma", ["Urinary and Male Genital"]),
+      e("hn-pgl", "Head and neck paraganglioma", ["Head and Neck"]),
+    ],
+    [
+      { entity_id: "idc-pr", term: "intraductal carcinoma", kind: "alias" },
+      { entity_id: "hn-pgl", term: "paraganglioma", kind: "alias" },
+    ],
+    ["Oncocytoma", "Intraductal carcinoma"]
+  );
+  const ids = (q: string) => findEntities(idx, q).map((f) => f.entities.map((x) => x.id).sort());
+
+  it("reads a homonym in the organ the question points to", () => {
+    expect(ids("CK7 in renal oncocytoma")).toEqual([["onc-kid"]]);
+    expect(ids("PIN4 in intraductal carcinoma of the prostate")).toEqual([["idc-pr"]]);
+    expect(ids("Is p63 lost in prostatic intraductal carcinoma?")).toEqual([["idc-pr"]]);
+  });
+  it("without a pointer, profiles each namesake on its own, never pooled", () => {
+    expect(ids("Is S100 positive in intraductal carcinoma?")).toEqual([["idc-sg"], ["idc-pr"]]);
+    // a stem still needs its organ named
+    expect(ids("Is CD117 positive in oncocytoma?")).toEqual([["onc-sal"]]);
+  });
+  it("pools a shared name that is not a homonym, whatever organ the question names", () => {
+    expect(ids("SDHB in renal paraganglioma")).toEqual([["hn-pgl", "pgl"]]);
+  });
+});
+
 describe("entityProfileText", () => {
   const row = (
     name: string,

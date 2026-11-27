@@ -62,12 +62,31 @@ async function allRows<T>(table: string, select: string, kinds?: string[]): Prom
   }
 }
 
+/**
+ * Terms the knowledge base records as naming different diseases. Null when the
+ * table is absent (before its migration): the matcher then keeps the organ
+ * proxy rather than losing the index.
+ */
+async function homonymTerms(): Promise<string[] | null> {
+  const { data, error } = await db()
+    .from("entity_homonyms")
+    .select("term")
+    .order("term")
+    .limit(5000)
+    .abortSignal(AbortSignal.timeout(LOAD_TIMEOUT_MS));
+  if (error) {
+    log.warn("[ask-albright] entity_homonyms unavailable; using the organ proxy", error);
+    return null;
+  }
+  return ((data ?? []) as Array<{ term: string }>).map((r) => r.term);
+}
+
 let index: { at: number; value: Promise<EntityIndex> } | null = null;
 
 function loadIndex(): Promise<EntityIndex> {
   if (index && Date.now() - index.at < INDEX_TTL_MS) return index.value;
   const value = (async () => {
-    const [entities, synonyms, placements] = await Promise.all([
+    const [entities, synonyms, placements, homonyms] = await Promise.all([
       allRows<EntityRow>("entities", "id, slug, name", KINDS),
       allRows<SynonymRow>("entity_synonyms", "id, entity_id, term, kind"),
       // Organ systems decide between namesakes (Oncocytoma: salivary vs kidney).
@@ -75,6 +94,7 @@ function loadIndex(): Promise<EntityIndex> {
         "entity_placements",
         "id, entity_id, organ_system"
       ),
+      homonymTerms(),
     ]);
     const organs = new Map<string, Set<string>>();
     for (const p of placements) {
@@ -82,7 +102,7 @@ function loadIndex(): Promise<EntityIndex> {
       organs.get(p.entity_id)!.add(p.organ_system);
     }
     for (const e of entities) e.organs = [...(organs.get(e.id) ?? [])];
-    return buildEntityIndex(entities, synonyms);
+    return buildEntityIndex(entities, synonyms, homonyms);
   })();
   index = { at: Date.now(), value };
   // A failed load is retried on the next question, not cached for six hours.

@@ -22,7 +22,10 @@
 //      volumes, so "Granular cell tumour" in nine books is nine chapters about
 //      one tumour. 1,010 of the base's own 1,086 curated merges are exactly
 //      this case — the rule reproduces the curators' decisions rather than
-//      guessing past them.
+//      guessing past them. EXCEPT a homonym (`entity_homonyms`, published in
+//      the same artifact): one name for different diseases — Plasmacytoma
+//      9731/3 solitary vs 9734/3 extramedullary. Those rows group by the
+//      knowledge-base entity their slug resolves to, never by name.
 //
 // The canonical name folds a TRAILING parenthetical ("… (MALT lymphoma)",
 // "Acute myeloid leukaemia (AML)"), which is how WHO writes a restatement of
@@ -236,7 +239,12 @@ export interface AggregateResult {
 /**
  * Collapse `matrix` to one diagnosis per tumour. Pure — the input is untouched.
  */
-export function aggregateMatrix(matrix: Matrix, redirects: RedirectMap = {}): AggregateResult {
+export function aggregateMatrix(
+  matrix: Matrix,
+  redirects: RedirectMap = {},
+  homonyms: Iterable<string> = []
+): AggregateResult {
+  const homonymKeys = new Set([...homonyms].map(canonicalName));
   // Pass 1: assign every chapter row a group key.
   const members = new Map<string, Diagnosis[]>();
   let redirectsApplied = 0;
@@ -248,7 +256,8 @@ export function aggregateMatrix(matrix: Matrix, redirects: RedirectMap = {}): Ag
     // The merge target names the group even when the winning row is itself
     // absent from this matrix build — that is what keeps a redirect meaningful.
     const naming = byId.get(resolved) ?? dx;
-    const key = canonicalName(naming.name);
+    const name = canonicalName(naming.name);
+    const key = homonymKeys.has(name) ? `${name}#${resolved}` : name;
     const bucket = members.get(key);
     if (bucket) bucket.push(dx);
     else members.set(key, [dx]);

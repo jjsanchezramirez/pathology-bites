@@ -53,6 +53,12 @@ export interface EntityIndex {
   terms: Map<string, Term>;
   /** Longest term in words, bounding the n-gram scan. */
   maxWords: number;
+  /**
+   * Terms the knowledge base records as naming different diseases
+   * (entity_homonyms), matchNorm'd. Null until that table exists: the matcher
+   * then falls back to the organ-system proxy (`resolveByOrgan`).
+   */
+  homonyms: Set<string> | null;
 }
 
 export interface FoundEntity {
@@ -247,7 +253,11 @@ export function organsNamed(text: string): Set<string> {
 
 const organsOf = (e: EntityRow) => (e.organs ?? []).filter((o) => !NOT_AN_ORGAN.has(o));
 
-export function buildEntityIndex(entities: EntityRow[], synonyms: SynonymRow[]): EntityIndex {
+export function buildEntityIndex(
+  entities: EntityRow[],
+  synonyms: SynonymRow[],
+  homonyms: string[] | null = null
+): EntityIndex {
   const byId = new Map(entities.map((e) => [e.id, e]));
   const terms = new Map<string, Term>();
   let maxWords = 1;
@@ -290,26 +300,63 @@ export function buildEntityIndex(entities: EntityRow[], synonyms: SynonymRow[]):
       !names.some((n) => !mine.has(n.id) && n.norm.startsWith(`${stem} `));
     for (const e of ents) add(stem, e, safe ? "name" : "stem");
   }
-  return { terms, maxWords };
+  const hom = homonyms ? new Set(homonyms.map(matchNorm).filter(Boolean)) : null;
+  return { terms, maxWords, homonyms: hom };
+}
+
+/** At most this many namesakes are profiled separately for one unqualified mention. */
+const MAX_NAMESAKES = 3;
+
+/**
+ * The entities a matched term stands for in this question, as groups: one
+ * group is one disease (its rows are pooled into one profile). Empty when the
+ * term stands for nothing here.
+ *
+ * The knowledge base says which shared names are namesakes (entity_homonyms:
+ * Oncocytoma is a salivary tumour and, of the kidney, a renal one). Same-
+ * disease rows are merged in the knowledge base and junk aliases deleted, so a
+ * term that is NOT a homonym is one disease and pools — including a stem when
+ * the question names its organ. A homonym is read in the organ the question
+ * points to; with no pointer each namesake gets its own group, never pooled.
+ */
+function resolve(
+  term: string,
+  t: Term,
+  context: Set<string>,
+  homonyms: Set<string> | null
+): EntityRow[][] {
+  if (!homonyms) {
+    const legacy = resolveByOrgan(term, t, context);
+    return legacy.length ? [legacy] : [];
+  }
+  const direct = t.candidates.filter((c) => c.how !== "stem");
+  const inContext = (c: Candidate) => organsOf(c.entity).some((o) => context.has(o));
+  if (homonyms.has(term)) {
+    // Each row is a different disease, so each is its own group — even when the
+    // question names both organs (or the namesakes' own organs come back as
+    // context from the first scan, findEntities).
+    const here = context.size ? t.candidates.filter(inContext) : [];
+    const order: Record<How, number> = { name: 0, alias: 1, abbreviation: 2, stem: 3 };
+    return [...(here.length ? here : direct)]
+      .sort((x, y) => order[x.how] - order[y.how])
+      .slice(0, MAX_NAMESAKES)
+      .map((c) => [c.entity]);
+  }
+  const stems = context.size ? t.candidates.filter((c) => c.how === "stem" && inContext(c)) : [];
+  const one = [...direct, ...stems].map((c) => c.entity);
+  return one.length ? [one] : [];
 }
 
 /**
- * The entities a matched term stands for in this question, or none.
- *
- * Namesakes in different organ systems are different tumours (Oncocytoma is
- * salivary; Oncocytoma of the kidney is renal; "oncocytoma" is also an alias
- * of adrenal cortical adenoma). Pooled, the profile mixed them. So when the
- * candidates span organ systems and the question names one — in words
+ * The organ-system proxy, used only until entity_homonyms exists (PR #69).
+ * When the candidates span organ systems and the question names one — in words
  * ("renal") or through another diagnosis it names (chromophobe RCC) — only
- * that organ's entities are kept. Without such a pointer, stems are dropped
- * and names and aliases pool as before ("paraganglioma" takes the urinary and
- * the head and neck entities), except an alias the entity's own name does not
- * contain and that shares no organ with the entities carrying the name:
- * "oncocytoma" for Adrenal cortical adenoma is a variant, not the salivary
- * tumour. Whether two namesakes are one disease or two is not in the data
- * yet; organ is the best proxy it has.
+ * that organ's entities are kept. Without such a pointer, stems are dropped and
+ * names and aliases pool, except an alias the entity's own name does not
+ * contain and that shares no organ with the entities carrying the name
+ * ("oncocytoma" for Adrenal cortical adenoma).
  */
-function resolve(term: string, t: Term, context: Set<string>): EntityRow[] {
+function resolveByOrgan(term: string, t: Term, context: Set<string>): EntityRow[] {
   const organsInPlay = new Set(t.candidates.flatMap((c) => organsOf(c.entity)));
   if (organsInPlay.size > 1 && context.size) {
     const here = t.candidates.filter((c) => organsOf(c.entity).some((o) => context.has(o)));
@@ -346,16 +393,18 @@ function scan(index: EntityIndex, text: string, context: Set<string>): FoundEnti
         const names = new Set(t.candidates.map((c) => matchNorm(c.entity.name).split(" ")[0]));
         if (names.size > 1) continue;
       }
-      const entities = resolve(phrase, t, context);
-      if (!entities.length) continue;
+      const groups = resolve(phrase, t, context, index.homonyms);
+      if (!groups.length) continue;
       for (let k = i; k < i + n; k++) taken[k] = true;
-      const key = entities
-        .map((e) => e.id)
-        .sort()
-        .join();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push({ name: entities[0].name, entities });
+      for (const entities of groups) {
+        const key = entities
+          .map((e) => e.id)
+          .sort()
+          .join();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({ name: entities[0].name, entities });
+      }
     }
   }
   return out;
@@ -380,10 +429,9 @@ function expandAbbreviations(text: string): string {
  * pseudopapillary neoplasm of the pancreas" is one mention, not two).
  * Abbreviations must be written in capitals in the text (GIST, not "gist"),
  * and one that stands for different tumours (AML: leukaemia or
- * angiomyolipoma) is skipped rather than guessed. A name shared across organ
- * systems is read in the organ the question points to (`resolve`): organ
- * words first, then the organ of every other diagnosis it names that sits in
- * one organ system only.
+ * angiomyolipoma) is skipped rather than guessed. A namesake (`resolve`) is
+ * read in the organ the question points to: organ words first, then the organ
+ * of every other diagnosis it names that sits in one organ system only.
  */
 export function findEntities(index: EntityIndex, rawText: string): FoundEntity[] {
   const text = expandAbbreviations(rawText);
