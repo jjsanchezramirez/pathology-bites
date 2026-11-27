@@ -75,7 +75,8 @@ import {
 } from "./visuals";
 import { lookupMarkerAliases } from "./marker-aliases";
 import { markerProfile } from "./kb-marker";
-import { entityProfiles, warmEntityIndex } from "./kb-entity";
+import { namesakeReply } from "./entity-match";
+import { entityProfiles, namesakeQuestion, warmEntityIndex } from "./kb-entity";
 import { checkTables } from "./table-check";
 import {
   CostBudget,
@@ -606,8 +607,12 @@ function* instantReply(
  */
 export async function* askAlbrightStream(
   question: string,
-  /** noCache: always answer fresh and don't store it (the dev eval uses this). */
-  { noCache = false }: { noCache?: boolean } = {}
+  /**
+   * noCache: always answer fresh and don't store it (the dev eval uses this).
+   * clarify: false when the caller already checked for namesakes (the routes
+   * do, before charging a question) — so a slow index never asks after the charge.
+   */
+  { noCache = false, clarify = true }: { noCache?: boolean; clarify?: boolean } = {}
 ): AsyncGenerator<AskEvent> {
   // Jokes come from the curated list: no planner, no search, no model, no cache.
   if (isJoke(question)) {
@@ -662,6 +667,24 @@ export async function* askAlbrightStream(
     const fact = await randomKbFact();
     if (fact) {
       yield* instantReply(t0, fact);
+      return;
+    }
+  }
+
+  // A shared name with no organ ("immunoprofile of oncocytoma": salivary,
+  // kidney or adrenal?) is asked back, not guessed: given both profiles the
+  // model answered for one and dropped the other. No model call, so free.
+  if (clarify) {
+    const ns = await namesakeQuestion(question);
+    if (ns) {
+      yield* instantReply(
+        Date.now(),
+        {
+          ...namesakeReply(ns.term, ns.choices),
+          citations: [],
+        },
+        "Pathology Bites"
+      );
       return;
     }
   }
@@ -1166,7 +1189,7 @@ export async function* askAlbrightStream(
 /** The whole answer at once (the JSON route and the eval use this). */
 export async function askAlbright(
   question: string,
-  opts: { noCache?: boolean } = {}
+  opts: { noCache?: boolean; clarify?: boolean } = {}
 ): Promise<AskResult> {
   for await (const ev of askAlbrightStream(question, opts)) {
     if (ev.type === "done") return ev.result;

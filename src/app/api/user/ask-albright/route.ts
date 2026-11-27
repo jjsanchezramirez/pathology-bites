@@ -9,6 +9,7 @@ import {
   isAskAlbrightAvailable,
 } from "@/features/user/ask-albright/lib/ask";
 import { budgetMessage, recordCost, reserveQuestion } from "@/features/user/ask-albright/lib/usage";
+import { namesakeQuestion } from "@/features/user/ask-albright/lib/kb-entity";
 import { findInHistory, saveHistory } from "@/features/user/ask-albright/lib/history";
 import { MAX_QUESTION_CHARS } from "@/features/user/ask-albright/lib/router";
 import { COST_CAP_USD } from "@/features/user/ask-albright/lib/cost";
@@ -154,6 +155,15 @@ export async function POST(request: NextRequest) {
 
   const minute = perMinute.checkLimit(auth.userId, "ask-albright");
   if (!minute.allowed) return limited(minute.resetTime, "Slow down — try again in a minute.");
+
+  // "Which oncocytoma?" is asked back before a question is reserved: no model
+  // call, not saved, not counted.
+  if (await namesakeQuestion(body.question)) {
+    const free = async (r: AskResult) => ({ ...r, historyId: null });
+    if (wantsStream) return streamResponse(askAlbrightStream(body.question), free);
+    return NextResponse.json(await free(await askAlbright(body.question)));
+  }
+
   // Admins have no per-user daily cap; the global budget still applies to them.
   const reservation = await reserveQuestion(auth.userId, { uncapped: auth.role === "admin" });
   if (!reservation.allowed) {
@@ -186,10 +196,11 @@ export async function POST(request: NextRequest) {
   // A failure is charged the worst case: what it spent before failing isn't known.
   const fail = () => recordCost(auth.userId, COST_CAP_USD);
 
-  if (wantsStream) return streamResponse(askAlbrightStream(body.question), finish, fail);
+  if (wantsStream)
+    return streamResponse(askAlbrightStream(body.question, { clarify: false }), finish, fail);
 
   try {
-    return NextResponse.json(await finish(await askAlbright(body.question)));
+    return NextResponse.json(await finish(await askAlbright(body.question, { clarify: false })));
   } catch (err) {
     await fail();
     if (err instanceof NoPassagesError) return apiError(err.message, 404);

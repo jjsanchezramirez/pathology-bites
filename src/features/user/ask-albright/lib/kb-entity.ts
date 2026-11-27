@@ -12,6 +12,7 @@ import {
   buildEntityIndex,
   entityProfileText,
   findEntities,
+  namesakeChoices,
 } from "./entity-match";
 
 /**
@@ -112,6 +113,27 @@ function loadIndex(): Promise<EntityIndex> {
   return value;
 }
 
+/**
+ * The namesakes to ask the user to choose between, when the question uses a
+ * shared name without saying which organ (namesakeChoices). Null when there is
+ * nothing to ask, or the index can't be had within `waitMs`.
+ */
+export async function namesakeQuestion(
+  question: string,
+  waitMs = LOAD_TIMEOUT_MS
+): Promise<ReturnType<typeof namesakeChoices>> {
+  try {
+    const idx = await Promise.race([
+      loadIndex(),
+      new Promise<null>((r) => setTimeout(() => r(null), waitMs)),
+    ]);
+    return idx ? namesakeChoices(idx, question) : null;
+  } catch (err) {
+    log.warn("[ask-albright] namesake check failed; answering without it", err);
+    return null;
+  }
+}
+
 /** Start loading names before the first question needs them. */
 export function warmEntityIndex(): void {
   void loadIndex().catch(() => {});
@@ -167,7 +189,7 @@ export async function entityProfiles(text: string, max: number): Promise<EntityP
     return found.flatMap((f) => {
       const mine = new Set(f.entities.map((e) => e.id));
       const own = rows.filter((r) => mine.has(r.entity_id));
-      const text = entityProfileText(f.name, own);
+      const text = entityProfileText(f.name, own, f.namesakeOf);
       if (!text) return [];
       const slug = f.entities[0].slug;
       return [
