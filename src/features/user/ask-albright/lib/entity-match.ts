@@ -66,6 +66,12 @@ export interface FoundEntity {
   name: string;
   /** Every entity carrying that name or synonym (one tumour across WHO volumes). */
   entities: EntityRow[];
+  /**
+   * Set when the question used a homonym without saying which organ: the
+   * shared term ("oncocytoma"). The entity is one of several unrelated
+   * diseases answering to it, profiled apart.
+   */
+  namesakeOf?: string;
 }
 
 /** Lowercase, British spellings folded, punctuation to spaces. */
@@ -333,11 +339,14 @@ function resolve(
   const inContext = (c: Candidate) => organsOf(c.entity).some((o) => context.has(o));
   if (homonyms.has(term)) {
     // Each row is a different disease, so each is its own group — even when the
-    // question names both organs (or the namesakes' own organs come back as
-    // context from the first scan, findEntities).
+    // question names both organs. Without a pointer the stems count too: bare
+    // "oncocytoma" is the kidney tumour as often as the salivary one, and
+    // leaving "Oncocytoma of the kidney" out sent the answer to the salivary
+    // and adrenal profiles with renal markers copied in from the literature.
+    // A stem is still named for the term, so it ranks above an alias.
     const here = context.size ? t.candidates.filter(inContext) : [];
-    const order: Record<How, number> = { name: 0, alias: 1, abbreviation: 2, stem: 3 };
-    return [...(here.length ? here : direct)]
+    const order: Record<How, number> = { name: 0, stem: 1, alias: 2, abbreviation: 3 };
+    return [...(here.length ? here : t.candidates)]
       .sort((x, y) => order[x.how] - order[y.how])
       .slice(0, MAX_NAMESAKES)
       .map((c) => [c.entity]);
@@ -395,6 +404,7 @@ function scan(index: EntityIndex, text: string, context: Set<string>): FoundEnti
       }
       const groups = resolve(phrase, t, context, index.homonyms);
       if (!groups.length) continue;
+      const namesakeOf = groups.length > 1 ? phrase : undefined;
       for (let k = i; k < i + n; k++) taken[k] = true;
       for (const entities of groups) {
         const key = entities
@@ -403,7 +413,7 @@ function scan(index: EntityIndex, text: string, context: Set<string>): FoundEnti
           .join();
         if (seen.has(key)) continue;
         seen.add(key);
-        out.push({ name: entities[0].name, entities });
+        out.push({ name: entities[0].name, entities, ...(namesakeOf && { namesakeOf }) });
       }
     }
   }
@@ -439,6 +449,9 @@ export function findEntities(index: EntityIndex, rawText: string): FoundEntity[]
   const first = scan(index, text, context);
   const fromMentions = new Set(context);
   for (const f of first) {
+    // Namesakes found for want of a pointer point nowhere: their organs would
+    // steer every other name in the question.
+    if (f.namesakeOf) continue;
     const organs = new Set(f.entities.flatMap(organsOf));
     if (organs.size === 1) fromMentions.add([...organs][0]);
   }
@@ -474,7 +487,11 @@ const PATTERN_LINE: Record<"loss" | "retained" | "aberrant" | "wildtype", string
  * alterations, best-sourced first, each marker once. Null when the knowledge
  * base has nothing for it.
  */
-export function entityProfileText(name: string, rows: ProfileRow[]): string | null {
+export function entityProfileText(
+  name: string,
+  rows: ProfileRow[],
+  namesakeOf?: string
+): string | null {
   const ranked = [...rows].sort(
     (a, b) => (b.sources ?? 0) - (a.sources ?? 0) || (b.pooled_pct ?? -1) - (a.pooled_pct ?? -1)
   );
@@ -537,6 +554,9 @@ export function entityProfileText(name: string, rows: ProfileRow[]): string | nu
     // read as a verdict, "calretinin positive" in both mesothelioma subtypes
     // became "equally reliable in both".
     `${name} in the Pathology Bites knowledge base (WHO-derived; lists where each marker has been reported, not how often or how strongly; for frequency and reliability use the other sources).`,
+    namesakeOf
+      ? `"${namesakeOf}" also names other, unrelated tumours in other organs; this profile is ${name} only. Answer each one separately, saying which organ it is, and never move a marker from one to another.`
+      : "",
     lists.positive.length ? `Positive: ${lists.positive.join("; ")}.` : "",
     lists.negative.length ? `Negative: ${lists.negative.join("; ")}.` : "",
     ...(["loss", "retained", "aberrant", "wildtype"] as const).map((k) =>

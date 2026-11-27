@@ -143,8 +143,10 @@ describe("namesakes from the knowledge base's homonym register", () => {
       e("idc-pr", "Intraductal carcinoma of the prostate", ["Urinary and Male Genital"]),
       e("pgl", "Paraganglioma", ["Urinary and Male Genital"]),
       e("hn-pgl", "Head and neck paraganglioma", ["Head and Neck"]),
+      e("aca", "Adrenal cortical adenoma", ["Endocrine and Neuroendocrine"]),
     ],
     [
+      { entity_id: "aca", term: "oncocytoma", kind: "alias" },
       { entity_id: "idc-pr", term: "intraductal carcinoma", kind: "alias" },
       { entity_id: "hn-pgl", term: "paraganglioma", kind: "alias" },
     ],
@@ -159,8 +161,20 @@ describe("namesakes from the knowledge base's homonym register", () => {
   });
   it("without a pointer, profiles each namesake on its own, never pooled", () => {
     expect(ids("Is S100 positive in intraductal carcinoma?")).toEqual([["idc-sg"], ["idc-pr"]]);
-    // a stem still needs its organ named
-    expect(ids("Is CD117 positive in oncocytoma?")).toEqual([["onc-sal"]]);
+    // a namesake reached through its site-qualified name counts, ahead of an alias
+    expect(ids("What is the immunoprofile of oncocytoma?")).toEqual([
+      ["onc-sal"],
+      ["onc-kid"],
+      ["aca"],
+    ]);
+  });
+  it("flags namesakes found without a pointer, and lets them steer nothing else", () => {
+    const found = findEntities(idx, "oncocytoma vs paraganglioma");
+    expect(found.filter((f) => f.namesakeOf === "oncocytoma").map((f) => f.entities[0].id)).toEqual(
+      ["onc-sal", "onc-kid", "aca"]
+    );
+    expect(found.find((f) => f.name === "Paraganglioma")?.namesakeOf).toBeUndefined();
+    expect(findEntities(idx, "CK7 in renal oncocytoma")[0].namesakeOf).toBeUndefined();
   });
   it("pools a shared name that is not a homonym, whatever organ the question names", () => {
     expect(ids("SDHB in renal paraganglioma")).toEqual([["hn-pgl", "pgl"]]);
@@ -248,5 +262,16 @@ describe("entityProfileText", () => {
 
   it("returns null when the knowledge base has nothing usable", () => {
     expect(entityProfileText("X", [row("Ki-67", "protein", "index")])).toBeNull();
+  });
+  it("tells the model a namesake's profile is that tumour only", () => {
+    const text = entityProfileText(
+      "Oncocytoma of the kidney",
+      [row("CD117", "protein", "positive")],
+      "oncocytoma"
+    )!;
+    expect(text).toContain('"oncocytoma" also names other, unrelated tumours');
+    expect(entityProfileText("X", [row("CD117", "protein", "positive")])).not.toContain(
+      "also names"
+    );
   });
 });

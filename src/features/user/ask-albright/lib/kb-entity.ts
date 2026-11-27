@@ -167,7 +167,7 @@ export async function entityProfiles(text: string, max: number): Promise<EntityP
     return found.flatMap((f) => {
       const mine = new Set(f.entities.map((e) => e.id));
       const own = rows.filter((r) => mine.has(r.entity_id));
-      const text = entityProfileText(f.name, own);
+      const text = entityProfileText(f.name, own, f.namesakeOf);
       if (!text) return [];
       const slug = f.entities[0].slug;
       return [
