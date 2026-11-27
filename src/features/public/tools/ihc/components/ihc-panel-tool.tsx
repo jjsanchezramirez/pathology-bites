@@ -1499,12 +1499,17 @@ export function IhcPanelTool() {
       // The merge map is an optional refinement, so it must never delay or
       // fail the matrix: a rejected fetch resolves to an empty map and the
       // aggregation falls back to grouping by canonical name alone.
-      const groups: Promise<RedirectMap> = entityGroupsUrl
+      type Groups = { redirects: RedirectMap; homonyms: string[] };
+      const none: Groups = { redirects: {}, homonyms: [] };
+      const groups: Promise<Groups> = entityGroupsUrl
         ? fetch(entityGroupsUrl)
             .then((r) => (r.ok ? r.json() : null))
-            .then((g: { redirects?: RedirectMap } | null) => g?.redirects ?? {})
-            .catch(() => ({}))
-        : Promise.resolve({});
+            .then((g: Partial<Groups> | null) => ({
+              redirects: g?.redirects ?? {},
+              homonyms: g?.homonyms ?? [],
+            }))
+            .catch(() => none)
+        : Promise.resolve(none);
 
       Promise.all([
         fetch(matrixUrl).then((r) =>
@@ -1512,7 +1517,7 @@ export function IhcPanelTool() {
         ),
         groups,
       ])
-        .then(([loaded, redirects]) => {
+        .then(([loaded, { redirects, homonyms }]) => {
           if (cancelled) return;
           // One antibody per marker: `cytoplasmic NPM1` and `abnormal
           // cytoplasmic NPM1` are NPM1 with a pattern, and the picker was
@@ -1522,7 +1527,7 @@ export function IhcPanelTool() {
           // tool shows one row per tumour. Without this, a search for a common
           // entity returned it once per book that describes it — seven rows of
           // extranodal marginal zone lymphoma, all with identical support.
-          const { matrix: merged, idMap: map } = aggregateMatrix(raw, redirects);
+          const { matrix: merged, idMap: map } = aggregateMatrix(raw, redirects, homonyms);
           // Syndromes are excluded from every search and every ranking — see
           // withoutSyndromes(). Applied to BOTH views so the Differential's
           // per-volume picker cannot offer one either.

@@ -227,3 +227,35 @@ describe("aggregateMatrix", () => {
     expect(matrix.diagnoses.length).toBeGreaterThan(0);
   });
 });
+
+describe("homonyms are never merged by name", () => {
+  // Plasmacytoma is two diseases (9731/3 solitary of bone, 9734/3 extramedullary)
+  // under one WHO name; the eye-and-orbit chapter is the head-and-neck entity.
+  const matrix = (): Matrix => ({
+    version: 3,
+    generatedAt: "",
+    markers: [{ id: "cd138", name: "CD138" }],
+    diagnoses: [
+      dx("plasmacytoma--head-and-neck", "Plasmacytoma", "Head and Neck", "HN"),
+      dx("plasmacytoma--eye-and-orbit", "Plasmacytoma", "Eye and Orbit", "Eye"),
+      dx("plasmacytoma--haematolymphoid", "Plasmacytoma", "Haematolymphoid", "Haem"),
+    ],
+    references: {},
+    cells: [
+      cell("plasmacytoma--head-and-neck", "cd138", "positive"),
+      cell("plasmacytoma--eye-and-orbit", "cd138", "positive"),
+      cell("plasmacytoma--haematolymphoid", "cd138", "positive"),
+    ],
+  });
+  const redirects = { "plasmacytoma--eye-and-orbit": "plasmacytoma--head-and-neck" };
+
+  it("pools a shared name when it is not a homonym", () => {
+    expect(aggregateMatrix(matrix(), redirects).matrix.diagnoses).toHaveLength(1);
+  });
+  it("groups a homonym by the entity each row resolves to", () => {
+    const { matrix: merged, idMap } = aggregateMatrix(matrix(), redirects, ["Plasmacytoma"]);
+    expect(merged.diagnoses).toHaveLength(2);
+    expect(idMap["plasmacytoma--eye-and-orbit"]).toBe(idMap["plasmacytoma--head-and-neck"]);
+    expect(idMap["plasmacytoma--haematolymphoid"]).not.toBe(idMap["plasmacytoma--head-and-neck"]);
+  });
+});
