@@ -97,6 +97,42 @@ describe("site-qualified names answer to their stem", () => {
   });
 });
 
+describe("namesakes in different organ systems", () => {
+  const e = (id: string, name: string, organs: string[]) => ({ id, slug: id, name, organs });
+  const idx = buildEntityIndex(
+    [
+      e("onc-sal", "Oncocytoma", ["Head and Neck"]),
+      e("onc-kid", "Oncocytoma of the kidney", ["Urinary and Male Genital"]),
+      e("aca", "Adrenal cortical adenoma", ["Endocrine and Neuroendocrine"]),
+      e("chrcc", "Chromophobe renal cell carcinoma", ["Urinary and Male Genital"]),
+      e("pgl", "Paraganglioma", ["Urinary and Male Genital"]),
+      e("hn-pgl", "Head and neck paraganglioma", ["Head and Neck", "Endocrine and Neuroendocrine"]),
+      e("pgl-th", "Paraganglioma of the thorax", ["Thoracic"]),
+    ],
+    [
+      { entity_id: "aca", term: "oncocytoma", kind: "alias" },
+      { entity_id: "hn-pgl", term: "paraganglioma", kind: "alias" },
+    ]
+  );
+  const ids = (q: string) => findEntities(idx, q).map((f) => f.entities.map((x) => x.id).sort());
+
+  it("reads a shared name in the organ another named diagnosis sits in", () => {
+    expect(ids("chromophobe RCC vs oncocytoma")).toEqual([["chrcc"], ["onc-kid"]]);
+    expect(ids("oncocytoma vs chromophobe renal cell carcinoma")).toEqual([["chrcc"], ["onc-kid"]]);
+  });
+  it("reads it in the organ the question names in words", () => {
+    expect(ids("CK7 in renal oncocytoma")).toEqual([["onc-kid"]]);
+    expect(ids("adrenal oncocytoma")).toEqual([["aca"]]);
+    expect(ids("thoracic paraganglioma")).toEqual([["pgl-th"]]);
+  });
+  it("without a pointer, keeps the name's owner and drops an unrelated alias in another organ", () => {
+    expect(ids("Is CD117 positive in oncocytoma?")).toEqual([["onc-sal"]]);
+  });
+  it("still pools an alias the entity's own name contains", () => {
+    expect(ids("SDHB in paraganglioma")).toEqual([["hn-pgl", "pgl"]]);
+  });
+});
+
 describe("entityProfileText", () => {
   const row = (
     name: string,

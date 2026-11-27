@@ -67,10 +67,21 @@ let index: { at: number; value: Promise<EntityIndex> } | null = null;
 function loadIndex(): Promise<EntityIndex> {
   if (index && Date.now() - index.at < INDEX_TTL_MS) return index.value;
   const value = (async () => {
-    const [entities, synonyms] = await Promise.all([
+    const [entities, synonyms, placements] = await Promise.all([
       allRows<EntityRow>("entities", "id, slug, name", KINDS),
       allRows<SynonymRow>("entity_synonyms", "id, entity_id, term, kind"),
+      // Organ systems decide between namesakes (Oncocytoma: salivary vs kidney).
+      allRows<{ entity_id: string; organ_system: string }>(
+        "entity_placements",
+        "id, entity_id, organ_system"
+      ),
     ]);
+    const organs = new Map<string, Set<string>>();
+    for (const p of placements) {
+      if (!organs.has(p.entity_id)) organs.set(p.entity_id, new Set());
+      organs.get(p.entity_id)!.add(p.organ_system);
+    }
+    for (const e of entities) e.organs = [...(organs.get(e.id) ?? [])];
     return buildEntityIndex(entities, synonyms);
   })();
   index = { at: Date.now(), value };
