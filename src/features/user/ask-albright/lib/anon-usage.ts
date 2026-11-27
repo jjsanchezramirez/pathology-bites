@@ -12,9 +12,10 @@ import { type BudgetPeriod, asPeriod } from "./usage";
  * Free questions for signed-out visitors (the homepage teaser), in
  * public.ask_albright_anon_usage. Three buckets must all have room:
  *
- * - Browser: ASK_ALBRIGHT_ANON_FREE questions, lifetime (default 3), keyed by
- *   an httpOnly cookie the status call issues. This is the number the visitor
- *   sees ("2 free questions left").
+ * - Browser: ASK_ALBRIGHT_ANON_FREE questions per UTC day (default 3), keyed
+ *   by an httpOnly cookie the status call issues. This is the number the
+ *   visitor sees ("2 free questions left today"). The row's `day` says which
+ *   day its count belongs to; a count from an earlier day is spent.
  * - Network: ASK_ALBRIGHT_ANON_IP_DAILY per IP per UTC day (default 10) — the
  *   backstop for clearing cookies. Higher than 3 on purpose: a hospital puts
  *   every pathologist behind one address. IPv6 is counted per /64 (one
@@ -111,11 +112,13 @@ export async function anonRemaining(visitor: string | null): Promise<number> {
   try {
     const { data, error } = await db()
       .from("ask_albright_anon_usage")
-      .select("questions")
+      .select("questions, day")
       .eq("bucket", visitorBucket(visitor))
       .maybeSingle();
     if (error) throw error;
-    return Math.max(0, free - (data?.questions ?? 0));
+    // Yesterday's count doesn't carry over: the allowance is per UTC day.
+    const used = data && data.day === utcDay() ? data.questions : 0;
+    return Math.max(0, free - used);
   } catch (err) {
     log.warn("[ask-albright] anon status lookup failed", err);
     return free;

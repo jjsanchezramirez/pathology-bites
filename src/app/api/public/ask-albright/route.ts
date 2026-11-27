@@ -81,7 +81,7 @@ function withVisitorCookie<T extends Response>(res: T, visitor: string): T {
  *   get:
  *     summary: Free-question status for a signed-out visitor
  *     description: >
- *       Returns how many free Ask Dr. Albright questions this browser has left,
+ *       Returns how many free Ask Dr. Albright questions this browser has left today,
  *       and sets the visitor cookie the POST requires. `signedIn: true` means
  *       the caller has a session and should use /api/user/ask-albright instead.
  *     tags:
@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
  *     summary: Ask Dr. Albright as a signed-out visitor (a few free questions)
  *     description: >
  *       Same answer as /api/user/ask-albright (send `Accept: application/x-ndjson`
- *       to stream), plus `remaining`: free questions this browser has left.
+ *       to stream), plus `remaining`: free questions this browser has left today.
  *       Requires the visitor cookie from GET and a same-origin request. Declined
  *       questions, "nothing found" and failures don't use up a free question.
  *     tags:
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
       return apiError("Dr. Albright is unavailable right now", 503);
     const message =
       reservation.reason === "visitor"
-        ? "You've used your free questions. Sign up free to keep asking."
+        ? "You've used today's free questions. Come back tomorrow, or sign up free to keep asking."
         : reservation.reason === "ip"
           ? "Free questions from your network are used up for today. Sign up free to keep asking."
           : reservation.period === "day" || !reservation.period
