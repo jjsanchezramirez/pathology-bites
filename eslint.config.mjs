@@ -52,14 +52,14 @@ const eslintConfig = [
             {
               name: "sonner",
               message:
-                "Please use '@/shared/utils/toast' instead of importing directly from 'sonner'. This ensures consistent duplicate prevention and better toast management.",
+                "Please use '@/shared/utils/ui/toast' instead of importing directly from 'sonner'. This ensures consistent duplicate prevention and better toast management.",
             },
           ],
           patterns: [
             {
               group: ["**/sonner"],
               message:
-                "Please use '@/shared/utils/toast' instead of importing directly from 'sonner'.",
+                "Please use '@/shared/utils/ui/toast' instead of importing directly from 'sonner'.",
             },
           ],
         },
@@ -96,8 +96,8 @@ const eslintConfig = [
       "dev/**",
       "public/ffmpeg/**",
       "src/app/test/**",
-      // Allow direct sonner imports only in utility wrapper, UI component, and root layout
-      "src/shared/utils/toast.ts",
+      // Allow direct sonner imports in the UI component and root layout (the toast wrapper,
+      // src/shared/utils/ui/toast.ts, uses an inline disable so the rest of its rules still apply)
       "src/shared/components/ui/sonner.tsx",
       "src/app/layout.tsx",
     ],
