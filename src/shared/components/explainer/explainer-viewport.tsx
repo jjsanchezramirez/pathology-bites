@@ -359,6 +359,19 @@ function TextOverlayElement({ overlay }: { overlay: TextOverlay }) {
     : overlay.text;
   const elementOpacity = isLetterByLetter ? (computedOpacity > 0 ? 1 : 0) : computedOpacity;
 
+  // Same box as the editor: the element's full width, text aligned inside it,
+  // and a background (if any) hugging the text rather than filling the box.
+  const boxed = overlay.maxWidth != null;
+  const chip: React.CSSProperties = overlay.backgroundColor
+    ? {
+        backgroundColor: overlay.backgroundColor,
+        padding: "0.4cqw 0.8cqw",
+        borderRadius: "0.4cqw",
+        boxDecorationBreak: "clone",
+        WebkitBoxDecorationBreak: "clone",
+      }
+    : {};
+
   return (
     <div
       className="absolute pointer-events-none"
@@ -370,12 +383,12 @@ function TextOverlayElement({ overlay }: { overlay: TextOverlay }) {
         fontWeight:
           overlay.fontWeight === "semibold" ? 600 : overlay.fontWeight === "bold" ? 700 : 400,
         color: overlay.color,
-        backgroundColor: overlay.backgroundColor,
-        maxWidth: overlay.maxWidth ? `${overlay.maxWidth}%` : undefined,
+        // An explicit width: without one, an absolutely positioned box can't be
+        // wider than the room right of its centre point, so text near the right
+        // edge wrapped far narrower than its box and ran into the text below.
+        width: boxed ? `${overlay.maxWidth}%` : undefined,
         textAlign: overlay.textAlign || "left",
         opacity: elementOpacity,
-        padding: overlay.backgroundColor ? "0.4cqw 0.8cqw" : undefined,
-        borderRadius: overlay.backgroundColor ? "0.4cqw" : undefined,
         whiteSpace: "pre-wrap",
         transition: "none",
         textShadow:
@@ -383,9 +396,10 @@ function TextOverlayElement({ overlay }: { overlay: TextOverlay }) {
             ? "0 0.1cqw 0.3cqw rgba(0,0,0,0.8), 0 0 0.8cqw rgba(0,0,0,0.5)"
             : undefined,
         zIndex: 20,
+        ...(boxed ? {} : chip),
       }}
     >
-      {displayText}
+      {boxed && overlay.backgroundColor ? <span style={chip}>{displayText}</span> : displayText}
     </div>
   );
 }
@@ -405,7 +419,11 @@ function SvgOverlayItem({ overlay }: { overlay: SvgOverlayElement }) {
         transform: `translate(-50%, -50%) rotate(${overlay.rotation}deg) scale(${cs})`,
         opacity: computedOpacity,
         transition: "none",
-        zIndex: 18,
+        // A picture placed on the slide sits under the annotations (rings at 3,
+        // spotlight dimming at 5), as it does in the editor's list order; at 18 it
+        // hid every ring drawn on it and escaped every spotlight. SVG assets
+        // (icons, the mascot) stay on top.
+        zIndex: overlay.overlayKind === "image" ? 2 : 18,
       }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}

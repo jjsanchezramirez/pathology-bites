@@ -55,8 +55,22 @@ Code: `src/shared/lesson/clean.ts` (drawing items),
 `src/shared/components/explainer/clean-layer.tsx` (player and editor),
 `src/shared/lesson/templates.ts` (scene → slide).
 
+## Everything fits
+
+A template never lets text overflow or run off the frame:
+
+- **Headings** shrink to stay on at most two lines above the content.
+- **Crowded scenes** (long labels, six rungs, five long points) are rebuilt with their text scaled
+  down, step by step to 60%, until the content's lowest edge is inside the frame
+  (`fitScene` in `src/shared/lesson/templates.ts`).
+- **On screen**, each text is held to its box and shrinks (down to half size) if it still doesn't
+  fit, so an estimate that comes out short costs a little size, never an overlap
+  (`clean-layer.tsx`, search in `src/shared/lesson/fit.ts`). Editing a template text in the editor
+  behaves the same way: make the box bigger to make the text bigger.
+
+The player's controls hide while a lesson plays, so nothing at the bottom of a slide is covered.
+
 ## Known limits
 
 - Zooms move the whole frame (classic camera), not just the picture, so
   callouts beside the picture leave the frame while zoomed.
-- Text heights in templates are estimated, so a long label can need a nudge.
