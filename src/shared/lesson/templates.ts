@@ -9,6 +9,13 @@
 //
 // Sizes are in percent of the frame width, and converted to the element rect's
 // units (x and width in percent of width, y and height in percent of height).
+//
+// Everything fits the frame: text heights are measured (approximately, without
+// a canvas), a heading shrinks to stay on at most two lines above the content,
+// and a scene whose content would run off the bottom is rebuilt with its text
+// scaled down until it fits (see slideFromScene). The renderer then holds each
+// text to its box (clean-layer.tsx), so an estimate that comes out short costs
+// a little size, never an overlap.
 
 import { autoTimeLesson, autoTimeSlide } from "./auto-timing";
 import type { Beat, ImageRegion, Scene, ScriptLesson, TemplateKind } from "./script/types";
@@ -197,9 +204,23 @@ function badge(
   return [disc, num.el];
 }
 
+/** Room for the heading: from HEADING_TOP to just above the content. */
+const HEADING_ROOM = CONTENT_TOP - HEADING_TOP - 0.5;
+const HEADING_SIZES = [3.3, 3.0, 2.7, 2.45, 2.2];
+
+/** The heading at the largest size that fits its band (at most two lines). */
+export function headingSize(text: string, width = 100 - 2 * PAD_X): number {
+  for (const size of HEADING_SIZES) {
+    const lines = estimateLines(text, size, 600, width);
+    if (lines <= 2 && lines * size * 1.15 <= HEADING_ROOM) return size;
+  }
+  return HEADING_SIZES[HEADING_SIZES.length - 1];
+}
+
 function headingEl(text: string | undefined): SlideElement[] {
   if (!text?.trim()) return [];
-  return [textEl(text, PAD_X, HEADING_TOP, 100 - 2 * PAD_X, 3.3, 600, T.ink, "build", 1.15).el];
+  const size = headingSize(text);
+  return [textEl(text, PAD_X, HEADING_TOP, 100 - 2 * PAD_X, size, 600, T.ink, "build", 1.15).el];
 }
 
 // ---- Scenes → slides ----------------------------------------------------------
@@ -216,34 +237,36 @@ function link(byBeat: Map<number, string[]>, k: number, els: SlideElement[]) {
   byBeat.set(k, list);
 }
 
-function buildTitle(scene: Scene): Built {
+function buildTitle(scene: Scene, s = 1): Built {
   const byBeat = new Map<number, string[]>();
   const left = PAD_X + 2;
   const width = 100 - left - (PAD_X + 6);
   const head = scene.heading ?? "";
-  const headH = estimateLines(head, 5.4, 600, width) * 5.4 * 1.08;
+  const headSize = 5.4 * s;
+  const subSize = 2.4 * s;
+  const headH = estimateLines(head, headSize, 600, width) * headSize * 1.08;
   const subs = scene.beats
     .map((b, k) => ({ b, k }))
     .filter(({ b }) => b.text?.trim())
     .map(({ b, k }) => ({
       k,
       text: b.text!,
-      h: estimateLines(b.text!, 2.4, 400, width) * 2.4 * 1.3,
+      h: estimateLines(b.text!, subSize, 400, width) * subSize * 1.3,
     }));
-  const total = 0.4 + 2.2 + headH + subs.reduce((n, s) => n + 1.6 + s.h, 0);
+  const total = 0.4 + 2.2 + headH + subs.reduce((n, sub) => n + 1.6 + sub.h, 0);
   let y = (STAGE_H - total) / 2;
   const elements: SlideElement[] = [
     boxEl(left, y, 6, 0.4, { fill: T.accent, radius: 0.2 }, "build"),
   ];
   y += 0.4 + 2.2;
-  elements.push(textEl(head, left, y, width, 5.4, 600, T.ink, "build", 1.08).el);
+  elements.push(textEl(head, left, y, width, headSize, 600, T.ink, "build", 1.08).el);
   y += headH;
-  for (const s of subs) {
+  for (const sub of subs) {
     y += 1.6;
-    const t = textEl(s.text, left, y, width, 2.4, 400, T.inkSoft, "build", 1.3);
+    const t = textEl(sub.text, left, y, width, subSize, 400, T.inkSoft, "build", 1.3);
     elements.push(t.el);
-    link(byBeat, s.k, [t.el]);
-    y += s.h;
+    link(byBeat, sub.k, [t.el]);
+    y += sub.h;
   }
   elements.push(
     textEl("Pathology Bites", left, STAGE_H - 4 - 1.44, width, 1.2, 600, T.accent, "build", 1.2).el
@@ -285,7 +308,7 @@ export function cameraFor(
   };
 }
 
-function buildImage(scene: Scene): Built {
+function buildImage(scene: Scene, s = 1): Built {
   const byBeat = new Map<number, string[]>();
   const { boxW, boxH } = imageBox(scene);
   const elements: SlideElement[] = [];
@@ -407,14 +430,14 @@ function buildImage(scene: Scene): Built {
       textX,
       y,
       textW,
-      1.9,
+      1.9 * s,
       num == null ? 600 : 400,
       T.ink,
       "build",
       1.28
     );
     const det = b.detail
-      ? textEl(b.detail, textX, y + main.height + 0.3, textW, 1.5, 400, T.inkSoft, "build", 1.2)
+      ? textEl(b.detail, textX, y + main.height + 0.3, textW, 1.5 * s, 400, T.inkSoft, "build", 1.2)
       : null;
     const textH = main.height + (det ? 0.3 + det.height : 0);
     const row: SlideElement[] = [];
@@ -447,12 +470,12 @@ function buildImage(scene: Scene): Built {
     if (det) row.push(det.el);
     elements.push(...row);
     link(byBeat, k, row);
-    y += Math.max(num != null ? 2.35 : 0, textH) + 1.5;
+    y += Math.max(num != null ? 2.35 : 0, textH) + 1.5 * s;
   });
   return { elements, byBeat };
 }
 
-function buildCompare(scene: Scene): Built {
+function buildCompare(scene: Scene, s = 1): Built {
   const byBeat = new Map<number, string[]>();
   const elements: SlideElement[] = [...headingEl(scene.heading)];
   const hasImages = scene.beats.some((b) => b.side && b.image?.url);
@@ -469,10 +492,9 @@ function buildCompare(scene: Scene): Built {
     const image = rows.find(({ b }) => b.image?.url)?.b.image;
     const imgH = image ? panelW / (16 / 9) + 1.4 : 0;
     const hs = rows.map(({ b }, idx) => {
-      const t = b.text
-        ? estimateLines(b.text, idx === 0 ? 2.5 : 2, 600, textW) * (idx === 0 ? 2.5 : 2) * 1.2
-        : 0;
-      const d = b.detail ? 0.6 + estimateLines(b.detail, 2, 400, textW) * 2 * 1.32 : 0;
+      const size = (idx === 0 ? 2.5 : 2) * s;
+      const t = b.text ? estimateLines(b.text, size, 600, textW) * size * 1.2 : 0;
+      const d = b.detail ? 0.6 + estimateLines(b.detail, 2 * s, 400, textW) * 2 * s * 1.32 : 0;
       return t + d;
     });
     const content = hs.reduce((n, h, idx) => n + h + (idx > 0 ? 1.2 : 0), 0);
@@ -510,7 +532,7 @@ function buildCompare(scene: Scene): Built {
     let ty = y + padY;
     rows.forEach(({ b, k }, idx) => {
       if (idx > 0) ty += 1.2;
-      const size = idx === 0 ? 2.5 : 2;
+      const size = (idx === 0 ? 2.5 : 2) * s;
       const row: SlideElement[] = [];
       let h = 0;
       if (b.text) {
@@ -534,7 +556,7 @@ function buildCompare(scene: Scene): Built {
           x + padX,
           ty + h + (h ? 0.6 : 0),
           panelW - 2 * padX,
-          2,
+          2 * s,
           400,
           T.ink,
           "build",
@@ -552,7 +574,7 @@ function buildCompare(scene: Scene): Built {
   let y = CONTENT_TOP + rowH + 2.6;
   scene.beats.forEach((b, k) => {
     if (b.side || !b.text?.trim()) return;
-    const t = textEl(b.text, PAD_X, y, 100 - 2 * PAD_X, 2.3, 600, T.ink, "build", 1.25);
+    const t = textEl(b.text, PAD_X, y, 100 - 2 * PAD_X, 2.3 * s, 600, T.ink, "build", 1.25);
     const row: SlideElement[] = [t.el];
     let h = t.height;
     if (b.detail) {
@@ -561,7 +583,7 @@ function buildCompare(scene: Scene): Built {
         PAD_X,
         y + h + 0.4,
         100 - 2 * PAD_X,
-        1.8,
+        1.8 * s,
         400,
         T.inkSoft,
         "build",
@@ -577,11 +599,11 @@ function buildCompare(scene: Scene): Built {
   return { elements, byBeat };
 }
 
-function buildLadder(scene: Scene): Built {
+function buildLadder(scene: Scene, s = 1): Built {
   const byBeat = new Map<number, string[]>();
   const elements: SlideElement[] = [...headingEl(scene.heading)];
   const rungs = scene.beats.map((b, k) => ({ b, k })).filter(({ b }) => b.text?.trim());
-  const d = rungs.length <= 4 ? 1 : rungs.length === 5 ? 0.92 : 0.84;
+  const d = (rungs.length <= 4 ? 1 : rungs.length === 5 ? 0.92 : 0.84) * s;
   const width = 100 - 2 * PAD_X;
   const circleD = 2.8 * d;
   const textX = PAD_X + 1.4 + circleD + 1.6;
@@ -629,7 +651,7 @@ function buildLadder(scene: Scene): Built {
   return { elements, byBeat };
 }
 
-function buildTakeHome(scene: Scene): Built {
+function buildTakeHome(scene: Scene, s = 1): Built {
   const byBeat = new Map<number, string[]>();
   const elements: SlideElement[] = [...headingEl(scene.heading)];
   const left = PAD_X + 0.4;
@@ -639,23 +661,23 @@ function buildTakeHome(scene: Scene): Built {
   let y = CONTENT_TOP + 2;
   scene.beats.forEach((b, k) => {
     if (!b.text?.trim()) return;
-    const dot = boxEl(left, y + 1.05, 1, 1, { fill: T.accent, shape: "circle" }, "build");
-    const t = textEl(b.text, textX, y, textW, 2.8, 600, T.ink, "build", 1.22);
+    const dot = boxEl(left, y + 1.05 * s, 1, 1, { fill: T.accent, shape: "circle" }, "build");
+    const t = textEl(b.text, textX, y, textW, 2.8 * s, 600, T.ink, "build", 1.22);
     const row: SlideElement[] = [dot, t.el];
     let h = t.height;
     if (b.detail) {
-      const det = textEl(b.detail, textX, y + h + 0.5, textW, 2, 400, T.inkSoft, "build", 1.3);
+      const det = textEl(b.detail, textX, y + h + 0.5, textW, 2 * s, 400, T.inkSoft, "build", 1.3);
       row.push(det.el);
       h += 0.5 + det.height;
     }
     elements.push(...row);
     link(byBeat, k, row);
-    y += h + 2.4;
+    y += h + 2.4 * s;
   });
   return { elements, byBeat };
 }
 
-const BUILDERS: Record<TemplateKind, (scene: Scene) => Built> = {
+const BUILDERS: Record<TemplateKind, (scene: Scene, textScale: number) => Built> = {
   title: buildTitle,
   image: buildImage,
   compare: buildCompare,
@@ -664,8 +686,38 @@ const BUILDERS: Record<TemplateKind, (scene: Scene) => Built> = {
 };
 
 /** One scene as a clean-look slide: editable elements, narration lines and cues. */
+/** Lowest point any element reaches, in percent of the frame height. */
+function contentBottom(elements: SlideElement[]): number {
+  let bottom = 0;
+  for (const el of elements) {
+    if (el.kind === "camera" || el.kind === "spotlight" || !("rect" in el) || !el.rect) continue;
+    bottom = Math.max(bottom, el.rect.y + el.rect.h);
+  }
+  return bottom;
+}
+
+/** Bottom margin every template keeps clear, in percent of the frame height. */
+const BOTTOM_LIMIT = 100 - toY(2.4);
+/** Text scales tried, largest first, until the scene fits the frame. */
+const TEXT_SCALES = [1, 0.92, 0.85, 0.78, 0.72, 0.66, 0.6];
+
+/**
+ * Build a scene at the largest text scale whose content stays inside the frame.
+ * Returns the smallest scale's layout when nothing fits (the scene is simply
+ * too full; lintScriptLesson warns about crowded scenes).
+ */
+export function fitScene(scene: Scene): Built & { textScale: number } {
+  let built: Built | null = null;
+  let scale = 1;
+  for (scale of TEXT_SCALES) {
+    built = BUILDERS[scene.template](scene, scale);
+    if (contentBottom(built.elements) <= BOTTOM_LIMIT) break;
+  }
+  return { ...built!, textScale: scale };
+}
+
 export function slideFromScene(scene: Scene, narrated = false): Slide {
-  const { elements, byBeat } = BUILDERS[scene.template](scene);
+  const { elements, byBeat } = fitScene(scene);
   const lines: NarrationLine[] = scene.beats.map((b, k) => ({
     id: uid("line"),
     text: b.say,

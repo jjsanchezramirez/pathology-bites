@@ -2,14 +2,18 @@
 
 // DOM renderer for clean-look slides (see src/shared/lesson/clean.ts): the
 // slide background, then every element in list order inside the camera.
-// Units match the canvas exporter: positions in percent of the 16:9 frame,
-// text and strokes in cqw.
+// Positions are in percent of the 16:9 frame, text and strokes in cqw.
+//
+// Text is held to its box: if it doesn't fit (a long label, or a template's
+// height estimate that came out short), its font shrinks until it does, down
+// to MIN_TEXT_SCALE, rather than spilling over whatever sits below it.
 
-import { memo } from "react";
+import { memo, useLayoutEffect, useRef, useState } from "react";
 import type { Transform } from "@/shared/types/explainer";
 import { CLEAN, type CleanFrame, type CleanItem } from "@/shared/lesson/clean";
 import type { ShapeKind, Rect } from "@/shared/lesson/types";
 import { lessonSans } from "@/shared/fonts/lesson-fonts";
+import { fitScale } from "@/shared/lesson/fit";
 
 /** Height of the frame in percent-of-width units (16:9). */
 const VH = 56.25;
@@ -39,6 +43,81 @@ const box = (r: Rect, rise: number): React.CSSProperties => ({
   height: `${r.h}%`,
   transform: rise ? `translateY(${rise.toFixed(3)}cqw)` : undefined,
 });
+
+type TextItem = Extract<CleanItem, { kind: "text" }>;
+
+function textStyle(item: TextItem, scale: number): React.CSSProperties {
+  return {
+    boxSizing: "border-box",
+    fontSize: `${item.fontSize * CLEAN.cqwPerRem * scale}cqw`,
+    lineHeight: CLEAN.lineHeight,
+    fontWeight: weight(item.fontWeight),
+    textAlign: item.align,
+    whiteSpace: "pre-wrap",
+    overflowWrap: "break-word",
+    padding: item.background ? "0.6cqw" : undefined,
+  };
+}
+
+/** A text item in its box, shrunk if needed so it never overflows. */
+function FitText({ item }: { item: TextItem }) {
+  const boxRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useLayoutEffect(() => {
+    const boxEl = boxRef.current;
+    const probe = measureRef.current;
+    if (!boxEl || !probe) return;
+    const base = item.fontSize * CLEAN.cqwPerRem;
+    const run = () => {
+      const h = boxEl.clientHeight;
+      const w = boxEl.clientWidth;
+      if (!h || !w) return; // not laid out (hidden, or no layout engine)
+      const next = fitScale((k) => {
+        probe.style.fontSize = `${base * k}cqw`;
+        return probe.scrollHeight <= h + 1 && probe.scrollWidth <= w + 1;
+      });
+      setScale((cur) => (Math.abs(cur - next) > 0.005 ? next : cur));
+    };
+    run();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(run) : null;
+    ro?.observe(boxEl);
+    // Metrics change once the lesson font has loaded.
+    document.fonts?.ready.then(run).catch(() => {});
+    return () => ro?.disconnect();
+  }, [item.text, item.rect.w, item.rect.h, item.fontSize, item.fontWeight, item.background]);
+
+  const shown = item.chars != null ? item.text.slice(0, item.chars) : item.text;
+  return (
+    <div
+      ref={boxRef}
+      style={{
+        ...box(item.rect, item.rise),
+        opacity: item.opacity,
+        color: item.color,
+        background: item.background,
+        borderRadius: item.background ? "0.5cqw" : undefined,
+      }}
+    >
+      <div style={{ ...textStyle(item, scale), height: "100%" }}>{shown}</div>
+      {/* Measures the full text (so letter-by-letter text doesn't change size as it types). */}
+      <div
+        ref={measureRef}
+        aria-hidden
+        style={{
+          ...textStyle(item, 1),
+          position: "absolute",
+          inset: 0,
+          visibility: "hidden",
+          overflow: "hidden",
+        }}
+      >
+        {item.text}
+      </div>
+    </div>
+  );
+}
 
 export const CleanItemView = memo(function CleanItemView({ item }: { item: CleanItem }) {
   switch (item.kind) {
@@ -80,32 +159,8 @@ export const CleanItemView = memo(function CleanItemView({ item }: { item: Clean
           />
         </svg>
       );
-    case "text": {
-      const text = item.chars != null ? item.text.slice(0, item.chars) : item.text;
-      return (
-        <div
-          style={{
-            ...box(item.rect, item.rise),
-            height: undefined,
-            minHeight: `${item.rect.h}%`,
-            boxSizing: "border-box",
-            opacity: item.opacity,
-            fontSize: `${item.fontSize * CLEAN.cqwPerRem}cqw`,
-            lineHeight: CLEAN.lineHeight,
-            fontWeight: weight(item.fontWeight),
-            color: item.color,
-            textAlign: item.align,
-            whiteSpace: "pre-wrap",
-            overflowWrap: "break-word",
-            background: item.background,
-            padding: item.background ? "0.6cqw" : undefined,
-            borderRadius: item.background ? "0.5cqw" : undefined,
-          }}
-        >
-          {text}
-        </div>
-      );
-    }
+    case "text":
+      return <FitText item={item} />;
     case "image":
       if (!item.url) {
         // A template's empty picture slot.

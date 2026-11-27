@@ -53,9 +53,12 @@ export function ExplainerPlayer({
   // when the user presses Escape or uses the browser's native controls
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Controls visibility — hide after inactivity (only relevant in fullscreen)
+  // Controls visibility. The bar sits over the bottom of the slide, so while the
+  // lesson plays it hides after a moment without pointer, touch or key activity
+  // (any size, not just fullscreen); paused, it stays up.
   const [controlsVisible, setControlsVisible] = useState(true);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const playingRef = useRef(false);
 
   // Reset CC when captions prop changes (new sequence generated)
   useEffect(() => {
@@ -82,21 +85,27 @@ export function ExplainerPlayer({
     }
   }, []);
 
-  // Auto-hide controls after 3s of inactivity (fullscreen only)
+  // Show the controls, then hide them after 2.5 s if the lesson is playing.
   const resetHideTimer = useCallback(() => {
     setControlsVisible(true);
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     hideTimerRef.current = setTimeout(() => {
-      if (document.fullscreenElement) setControlsVisible(false);
-    }, 3000);
+      if (playingRef.current) setControlsVisible(false);
+    }, 2500);
   }, []);
 
-  useEffect(() => {
-    if (!isFullscreen) {
+  // Pointer left the player while playing: get out of the way now.
+  const hideIfPlaying = useCallback(() => {
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    if (playingRef.current) setControlsVisible(false);
+  }, []);
+
+  useEffect(
+    () => () => {
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-      setControlsVisible(true);
-    }
-  }, [isFullscreen]);
+    },
+    []
+  );
 
   // Preload all resources before playback
   const preloader = useResourcePreloader({
@@ -110,6 +119,17 @@ export function ExplainerPlayer({
     onTimeUpdate,
     fallbackDuration: duration,
   });
+
+  // Playing: start the hide countdown. Paused or ended: keep the controls up.
+  useEffect(() => {
+    playingRef.current = audio.isPlaying;
+    if (audio.isPlaying) {
+      resetHideTimer();
+    } else {
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      setControlsVisible(true);
+    }
+  }, [audio.isPlaying, resetHideTimer]);
 
   // Frame shown = hover-preview time when hovering the scrubber, else committed time.
   const displayTime = hoverTime ?? audio.currentTime;
@@ -300,8 +320,14 @@ export function ExplainerPlayer({
         isFullscreen && "flex items-center justify-center bg-black w-full h-full",
         className
       )}
-      onKeyDown={handleKeyDown}
-      onMouseMove={isFullscreen ? resetHideTimer : undefined}
+      onKeyDown={(e) => {
+        resetHideTimer();
+        handleKeyDown(e);
+      }}
+      onMouseMove={resetHideTimer}
+      onTouchStart={resetHideTimer}
+      onFocus={resetHideTimer}
+      onMouseLeave={hideIfPlaying}
       tabIndex={0}
       role="application"
       aria-label="Explanation video player"
