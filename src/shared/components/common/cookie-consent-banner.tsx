@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { X, Cookie } from "lucide-react";
@@ -24,6 +25,8 @@ export const BANNER_DELAY_MS = 500;
  */
 export function CookieConsentBanner() {
   const [open, setOpen] = useState(false);
+  // Embedded lesson players (/embed/*) live inside other sites' pages: no banner there.
+  const embedded = usePathname()?.startsWith("/embed/") ?? false;
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -46,7 +49,7 @@ export function CookieConsentBanner() {
     setOpen(false);
   };
 
-  if (!open) return null;
+  if (!open || embedded) return null;
 
   return (
     <div

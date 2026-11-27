@@ -1,35 +1,20 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkDirective from "remark-directive";
 import remarkGfm from "remark-gfm";
 import { visit } from "unist-util-visit";
 import { ImageCarousel } from "@/shared/components/media/image-carousel";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { Lightbulb, Loader2 } from "lucide-react";
-import type { Lesson } from "@/shared/lesson/types";
-import { normalizeStoredSequence } from "@/shared/lesson/normalize";
-import type { ScriptLesson } from "@/shared/lesson/script/types";
-import dynamic from "next/dynamic";
+import { Lightbulb } from "lucide-react";
+import { LessonEmbed } from "@/shared/components/explainer/lesson-embed";
 import type { LessonCheckpoint as LessonCheckpointData } from "../types";
 import { LessonCheckpoint } from "./lesson-checkpoint";
 import { extractImageIds } from "../utils/lesson-references";
 import { unwrapSelfContainedDirectives } from "../utils/unwrap-block-directives";
 
 export { extractImageIds };
-
-const ExplainerPlayer = dynamic(
-  () => import("@/shared/components/explainer/explainer-player").then((mod) => mod.ExplainerPlayer),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin" />
-      </div>
-    ),
-  }
-);
 
 // Custom remark plugin: transforms directive AST nodes into custom hast elements
 // that react-markdown can render via the components map.
@@ -200,7 +185,7 @@ export function MarkdownLessonRenderer({
 
           // Custom element from remark-directive
           "explainer-directive": ({ sequenceId }: { sequenceId: string }) => {
-            return <ExplainerDirective sequenceId={sequenceId} />;
+            return <LessonEmbed lessonId={sequenceId} className="my-6 border" />;
           },
 
           // Custom element from remark-directive
@@ -247,50 +232,5 @@ export function MarkdownLessonRenderer({
         {markdown}
       </ReactMarkdown>
     </div>
-  );
-}
-
-function ExplainerDirective({ sequenceId }: { sequenceId: string }) {
-  const [lesson, setLesson] = useState<Lesson | ScriptLesson | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadSequence() {
-      try {
-        const res = await fetch(`/api/interactive-sequences/${sequenceId}`);
-        if (res.status === 404) {
-          setError("Interactive sequence not found");
-          return;
-        }
-        if (!res.ok) throw new Error("Failed to load sequence");
-        const { sequence } = await res.json();
-        const normalized = normalizeStoredSequence(sequence.sequence_data);
-        if (!normalized) {
-          setError("This sequence is in a legacy format and needs to be re-saved.");
-          return;
-        }
-        setLesson(normalized);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load");
-      } finally {
-        setLoading(false);
-      }
-    }
-    if (sequenceId) loadSequence();
-  }, [sequenceId]);
-
-  return (
-    <Card className="my-6 overflow-hidden">
-      <CardContent className="p-0">
-        {loading && (
-          <div className="flex justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        )}
-        {error && <div className="p-4 text-center text-sm text-destructive">{error}</div>}
-        {lesson && <ExplainerPlayer lesson={lesson} />}
-      </CardContent>
-    </Card>
   );
 }

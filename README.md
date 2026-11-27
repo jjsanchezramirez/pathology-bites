@@ -124,7 +124,7 @@ Feature code lives in `src/features/{domain}/`; reusable code in `src/shared/`. 
 git clone <repo-url>
 cd pathology-bites
 cp .env.example .env.local   # fill in the values below
-npm install                  # also runs setup-ffmpeg postinstall
+npm install
 npm run dev                  # http://localhost:3000
 ```
 
@@ -251,7 +251,7 @@ See [`tests/README.md`](./tests/README.md) for structure and conventions.
 
 ## Deployment
 
-Deployed on **Vercel** behind **Cloudflare**. Set the environment variables from `.env.example` in the Vercel project, configure Supabase OAuth redirect URLs, and point the Cloudflare zone at the Vercel deployment. Production builds run `npm run build`; `setup-ffmpeg` runs on install to fetch the FFmpeg WASM assets.
+Deployed on **Vercel** behind **Cloudflare**. Set the environment variables from `.env.example` in the Vercel project, configure Supabase OAuth redirect URLs, and point the Cloudflare zone at the Vercel deployment. Production builds run `npm run build`.
 
 The companion Cloudflare Workers ([Companion services & repos](#companion-services--repos)) deploy independently from their own repos via `wrangler deploy` — they are not part of the Vercel build.
 

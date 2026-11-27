@@ -36,6 +36,7 @@ const FEATURE_ACCESS: Record<string, Access> = {
   "tags.manage": "admin",
   "sets.manage": "admin",
   "images.manage": "admin",
+  "lessons.manage": "admin", // Lesson Studio and Learning Modules
   "audio.manage": "admin",
   "inquiries.manage": "admin",
   "notifications.manage": "admin",

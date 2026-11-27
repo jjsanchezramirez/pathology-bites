@@ -185,6 +185,13 @@ export async function deleteVoice(id: string): Promise<void> {
 
 const TTS_RPM = Math.max(1, Number(process.env.GEMINI_TTS_RPM) || 10);
 const TTS_SPACING_MS = Math.ceil(60_000 / TTS_RPM) + 150;
+
+/**
+ * Sentences one narration request may speak inside the route's 300 s budget
+ * (280 s of speaking at one request per slot). Longer lessons are narrated in
+ * several requests, a few slides at a time (see batchNarration).
+ */
+export const TTS_MAX_LINES_PER_REQUEST = Math.max(1, Math.floor(280_000 / TTS_SPACING_MS));
 let nextSlotAt = 0;
 
 /** Wait for the next free request slot (per server instance). */

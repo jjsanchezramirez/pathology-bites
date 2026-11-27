@@ -13,11 +13,16 @@ export function whisperAvailable(): boolean {
   return hasApiKey("openai");
 }
 
-export async function transcribeWords(wav: Uint8Array, prompt?: string): Promise<WordTiming[]> {
+export async function transcribeWords(
+  audio: Uint8Array,
+  prompt?: string,
+  format: "wav" | "mp3" = "wav"
+): Promise<WordTiming[]> {
   const apiKey = getApiKey("openai");
   if (!apiKey) throw new Error("OPENAI_API_KEY is not set or OpenAI is switched off");
   const form = new FormData();
-  form.append("file", new Blob([new Uint8Array(wav)], { type: "audio/wav" }), "narration.wav");
+  const type = format === "mp3" ? "audio/mpeg" : "audio/wav";
+  form.append("file", new Blob([new Uint8Array(audio)], { type }), `narration.${format}`);
   form.append("model", "whisper-1");
   form.append("response_format", "verbose_json");
   form.append("timestamp_granularities[]", "word");

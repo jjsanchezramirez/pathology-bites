@@ -2,11 +2,9 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import type { Lesson } from "@/shared/lesson/types";
-import { isScriptLesson, type ScriptLesson } from "@/shared/lesson/script/types";
-import { scriptImageUrls } from "@/shared/lesson/script/timeline";
 
 interface UseResourcePreloaderOptions {
-  lesson: Lesson | ScriptLesson;
+  lesson: Lesson;
   audioUrl: string;
 }
 
@@ -31,13 +29,9 @@ export function useResourcePreloader({
   // change the pictures (typing in the script editor) don't reload everything.
   const imageKey = useMemo(() => {
     const urls = new Set<string>();
-    if (isScriptLesson(lesson)) {
-      for (const url of scriptImageUrls(lesson)) urls.add(url);
-    } else {
-      for (const slide of lesson.slides) {
-        for (const el of slide.elements) {
-          if (el.kind === "image" && el.imageUrl) urls.add(el.imageUrl);
-        }
+    for (const slide of lesson.slides) {
+      for (const el of slide.elements) {
+        if (el.kind === "image" && el.imageUrl) urls.add(el.imageUrl);
       }
     }
     return [...urls].join("\n");

@@ -324,31 +324,18 @@ export const AI_TASKS = {
     jsonMode: false, // free-text script, not JSON
   },
   /**
-   * Lesson-studio generate-lesson, pass 1 (transcript analysis) and pass 2
-   * (planner). Both share one 60s route budget with per-image vision, so their
-   * deadlines are deliberately short — a slow chain walk here starves vision.
-   *
-   * jsonMode stays off: these parsers already accept fenced output, and the
-   * previous hand-rolled calls never requested strict JSON. Standardising the
-   * call path should not quietly change what the models emit.
+   * Lesson-studio generator: writes a whole lesson script (scenes of the five
+   * templates) as JSON. Runs after per-image vision in a 120s route.
    */
-  "lesson-transcript": {
+  "lesson-writer": {
     chain: TEXT_FALLBACK_CHAIN,
-    maxTokens: 2048,
-    temperature: 0.2,
-    timeoutMs: 12_000,
-    deadlineMs: 20_000,
-    jsonMode: false,
+    maxTokens: 6000,
+    temperature: 0.4,
+    timeoutMs: 45_000,
+    deadlineMs: 75_000,
+    jsonMode: true, // the prompt demands a JSON object
   },
-  "lesson-planner": {
-    chain: TEXT_FALLBACK_CHAIN,
-    maxTokens: 1024,
-    temperature: 0.2,
-    timeoutMs: 12_000,
-    deadlineMs: 20_000,
-    jsonMode: false,
-  },
-  /** Per-image vision analysis. vision-analyze route is maxDuration 30. */
+  /** Per-image vision analysis for the lesson generator. */
   "lesson-vision": {
     chain: VISION_FALLBACK_CHAIN,
     maxTokens: 800,

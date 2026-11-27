@@ -4,7 +4,7 @@ import { createClient } from "@/shared/services/server";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
-import { isStoredSequenceShape } from "@/shared/lesson/normalize";
+import { isLessonShape } from "@/shared/lesson/normalize";
 
 const updateSequenceSchema = z.object({
   id: z.string().min(1),
@@ -14,9 +14,8 @@ const updateSequenceSchema = z.object({
   sequence_data: z
     .object({})
     .passthrough()
-    .refine(isStoredSequenceShape, {
-      message:
-        "sequence_data must be a Lesson (slides[] + aspectRatio) or a script lesson (format script-lesson, scenes[]).",
+    .refine(isLessonShape, {
+      message: "sequence_data must be a Lesson (slides[] + aspectRatio).",
     })
     .optional(),
   category_id: z.string().nullish(),

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import {
+  TTS_MAX_LINES_PER_REQUEST,
   DEFAULT_TTS_MODEL,
   PREBUILT_VOICES,
   TTS_MODELS,
@@ -79,6 +80,8 @@ export async function GET(request: NextRequest) {
     models: TTS_MODELS,
     defaultModel: DEFAULT_TTS_MODEL,
     whisper: whisperAvailable(),
+    /** Sentences per narration/generate request; longer lessons go in parts. */
+    maxLinesPerRequest: TTS_MAX_LINES_PER_REQUEST,
     warning,
   });
 }

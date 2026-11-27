@@ -1,13 +1,14 @@
-// Script-first lessons.
+// The script format: a lesson written as narration, one sentence at a time.
 //
-// A script lesson is written as narration, one sentence at a time. Sentences are
-// grouped into scenes; each scene uses one of a few fixed templates, and each
-// sentence (a "beat") reveals one thing on that template. Timing comes from the
-// narration audio (or an estimate from word count before there is audio), and
-// motion is fixed (see motion.ts), so nothing is keyframed by hand.
+// Sentences are grouped into scenes; each scene uses one of five templates, and
+// each sentence (a "beat") reveals one thing on that template. This is the
+// import format for the canvas editor (File → Import script, and the AI
+// generator's output): templates.ts turns every scene into editable canvas
+// elements that time themselves from the narration.
 //
-// Stored in interactive_sequences.sequence_data next to the older canvas
-// Lesson format (./../types.ts). The `format` field tells them apart.
+// The retired script studio also stored this shape in
+// interactive_sequences.sequence_data (`format: "script-lesson"`); such rows are
+// converted to canvas on read by normalizeStoredSequence.
 
 import type { LessonAudio } from "../types";
 

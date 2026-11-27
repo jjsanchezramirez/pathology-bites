@@ -1,5 +1,5 @@
 // Top action bar. Three zones:
-//   Left — File menu (New, Load, Save, Save as new, Export, Audio)
+//   Left — File menu (New, Load, Save, Save as new, Embed, Narrate, Audio)
 //   Center — Title input · status chip · duration · undo/redo
 //   Right — Save status pill · Preview toggle
 
@@ -19,7 +19,7 @@ import {
   Pause,
   Save,
   FolderOpen,
-  Download,
+  Code2,
   Undo2,
   Redo2,
   FilePlus2,
@@ -39,8 +39,8 @@ interface TopBarProps {
   onSaveOpen: () => void;
   /** Open the load dialog. Caller is responsible for dirty-check confirm. */
   onLoadOpen: () => void;
-  /** Open export dialog. */
-  onExportOpen: () => void;
+  /** Open the embed dialog (share link and iframe code for the saved lesson). */
+  onEmbedOpen: () => void;
   /** Reset the document to a blank lesson. Caller handles dirty-check confirm. */
   onNewLesson: () => void;
   /** Clear lesson.id so the next Save creates a new row, then open Save dialog. */
@@ -68,7 +68,7 @@ export function TopBar({
   onAudioPickerOpen,
   onSaveOpen,
   onLoadOpen,
-  onExportOpen,
+  onEmbedOpen,
   onNewLesson,
   onSaveAsNew,
   onClearAudio,
@@ -131,9 +131,9 @@ export function TopBar({
             Save as new…
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={onExportOpen} disabled={noSlides}>
-            <Download className="mr-2 h-4 w-4" />
-            Export video…
+          <DropdownMenuItem onSelect={onEmbedOpen} disabled={!isSaved}>
+            <Code2 className="mr-2 h-4 w-4" />
+            Embed…
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={onNarrateOpen} disabled={noSlides}>
@@ -194,13 +194,7 @@ export function TopBar({
 
       {/* --- Right: Generate · Save status · Preview --------------------- */}
       <div className="flex flex-shrink-0 items-center gap-1">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onGenerate}
-          disabled={!hasAudio || noSlides}
-          title="Generate lesson with AI"
-        >
+        <Button variant="outline" size="sm" onClick={onGenerate} title="Draft a lesson with AI">
           <Wand2 className="mr-1 h-3 w-3" />
           Generate
         </Button>

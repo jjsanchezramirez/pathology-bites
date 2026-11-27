@@ -11,11 +11,10 @@
 //
 // Pure and idempotent: the editor runs it after every change.
 
-import { DEFAULT_PACING } from "./narration";
-import { estimateSpeech } from "./script/timeline";
+import { DEFAULT_PACING, estimateSpeech } from "./narration";
 import type { Lesson, Slide, SlideElement, Timing } from "./types";
 
-/** The one motion set, in seconds (matches the script player). */
+/** The one motion set, in seconds. */
 export const AUTO_MOTION = {
   fadeIn: 0.6,
   fadeOut: 0.4,

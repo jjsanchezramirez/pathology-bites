@@ -23,24 +23,16 @@ import {
 import { Loader2, Save } from "lucide-react";
 import type { Lesson } from "@/shared/lesson/types";
 import { slideStarts } from "@/shared/lesson/evaluate";
-import { isScriptLesson, type ScriptLesson } from "@/shared/lesson/script/types";
-import { computeTimeline } from "@/shared/lesson/script/timeline";
 
-function summary(lesson: Lesson | ScriptLesson | null): { parts: string; seconds: number } {
+function summary(lesson: Lesson | null): { parts: string; seconds: number } {
   if (!lesson) return { parts: "0 slides", seconds: 0 };
-  if (isScriptLesson(lesson)) {
-    return {
-      parts: `${lesson.scenes.length} scenes`,
-      seconds: computeTimeline(lesson).duration,
-    };
-  }
   return { parts: `${lesson.slides.length} slides`, seconds: slideStarts(lesson).duration };
 }
 
 interface SaveToDatabaseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  lesson: Lesson | ScriptLesson | null;
+  lesson: Lesson | null;
   // If these are provided, we're updating an existing sequence
   existingSequenceId?: string | null;
   existingTitle?: string;
