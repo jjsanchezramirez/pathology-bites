@@ -6,6 +6,8 @@ import { HeroSection } from "@/shared/components/common/hero-section";
 import { DemoQuestionSection } from "@/shared/components/common/demo-question-section";
 import { FinalCTASection } from "@/shared/components/common/final-cta-section";
 import { ScrollReveal } from "@/shared/components/common/scroll-reveal";
+import { HomepageAskAlbright } from "@/features/user/ask-albright/components/homepage-ask-albright";
+import { ASK_ALBRIGHT_ENABLED } from "@/features/user/ask-albright/lib/enabled";
 
 // The virtual-slides corpus (~2 MB brotli / ~27 MB decompressed) is loaded LAZILY by
 // the hero teaser — deferred to browser-idle / first hero interaction so it stays off
@@ -31,7 +33,9 @@ export function LandingPage() {
       <ScrollReveal animation="fade-up">
         <FinalCTASection />
       </ScrollReveal>
-      <ScrollToTopButton />
+      {/* Dr. Albright owns the bottom-right corner; scroll-to-top moves left. */}
+      <ScrollToTopButton className={ASK_ALBRIGHT_ENABLED ? "left-8 right-auto" : undefined} />
+      <HomepageAskAlbright />
     </>
   );
 }

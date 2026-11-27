@@ -2,16 +2,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import {
-  type AskEvent,
   type AskResult,
   NoPassagesError,
   askAlbright,
   askAlbrightStream,
   isAskAlbrightAvailable,
 } from "@/features/user/ask-albright/lib/ask";
-import { recordCost, reserveQuestion } from "@/features/user/ask-albright/lib/usage";
+import { budgetMessage, recordCost, reserveQuestion } from "@/features/user/ask-albright/lib/usage";
 import { findInHistory, saveHistory } from "@/features/user/ask-albright/lib/history";
 import { MAX_QUESTION_CHARS } from "@/features/user/ask-albright/lib/router";
+import { NDJSON, limited, streamResponse } from "@/features/user/ask-albright/lib/http";
 import { requireUser } from "@/shared/utils/api/api-guard";
 import { APIRateLimiter } from "@/shared/utils/api/api-rate-limiter";
 import { apiError, parseBody } from "@/shared/utils/api/parse-body";
@@ -25,51 +25,6 @@ const bodySchema = z.object({
 // daily (lib/usage.ts): per user, and a global budget; each answer is capped
 // at 0.20¢ (lib/cost.ts).
 const perMinute = new APIRateLimiter({ windowMs: 60_000, maxRequests: 10 });
-
-const NDJSON = "application/x-ndjson";
-
-/** One JSON object per line: meta, delta…, then done (with historyId) or error. */
-function streamResponse(
-  events: AsyncGenerator<AskEvent>,
-  finish: (result: AskResult) => Promise<Record<string, unknown>>
-): Response {
-  const enc = new TextEncoder();
-  const body = new ReadableStream<Uint8Array>({
-    async start(controller) {
-      const send = (obj: unknown) => controller.enqueue(enc.encode(`${JSON.stringify(obj)}\n`));
-      try {
-        for await (const ev of events) {
-          if (ev.type === "done") send({ type: "done", ...(await finish(ev.result)) });
-          else send(ev);
-        }
-      } catch (err) {
-        if (err instanceof NoPassagesError)
-          send({ type: "error", status: 404, error: err.message });
-        else {
-          log.error("[ask-albright] failed", err);
-          send({
-            type: "error",
-            status: 502,
-            error: "Dr. Albright couldn't answer that right now",
-          });
-        }
-      } finally {
-        controller.close();
-      }
-    },
-  });
-  return new Response(body, {
-    headers: { "Content-Type": NDJSON, "Cache-Control": "no-store", "X-Accel-Buffering": "no" },
-  });
-}
-
-function limited(resetTime: number, message: string): NextResponse {
-  const retryAfter = Math.max(1, Math.ceil((resetTime - Date.now()) / 1000));
-  return NextResponse.json(
-    { error: message, retryAfter },
-    { status: 429, headers: { "Retry-After": String(retryAfter) } }
-  );
-}
 
 /**
  * @swagger
@@ -208,7 +163,7 @@ export async function POST(request: NextRequest) {
     return limited(
       midnight.getTime(),
       reservation.reason === "global"
-        ? "Dr. Albright has reached today's limit. Try again tomorrow."
+        ? budgetMessage(reservation.period ?? "day")
         : "Daily question limit reached. Try again tomorrow."
     );
   }

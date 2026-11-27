@@ -8,7 +8,12 @@ vi.mock("@/shared/services/service-role-client", () => ({
   createServiceRoleClient: () => ({ rpc }),
 }));
 
-import { dailyLimits, recordCost, reserveQuestion } from "@/features/user/ask-albright/lib/usage";
+import {
+  budgetMessage,
+  recordCost,
+  reserveQuestion,
+  userDailyLimit,
+} from "@/features/user/ask-albright/lib/usage";
 
 describe("daily usage limits", () => {
   beforeEach(() => {
@@ -16,13 +21,26 @@ describe("daily usage limits", () => {
   });
   afterEach(() => vi.unstubAllEnvs());
 
-  it("turns the daily budget into a question count at the per-answer cap", () => {
-    expect(dailyLimits()).toEqual({ perUser: 50, global: 1000 }); // $2 / $0.002
+  it("reads the per-user daily limit from the environment", () => {
+    expect(userDailyLimit()).toBe(50);
     vi.stubEnv("ASK_ALBRIGHT_USER_DAILY", "20");
-    vi.stubEnv("ASK_ALBRIGHT_DAILY_BUDGET_USD", "0.5");
-    expect(dailyLimits()).toEqual({ perUser: 20, global: 250 });
+    expect(userDailyLimit()).toBe(20);
     vi.stubEnv("ASK_ALBRIGHT_USER_DAILY", "nonsense");
-    expect(dailyLimits().perUser).toBe(50);
+    expect(userDailyLimit()).toBe(50);
+  });
+
+  it("names the spend cap that was reached", async () => {
+    rpc.mockResolvedValue({
+      data: { allowed: false, reason: "global", period: "week" },
+      error: null,
+    });
+    expect(await reserveQuestion("u1")).toEqual({
+      allowed: false,
+      reason: "global",
+      period: "week",
+    });
+    expect(budgetMessage("week")).toMatch(/this week's limit/);
+    expect(budgetMessage("day")).toMatch(/today's limit/);
   });
 
   it("reserves through the RPC with the limits", async () => {
@@ -31,10 +49,14 @@ describe("daily usage limits", () => {
     expect(rpc).toHaveBeenCalledWith("ask_albright_reserve", {
       p_user: "u1",
       p_user_max: 50,
-      p_global_max: 1000,
+      p_global_max: 2_000_000_000, // spend caps live in the database
     });
     rpc.mockResolvedValue({ data: { allowed: false, reason: "global" }, error: null });
-    expect(await reserveQuestion("u1")).toEqual({ allowed: false, reason: "global" });
+    expect(await reserveQuestion("u1")).toEqual({
+      allowed: false,
+      reason: "global",
+      period: "day",
+    });
   });
 
   it("fails closed when the RPC returns an error (e.g. migration not applied)", async () => {
@@ -72,7 +94,7 @@ describe("daily usage limits", () => {
     expect(rpc).toHaveBeenLastCalledWith("ask_albright_reserve", {
       p_user: "admin-1",
       p_user_max: 2_000_000_000,
-      p_global_max: 1000,
+      p_global_max: 2_000_000_000,
     });
   });
 });
