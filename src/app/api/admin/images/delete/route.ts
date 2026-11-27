@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { deleteFromR2, extractR2KeyFromUrl } from "@/shared/services/r2-storage";
-import { requireUser } from "@/shared/utils/api/api-guard";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { revalidateImages } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
@@ -113,26 +113,9 @@ export async function DELETE(request: NextRequest) {
     const supabase = await createClient();
     log.debug("✅ Supabase client created");
 
-    // Verify user is authenticated admin
-    const auth = requireUser(request);
+    // Admin only. Role comes from app_metadata via middleware headers (CLAUDE.md "Auth").
+    const auth = requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
-    const userId = auth.userId;
-
-    const { data: userData, error: roleError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
-
-    log.debug("🔐 Role check:", { userData, roleError: roleError?.message });
-
-    if (roleError || !userData || userData.role !== "admin") {
-      log.debug("❌ Authorization failed");
-      return NextResponse.json(
-        { error: "Only administrators can delete images", details: roleError?.message },
-        { status: 403 }
-      );
-    }
 
     // Parse request body
     const body = await parseBody(request, deleteImageSchema);
