@@ -23,6 +23,7 @@ import {
 import { NDJSON, limited, streamResponse } from "@/features/user/ask-albright/lib/http";
 import { budgetMessage } from "@/features/user/ask-albright/lib/usage";
 import { MAX_QUESTION_CHARS } from "@/features/user/ask-albright/lib/router";
+import { COST_CAP_USD } from "@/features/user/ask-albright/lib/cost";
 import { createClient } from "@/shared/services/server";
 import { APIRateLimiter } from "@/shared/utils/api/api-rate-limiter";
 import { apiError, parseBody } from "@/shared/utils/api/parse-body";
@@ -189,6 +190,12 @@ export async function POST(request: NextRequest) {
   }
   const { remaining } = reservation;
   const refund = () => refundAnon(visitor, network);
+  // A failure gives the question back but is charged the worst case: what it
+  // spent before failing isn't known.
+  const fail = async () => {
+    await refund();
+    await recordAnonCost(visitor, COST_CAP_USD);
+  };
 
   const finish = async (result: AskResult) => {
     log.info(
@@ -197,6 +204,7 @@ export async function POST(request: NextRequest) {
     // A decline ("I only answer pathology") isn't an answer: give it back.
     if (result.scope) {
       await refund();
+      await recordAnonCost(visitor, result.costUsd ?? 0);
       return { ...result, historyId: null, remaining: remaining + 1 };
     }
     await recordAnonCost(visitor, result.costUsd ?? 0);
@@ -204,12 +212,12 @@ export async function POST(request: NextRequest) {
   };
 
   const wantsStream = (request.headers.get("accept") ?? "").includes(NDJSON);
-  if (wantsStream) return streamResponse(askAlbrightStream(body.question), finish, refund);
+  if (wantsStream) return streamResponse(askAlbrightStream(body.question), finish, fail);
 
   try {
     return NextResponse.json(await finish(await askAlbright(body.question)));
   } catch (err) {
-    await refund();
+    await fail();
     if (err instanceof NoPassagesError) return apiError(err.message, 404);
     log.error("[ask-albright] public failed", err);
     return apiError("Dr. Albright couldn't answer that right now", 502);

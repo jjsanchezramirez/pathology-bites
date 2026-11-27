@@ -13,8 +13,10 @@ import { log } from "@/shared/utils/logging";
  * - Spend caps: $1/day, $5/week (from Sunday), $15/month across members AND
  *   signed-out visitors combined. They live in the database, in the one-row
  *   public.ask_albright_budget table — retune them there, no deploy — and are
- *   checked inside the reserve RPC as questions × the per-answer cap, before
- *   anything is spent.
+ *   checked inside the reserve RPC against REAL recorded spend, plus the
+ *   per-answer cap for every answer still in flight. Reserving books that
+ *   worst case; settling (recordCost) swaps it for the real cost, so every
+ *   outcome must settle: cached = 0, failure = COST_CAP_USD.
  *
  * Fails CLOSED: if the reservation can't be made, no question is answered.
  */
@@ -75,9 +77,13 @@ export async function reserveQuestion(
   }
 }
 
-/** Add an answer's actual cost to today's row (reporting only; never fails the answer). */
+/**
+ * Settle one reserved answer: release its worst-case hold and add what it really
+ * cost (0 for a cached answer). Call it on EVERY outcome — an unsettled answer
+ * stays booked at the full cap. Never fails the answer.
+ */
 export async function recordCost(userId: string, usd: number): Promise<void> {
-  if (!(usd > 0)) return;
+  if (!(usd >= 0)) usd = 0;
   try {
     const { error } = await db().rpc("ask_albright_record_cost", {
       p_user: userId,

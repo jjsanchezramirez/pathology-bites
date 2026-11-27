@@ -72,10 +72,12 @@ describe("daily usage limits", () => {
     expect(await reserveQuestion("u1")).toEqual({ allowed: false, reason: "unavailable" });
   });
 
-  it("records positive costs only", async () => {
-    await recordCost("u1", 0);
-    expect(rpc).not.toHaveBeenCalled();
+  it("settles every answer, a free (cached) one included", async () => {
     rpc.mockResolvedValue({ data: null, error: null });
+    await recordCost("u1", 0);
+    expect(rpc).toHaveBeenCalledWith("ask_albright_record_cost", { p_user: "u1", p_cost: 0 });
+    await recordCost("u1", Number.NaN);
+    expect(rpc).toHaveBeenLastCalledWith("ask_albright_record_cost", { p_user: "u1", p_cost: 0 });
     await recordCost("u1", 0.00071234567);
     expect(rpc).toHaveBeenCalledWith("ask_albright_record_cost", {
       p_user: "u1",

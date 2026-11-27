@@ -159,9 +159,13 @@ export async function refundAnon(visitor: string, network: string): Promise<void
   }
 }
 
-/** Reporting only; never fails the answer. */
+/**
+ * Settle one reserved answer against the spend caps: release its worst-case
+ * hold and add what it really cost. Call it on EVERY outcome, declines and
+ * failures included (see usage.ts). Never fails the answer.
+ */
 export async function recordAnonCost(visitor: string, usd: number): Promise<void> {
-  if (!(usd > 0)) return;
+  if (!(usd >= 0)) usd = 0;
   try {
     const { error } = await db().rpc("ask_albright_anon_record_cost", {
       p_visitor: visitorBucket(visitor),
