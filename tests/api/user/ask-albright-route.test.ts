@@ -25,7 +25,10 @@ vi.mock("@/features/user/ask-albright/lib/history", () => ({
 vi.mock("@/features/user/ask-albright/lib/marker-aliases", () => ({
   lookupMarkerAliases: vi.fn(async () => []),
 }));
-vi.mock("@/features/user/ask-albright/lib/usage", () => ({
+// Only the database calls are stubbed; the pure helpers (budgetMessage,
+// userDailyLimit, asPeriod) stay real, so a new helper doesn't break the mock.
+vi.mock("@/features/user/ask-albright/lib/usage", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/features/user/ask-albright/lib/usage")>()),
   reserveQuestion: vi.fn(async () => ({ allowed: true })),
   recordCost: vi.fn(async () => {}),
 }));
@@ -669,6 +672,19 @@ describe("POST /api/user/ask-albright", () => {
       expect(ai).not.toHaveBeenCalled();
     }
   );
+
+  it("names the spend cap that stopped the question", async () => {
+    vi.mocked(reserveQuestion).mockResolvedValue({
+      allowed: false,
+      reason: "global",
+      period: "week",
+    });
+    const { POST } = await loadRoute();
+    const res = await POST(ask("What stains for oncocytoma?"));
+    expect(res.status).toBe(429);
+    expect((await getResponseJson(res)).error).toMatch(/this week's limit/);
+    expect(ai).not.toHaveBeenCalled();
+  });
 
   it("reserves admins without the per-user cap, everyone else with it", async () => {
     const { POST } = await loadRoute();
