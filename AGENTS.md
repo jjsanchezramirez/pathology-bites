@@ -52,6 +52,15 @@ does a script already do this, does a shared helper already do this, does the
 data already carry this. "Nearly, but not quite" means extend the existing
 thing; a second implementation is how the two diverge and one silently rots.
 
+## Open work
+
+**Pending work lives in one place: `dev/docs/TODO.md`** (local, gitignored, because
+much of it concerns the private pipeline and infrastructure). Check it before
+starting something, add to it when you leave work unfinished or find a problem you
+are not fixing, and delete an item when it is done. Do not start a new TODO list in
+a feature doc, audit or memory note; put the detail there if you must and link it
+from `TODO.md`.
+
 ## Stack
 
 Next.js 15 (App Router) + React 19 + TypeScript + Supabase (auth/DB) + Cloudflare R2 (storage) + Tailwind + shadcn/ui + Vitest
@@ -85,7 +94,7 @@ src/
 - Route groups map to layouts: (admin) uses UnifiedLayoutClient w/ admin nav, (dashboard) w/ user nav.
 - Auth: Supabase JWT. Middleware checks roles (admin/creator/reviewer/user). Public APIs under `api/public/*`, `api/auth/*`, `api/content/*`.
 - Imports: use `@/` alias (maps to `src/`).
-- Toasts: import from `@/shared/utils/toast`, never direct from `sonner` (ESLint enforced).
+- Toasts: import from `@/shared/utils/ui/toast`, never direct from `sonner` (ESLint enforced).
 - Components: shadcn/ui in `src/shared/components/ui/`. Prefer existing over new.
 - Confirmation modals: always use `Dialog` (`shared/components/ui/dialog.tsx`) — never `AlertDialog`. Repo `AlertDialog` ships `slide-in-from-left-1/2` / `slide-in-from-top-[48%]` animations layered on `translate-x-[-50%] translate-y-[-50%]` centering transform; two stack, panel pinned upper-left not centered. Whole codebase uses `Dialog` for "are you sure?" flows (see `quiz/[id]/components/dialogs/*`); follow pattern.
 - **Badges.** Visual reference live at `/debug/badges` (gitignored). Three rules:
