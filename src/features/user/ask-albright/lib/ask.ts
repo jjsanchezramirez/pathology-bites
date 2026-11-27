@@ -76,6 +76,7 @@ import {
 import { lookupMarkerAliases } from "./marker-aliases";
 import { markerProfile } from "./kb-marker";
 import { entityProfiles, warmEntityIndex } from "./kb-entity";
+import { checkTables } from "./table-check";
 import {
   CostBudget,
   RERANK_COST_MODEL,
@@ -1126,9 +1127,21 @@ export async function* askAlbrightStream(
         visualPromise,
         new Promise<null>((r) => setTimeout(() => r(null), 2_000)),
       ]);
+  // A table cell the knowledge base contradicts is replaced by the knowledge
+  // base's call (a differential's finding credited to the page's diagnosis).
+  const tableProfiles = usedProfiles.flatMap((p, i) =>
+    "rows" in p && Array.isArray(p.rows)
+      ? [{ title: p.title, n: usedPages.length + i + 1, rows: p.rows }]
+      : []
+  );
   const result: AskResult = {
     ...(({ answer, followUps }) => ({
-      answer: dropUnaskedGaps(answer),
+      answer: (() => {
+        const { text, fixes } = checkTables(dropUnaskedGaps(answer), tableProfiles);
+        if (fixes.length)
+          log.info(`[ask-albright] table cells corrected: ${JSON.stringify(fixes)}`);
+        return text;
+      })(),
       // Tables rarely carry the model's follow-ups; offer the unasked aspects instead.
       followUps:
         followUps.length || finalFormat !== "table" ? followUps : comparisonFollowUps(question),
