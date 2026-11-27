@@ -12,6 +12,7 @@ import {
   buildEntityIndex,
   entityProfileText,
   findEntities,
+  namesakeChoices,
 } from "./entity-match";
 
 /**
@@ -110,6 +111,27 @@ function loadIndex(): Promise<EntityIndex> {
     if (index?.value === value) index = null;
   });
   return value;
+}
+
+/**
+ * The namesakes to ask the user to choose between, when the question uses a
+ * shared name without saying which organ (namesakeChoices). Null when there is
+ * nothing to ask, or the index can't be had within `waitMs`.
+ */
+export async function namesakeQuestion(
+  question: string,
+  waitMs = LOAD_TIMEOUT_MS
+): Promise<ReturnType<typeof namesakeChoices>> {
+  try {
+    const idx = await Promise.race([
+      loadIndex(),
+      new Promise<null>((r) => setTimeout(() => r(null), waitMs)),
+    ]);
+    return idx ? namesakeChoices(idx, question) : null;
+  } catch (err) {
+    log.warn("[ask-albright] namesake check failed; answering without it", err);
+    return null;
+  }
 }
 
 /** Start loading names before the first question needs them. */

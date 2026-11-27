@@ -22,6 +22,7 @@ import {
 } from "@/features/user/ask-albright/lib/anon-usage";
 import { NDJSON, limited, streamResponse } from "@/features/user/ask-albright/lib/http";
 import { budgetMessage } from "@/features/user/ask-albright/lib/usage";
+import { namesakeQuestion } from "@/features/user/ask-albright/lib/kb-entity";
 import { MAX_QUESTION_CHARS } from "@/features/user/ask-albright/lib/router";
 import { COST_CAP_USD } from "@/features/user/ask-albright/lib/cost";
 import { createClient } from "@/shared/services/server";
@@ -171,6 +172,19 @@ export async function POST(request: NextRequest) {
   const minute = perMinute.checkLimit(network, "ask-albright-public");
   if (!minute.allowed) return limited(minute.resetTime, "Slow down — try again in a minute.");
 
+  // "Which oncocytoma?" is asked back before a free question is reserved: no
+  // model call, so it never uses one up.
+  const wantsStream = (request.headers.get("accept") ?? "").includes(NDJSON);
+  if (await namesakeQuestion(body.question)) {
+    const free = async (r: AskResult) => ({
+      ...r,
+      historyId: null,
+      remaining: await anonRemaining(visitor),
+    });
+    if (wantsStream) return streamResponse(askAlbrightStream(body.question), free);
+    return NextResponse.json(await free(await askAlbright(body.question)));
+  }
+
   const reservation = await reserveAnon(visitor, network);
   if (!reservation.allowed) {
     if (reservation.reason === "unavailable")
@@ -211,11 +225,11 @@ export async function POST(request: NextRequest) {
     return { ...result, historyId: null, remaining };
   };
 
-  const wantsStream = (request.headers.get("accept") ?? "").includes(NDJSON);
-  if (wantsStream) return streamResponse(askAlbrightStream(body.question), finish, fail);
+  if (wantsStream)
+    return streamResponse(askAlbrightStream(body.question, { clarify: false }), finish, fail);
 
   try {
-    return NextResponse.json(await finish(await askAlbright(body.question)));
+    return NextResponse.json(await finish(await askAlbright(body.question, { clarify: false })));
   } catch (err) {
     await fail();
     if (err instanceof NoPassagesError) return apiError(err.message, 404);

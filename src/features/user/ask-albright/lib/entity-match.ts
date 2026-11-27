@@ -104,6 +104,7 @@ const NOT_AN_ORGAN = new Set(["Paediatric", "Genetic Tumour Syndromes"]);
  */
 const ORGAN_WORDS: Record<string, string[]> = {
   "Urinary and Male Genital": [
+    "genitourinary",
     "kidney",
     "kidneys",
     "renal",
@@ -150,6 +151,7 @@ const ORGAN_WORDS: Record<string, string[]> = {
     "middle ear",
   ],
   "Endocrine and Neuroendocrine": [
+    "endocrine",
     "adrenal",
     "adrenocortical",
     "thyroid",
@@ -158,6 +160,7 @@ const ORGAN_WORDS: Record<string, string[]> = {
     "adenohypophysis",
   ],
   "Digestive System": [
+    "gastrointestinal",
     "stomach",
     "gastric",
     "colon",
@@ -202,6 +205,8 @@ const ORGAN_WORDS: Record<string, string[]> = {
   ],
   Breast: ["breast", "breasts", "mammary"],
   "Female Genital": [
+    "gynecologic",
+    "gynaecologic",
     "ovary",
     "ovaries",
     "ovarian",
@@ -245,7 +250,27 @@ const ORGAN_WORDS: Record<string, string[]> = {
     "intraocular",
   ],
   "Soft Tissue and Bone": ["bone", "bones", "osseous", "soft tissue", "soft tissues"],
-  Haematolymphoid: ["lymph node", "nodal", "marrow", "spleen", "splenic"],
+  Haematolymphoid: ["haematolymphoid", "lymph node", "nodal", "marrow", "spleen", "splenic"],
+};
+
+/**
+ * One word per organ system that ORGAN_WORDS reads back as that system, to
+ * qualify a namesake whose own name is the bare term ("head and neck
+ * oncocytoma").
+ */
+const ORGAN_LABEL: Record<string, string> = {
+  "Urinary and Male Genital": "genitourinary",
+  "Head and Neck": "head and neck",
+  "Endocrine and Neuroendocrine": "endocrine",
+  "Digestive System": "gastrointestinal",
+  Thoracic: "thoracic",
+  Breast: "breast",
+  "Female Genital": "gynaecologic",
+  Skin: "cutaneous",
+  "Central Nervous System": "CNS",
+  "Eye and Orbit": "ocular",
+  "Soft Tissue and Bone": "soft tissue",
+  Haematolymphoid: "haematolymphoid",
 };
 
 /** Organ systems a question names in plain words. */
@@ -569,4 +594,77 @@ export function entityProfileText(
   ]
     .filter(Boolean)
     .join(" ");
+}
+
+export interface NamesakeChoice {
+  /** The entity's name in the knowledge base. */
+  name: string;
+  /** Its WHO organ system ("" when it has none). */
+  organ: string;
+  /** The question rewritten so it names this one; asking it is unambiguous. */
+  question: string;
+}
+
+/** `phrase` in place of the first `term` in `question`, else appended. */
+function rewriteTerm(question: string, term: string, phrase: string): string {
+  const words = term.split(" ").map((w) => w.replace(/tumor/, "tumou?r"));
+  const re = new RegExp(`\\b${words.join("[^A-Za-z0-9]+")}\\b`, "i");
+  const m = question.match(re);
+  if (!m || m.index === undefined) return `${question.trim()} (${phrase})`;
+  const cased = /^[A-Z]/.test(m[0]) ? phrase[0].toUpperCase() + phrase.slice(1) : phrase;
+  return question.slice(0, m.index) + cased + question.slice(m.index + m[0].length);
+}
+
+/**
+ * When the question uses a homonym without saying which organ, the
+ * namesakes to choose between, each with the question rewritten to name it.
+ * Null when nothing is ambiguous, or fewer than two rewrites come out
+ * unambiguous (then the answer goes ahead with every namesake profiled).
+ */
+export function namesakeChoices(
+  index: EntityIndex,
+  question: string
+): { term: string; choices: NamesakeChoice[] } | null {
+  const found = findEntities(index, question);
+  const term = found.find((f) => f.namesakeOf)?.namesakeOf;
+  if (!term) return null;
+  const choices: NamesakeChoice[] = [];
+  for (const f of found.filter((x) => x.namesakeOf === term)) {
+    const e = f.entities[0];
+    const organ = organsOf(e)[0] ?? "";
+    // An acronym-led name keeps its capitals; others read mid-sentence.
+    const name = /^[A-Z]{2}/.test(e.name) ? e.name : e.name[0].toLowerCase() + e.name.slice(1);
+    const phrase =
+      matchNorm(e.name) !== term
+        ? name
+        : ORGAN_LABEL[organ]
+          ? `${ORGAN_LABEL[organ]} ${name}`
+          : null;
+    if (!phrase) continue;
+    const rewritten = rewriteTerm(question, term, phrase);
+    const again = findEntities(index, rewritten);
+    if (again.some((g) => g.namesakeOf)) continue;
+    if (!again.some((g) => g.entities.some((x) => x.id === e.id))) continue;
+    choices.push({ name: e.name, organ, question: rewritten });
+  }
+  return choices.length >= 2 ? { term, choices } : null;
+}
+
+/** The reply that asks which namesake: the choices, each one a tap away. */
+export function namesakeReply(
+  term: string,
+  choices: NamesakeChoice[]
+): {
+  answer: string;
+  followUps: string[];
+} {
+  const shown = term.replace(/\btumor\b/g, "tumour");
+  return {
+    answer: [
+      `"${shown[0].toUpperCase()}${shown.slice(1)}" names ${choices.length} different tumours. Which one do you mean?`,
+      choices.map((c) => `- **${c.name}**${c.organ ? ` (${c.organ})` : ""}`).join("\n"),
+      "Pick one below. Asking me which one you meant doesn't use up a question.",
+    ].join("\n\n"),
+    followUps: choices.map((c) => c.question),
+  };
 }

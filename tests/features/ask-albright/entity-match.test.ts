@@ -3,6 +3,8 @@ import {
   buildEntityIndex,
   entityProfileText,
   findEntities,
+  namesakeChoices,
+  namesakeReply,
   matchNorm,
 } from "@/features/user/ask-albright/lib/entity-match";
 
@@ -178,6 +180,32 @@ describe("namesakes from the knowledge base's homonym register", () => {
   });
   it("pools a shared name that is not a homonym, whatever organ the question names", () => {
     expect(ids("SDHB in renal paraganglioma")).toEqual([["hn-pgl", "pgl"]]);
+  });
+  it("offers one unambiguous rewrite per namesake when no organ is named", () => {
+    const ns = namesakeChoices(idx, "What is the immunoprofile of oncocytoma?")!;
+    expect(ns.term).toBe("oncocytoma");
+    expect(ns.choices.map((c) => c.question)).toEqual([
+      "What is the immunoprofile of head and neck oncocytoma?",
+      "What is the immunoprofile of oncocytoma of the kidney?",
+      "What is the immunoprofile of adrenal cortical adenoma?",
+    ]);
+    for (const c of ns.choices) expect(namesakeChoices(idx, c.question)).toBeNull();
+    expect(namesakeChoices(idx, "Oncocytoma IHC")!.choices[1].question).toBe(
+      "Oncocytoma of the kidney IHC"
+    );
+  });
+  it("asks nothing when the organ is clear or the name is not a homonym", () => {
+    expect(namesakeChoices(idx, "chromophobe RCC vs oncocytoma")).toBeNull();
+    expect(namesakeChoices(idx, "CK7 in renal oncocytoma")).toBeNull();
+    expect(namesakeChoices(idx, "SDHB in paraganglioma")).toBeNull();
+  });
+  it("words the question back with every choice", () => {
+    const ns = namesakeChoices(idx, "What is the immunoprofile of oncocytoma?")!;
+    const reply = namesakeReply(ns.term, ns.choices);
+    expect(reply.answer).toContain('"Oncocytoma" names 3 different tumours');
+    expect(reply.answer).toContain("- **Oncocytoma of the kidney** (Urinary and Male Genital)");
+    expect(reply.answer).toContain("doesn't use up a question");
+    expect(reply.followUps).toEqual(ns.choices.map((c) => c.question));
   });
 });
 
