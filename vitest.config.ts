@@ -1,6 +1,13 @@
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
+import { existsSync } from "fs";
 import path from "path";
 import react from "@vitejs/plugin-react";
+
+// Tests under tests/debug/ cover the dev-only /debug pages, which live in the
+// gitignored src/app/debug/ and so exist only on machines that have them. Run
+// those tests there; anywhere else (a fresh checkout, CI, a cloud session)
+// there is nothing for them to import, so leave them out.
+const hasDebugPages = existsSync(path.resolve(__dirname, "./src/app/debug"));
 
 export default defineConfig({
   plugins: [react()],
@@ -8,6 +15,7 @@ export default defineConfig({
     globals: true,
     environment: "happy-dom",
     include: ["tests/**/*.test.{ts,tsx}", "src/**/*.test.{ts,tsx}"],
+    exclude: [...configDefaults.exclude, ...(hasDebugPages ? [] : ["tests/debug/**"])],
     setupFiles: ["./vitest.setup.ts"],
     coverage: {
       provider: "v8",

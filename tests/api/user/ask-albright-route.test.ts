@@ -32,15 +32,18 @@ vi.mock("@/features/user/ask-albright/lib/usage", async (importOriginal) => ({
   reserveQuestion: vi.fn(async () => ({ allowed: true })),
   recordCost: vi.fn(async () => {}),
 }));
+// Every export the route reaches is stubbed: these all load the knowledge-base
+// index. namesakeQuestion defaults to "nothing ambiguous".
 vi.mock("@/features/user/ask-albright/lib/kb-entity", () => ({
   entityProfiles: vi.fn(async () => []),
+  namesakeQuestion: vi.fn(async () => null),
   warmEntityIndex: vi.fn(),
 }));
 
 import { getApiKey } from "@/shared/config/ai-keys";
 import { callOpenAICompatText, streamOpenAICompatText } from "@/shared/services/openai-compat";
 import { recordCost, reserveQuestion } from "@/features/user/ask-albright/lib/usage";
-import { entityProfiles } from "@/features/user/ask-albright/lib/kb-entity";
+import { entityProfiles, namesakeQuestion } from "@/features/user/ask-albright/lib/kb-entity";
 import { searchPathTalk, searchPathTalkFigures } from "@/shared/services/pathtalk";
 import { searchImagesForDiagnosis } from "@/shared/services/image-search";
 import { validDiagram } from "@/features/user/ask-albright/lib/visuals";
@@ -162,6 +165,7 @@ describe("POST /api/user/ask-albright", () => {
   beforeEach(() => {
     n++;
     vi.clearAllMocks();
+    vi.mocked(namesakeQuestion).mockResolvedValue(null);
     vi.mocked(getApiKey).mockReturnValue("test-token");
     vi.mocked(findInHistory).mockResolvedValue(null);
     vi.mocked(lookupMarkerAliases).mockResolvedValue([]);
@@ -673,6 +677,35 @@ describe("POST /api/user/ask-albright", () => {
     }
   );
 
+  it("asks which namesake is meant, free: no reservation, no model call, not saved", async () => {
+    vi.mocked(namesakeQuestion).mockResolvedValue({
+      term: "oncocytoma",
+      choices: [
+        {
+          name: "Renal oncocytoma",
+          organ: "kidney",
+          question: "Immunoprofile of renal oncocytoma?",
+        },
+        {
+          name: "Salivary gland oncocytoma",
+          organ: "salivary gland",
+          question: "Immunoprofile of salivary gland oncocytoma?",
+        },
+      ],
+    });
+    const { POST } = await loadRoute();
+    const body = await getResponseJson(await POST(ask("Immunoprofile of oncocytoma?")));
+    expect(body.answer).toMatch(/Which one do you mean/);
+    expect(body.followUps).toEqual([
+      "Immunoprofile of renal oncocytoma?",
+      "Immunoprofile of salivary gland oncocytoma?",
+    ]);
+    expect(body.historyId).toBeNull();
+    expect(reserveQuestion).not.toHaveBeenCalled();
+    expect(ai).not.toHaveBeenCalled();
+    expect(saveHistory).not.toHaveBeenCalled();
+  });
+
   it("names the spend cap that stopped the question", async () => {
     vi.mocked(reserveQuestion).mockResolvedValue({
       allowed: false,
@@ -818,6 +851,7 @@ describe("POST /api/user/ask-albright — visuals cascade", () => {
   beforeEach(() => {
     n++;
     vi.clearAllMocks();
+    vi.mocked(namesakeQuestion).mockResolvedValue(null);
     vi.mocked(getApiKey).mockReturnValue("test-token");
     vi.mocked(findInHistory).mockResolvedValue(null);
     vi.mocked(lookupMarkerAliases).mockResolvedValue([]);
