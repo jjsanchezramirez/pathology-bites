@@ -33,6 +33,18 @@ corroborate against WHO / PathologyOutlines / PathTalk, edit the claim in the
 file it names, then `add.ts --file <name> --yes`. Do not hand-build files for
 `ingest_manual.ts` or orchestrate agents to do this — that is rebuilding `add.ts`.
 
+**The knowledge base is its own Supabase project.** Since 2026-11-26 the
+knowledge-base tables (entities, markers, evidence, sources, documents,
+passages, claims and their kin), their `kb_*` / `kg_*` functions and views live
+in "Pathology Bites Knowledge Base" (`eijdttkmvufcrittltrf`), not the main
+project, so each keeps its own 500 MB. Read and write them with
+`createKbClient()` (`src/shared/services/kb-client.ts`, env `KB_SUPABASE_URL` +
+`KB_SUPABASE_SERVICE_ROLE_KEY`); pipeline scripts read the same two keys from
+`.env.local`. Users, questions, quizzes, images and Ask Dr. Albright usage stay
+in main. Nothing joins across the two (`questions.entity_id` is a bare uuid),
+and the KB project has no idea who the app's users are: RLS is public-read,
+every write goes through the secret key on the server.
+
 **Naming: knowledge base vs knowledge graph.** They are two layers, not
 synonyms. The **knowledge base** is the dataset and everything that reads it as
 a dataset — `entities` / `markers` / `evidence` / `sources` and their kin, the

@@ -15,8 +15,7 @@ import "server-only";
 
 import { cache } from "react";
 
-import { createClient } from "@/shared/services/server";
-import { createServiceRoleClient } from "@/shared/services/service-role-client";
+import { createKbClient } from "@/shared/services/kb-client";
 
 export interface EntityRow {
   id: string;
@@ -61,7 +60,7 @@ async function all<T>(
 export async function resolveEntity(
   slug: string
 ): Promise<{ entity: EntityRow } | { redirectTo: string } | null> {
-  const sb = await createClient();
+  const sb = createKbClient();
 
   const { data: hit } = await sb
     .from("entities")
@@ -103,7 +102,7 @@ export interface EntityDetail {
  * attributed. Nothing on the entity page should blend sources.
  */
 export async function entityDetail(entity: EntityRow): Promise<EntityDetail> {
-  const sb = await createClient();
+  const sb = createKbClient();
 
   const [placementsRaw, synonyms, diffOut, diffIn] = await Promise.all([
     all<{ volume: string; organ_system: string | null; rank: string; chapter_name: string | null; parent_id: string | null }>(
@@ -209,7 +208,7 @@ export interface MarkerDetail {
  * defect the 2026-08-29 audit filed (D4).
  */
 export async function markerDetail(slug: string): Promise<MarkerDetail | null> {
-  const sb = await createClient();
+  const sb = createKbClient();
   const { data: marker } = await sb
     .from("markers")
     .select("id, slug, name, kind, compartment, gene_symbols, definition")
@@ -230,7 +229,7 @@ export interface GeneDetail {
 }
 
 export async function geneDetail(symbol: string): Promise<GeneDetail | null> {
-  const sb = await createClient();
+  const sb = createKbClient();
   const { data: gene } = await sb
     .from("genes")
     .select("symbol, name, locus")
@@ -347,7 +346,7 @@ interface Monograph {
 export const entityMonograph = cache(async (slug: string): Promise<Monograph | null> => {
   // Service role: the kb_* rollups are SECURITY DEFINER and granted to service_role only,
   // so the public can't call them directly through /rest/v1/rpc; the page shows the result.
-  const { data, error } = await createServiceRoleClient().rpc("kb_entity_monograph", { p_slug: slug });
+  const { data, error } = await createKbClient().rpc("kb_entity_monograph", { p_slug: slug });
   if (error) throw new Error(error.message);
   const m = data as unknown as Monograph | null;
   if (!m || !m.entity) return null;
@@ -445,7 +444,7 @@ export interface MarkerRollup {
 export const entityMarkerRollup = cache(async (slug: string): Promise<MarkerRollup | null> => {
   // Service role: the kb_* rollups are SECURITY DEFINER and granted to service_role only,
   // so the public can't call them directly through /rest/v1/rpc; the page shows the result.
-  const { data, error } = await createServiceRoleClient().rpc("kb_entity_marker_rollup", { p_slug: slug });
+  const { data, error } = await createKbClient().rpc("kb_entity_marker_rollup", { p_slug: slug });
   if (error) throw new Error(error.message);
   const r = data as unknown as MarkerRollup | null;
   if (!r || !r.entity) return null;
@@ -478,7 +477,7 @@ export interface MarkerEntityRollup {
 export const markerEntityRollup = cache(async (slug: string): Promise<MarkerEntityRollup | null> => {
   // Service role: the kb_* rollups are SECURITY DEFINER and granted to service_role only,
   // so the public can't call them directly through /rest/v1/rpc; the page shows the result.
-  const { data, error } = await createServiceRoleClient().rpc("kb_marker_entity_rollup", { p_slug: slug });
+  const { data, error } = await createKbClient().rpc("kb_marker_entity_rollup", { p_slug: slug });
   if (error) throw new Error(error.message);
   const r = data as unknown as MarkerEntityRollup | null;
   if (!r || !r.marker) return null;

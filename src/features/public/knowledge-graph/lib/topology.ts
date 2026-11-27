@@ -7,7 +7,7 @@
  * per-tumour collapse and the edge pooling is the one thing that would let a
  * baked homepage snapshot and the live explorer disagree about the data.
  */
-import { createServiceRoleClient } from "@/shared/services/service-role-client";
+import { createKbClient } from "@/shared/services/kb-client";
 import type { Database } from "@/shared/types/supabase";
 
 export type TopologyPart = "all" | "nodes" | "edges";
@@ -21,7 +21,7 @@ export interface Topology {
 
 const PAGE = 1000;
 
-export type Sb = ReturnType<typeof createServiceRoleClient>;
+export type Sb = ReturnType<typeof createKbClient>;
 
 /**
  * The tables this module reads. Narrowing from `string` is what lets
