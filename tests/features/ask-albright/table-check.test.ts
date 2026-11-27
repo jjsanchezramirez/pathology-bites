@@ -44,7 +44,7 @@ describe("checkTables", () => {
       PCP,
     ]);
     expect(text).toContain(
-      "| β-catenin | Membranous only, no nuclear (normal pattern) [4] | Nuclear (aberrant) [3] |"
+      "| β-catenin | Membranous only, no nuclear (normal pattern) [4] | Aberrant (nuclear) [3] |"
     );
     expect(fixes).toHaveLength(2);
   });
@@ -76,13 +76,13 @@ describe("checkTables", () => {
       [ACP, PCP]
     );
     expect(text).toContain(
-      "| Key stains | CK7+, β-catenin (membranous only) [4] [1] | CK7+, CK17+, β-catenin (nuclear) [3] [2] |"
+      "| Key stains | CK7+, β-catenin (membranous only) [4] [1] | CK7+, CK17+, β-catenin (aberrant nuclear) [3] [2] |"
     );
   });
 
   it("does not repeat a citation the model already gave", () => {
     const { text } = checkTables(table(["| Key stains | CK7+ | β-catenin+ [3] |"]), [ACP, PCP]);
-    expect(text).toContain("| β-catenin (nuclear) [3] |");
+    expect(text).toContain("| β-catenin (aberrant nuclear) [3] |");
   });
 
   it("flips a contradicted plain marker in a list and leaves agreeing ones", () => {
