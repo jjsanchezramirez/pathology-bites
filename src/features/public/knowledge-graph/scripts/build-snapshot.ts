@@ -83,12 +83,12 @@ const kb = (n: number) => `${(n / 1024).toFixed(0)} KB`;
 
 async function main() {
   loadEnvLocal();
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error("SUPABASE_SERVICE_ROLE_KEY missing — is .env.local present?");
+  if (!process.env.KB_SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error("KB_SUPABASE_SERVICE_ROLE_KEY missing — is .env.local present?");
   }
   // Imported lazily: the module reads env at call time, and env is only just set.
-  const { createServiceRoleClient } = await import("@/shared/services/service-role-client");
-  const sb = createServiceRoleClient();
+  const { createKbClient } = await import("@/shared/services/kb-client");
+  const sb = createKbClient();
 
   console.log("reading the graph…");
   const topo = await buildTopology(sb, "all");

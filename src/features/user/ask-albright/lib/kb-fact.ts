@@ -1,7 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { KNOWLEDGE_PAGES_ENABLED } from "@/features/public/knowledge/lib/enabled";
-import { createServiceRoleClient } from "@/shared/services/service-role-client";
+import { createKbClient } from "@/shared/services/kb-client";
 import { log } from "@/shared/utils/logging";
 import {
   displayName,
@@ -34,7 +34,7 @@ const POOL_TTL_MS = 6 * 60 * 60 * 1000;
 
 // Public-read tables; service role because the pool is shared across requests
 // (as in kb-entity.ts). Untyped: marker_key_tumours postdates the generated types.
-const db = () => createServiceRoleClient() as unknown as SupabaseClient;
+const db = () => createKbClient() as unknown as SupabaseClient;
 
 interface Pick {
   markerId: string;

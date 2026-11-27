@@ -1,7 +1,7 @@
 import "server-only";
 
 import { KNOWLEDGE_PAGES_ENABLED } from "@/features/public/knowledge/lib/enabled";
-import { createClient } from "@/shared/services/server";
+import { createKbClient } from "@/shared/services/kb-client";
 import { log } from "@/shared/utils/logging";
 import {
   PICK_NEGATIVE,
@@ -44,7 +44,7 @@ const TIMEOUT_MS = 2500;
 
 /** Stored picks for a marker (public.marker_key_tumours); none on any failure. */
 async function storedPicks(
-  sb: Awaited<ReturnType<typeof createClient>>,
+  sb: ReturnType<typeof createKbClient>,
   markerId: string
 ): Promise<{ positive?: string[]; negative?: string[] }> {
   try {
@@ -69,7 +69,7 @@ export async function markerProfile(marker: {
 }): Promise<MarkerProfile | null> {
   if (!marker.id) return null;
   try {
-    const sb = await createClient();
+    const sb = createKbClient();
     const picksPromise = storedPicks(sb, marker.id);
     const { data, error } = await sb
       .from("marker_summary")

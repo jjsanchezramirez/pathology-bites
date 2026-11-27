@@ -61,13 +61,9 @@ async function fetchAll<T>(
 }
 
 async function buildIndex(): Promise<void> {
-  const supabase = createClient(
-    getEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    getEnv("SUPABASE_SERVICE_ROLE_KEY"),
-    {
-      auth: { persistSession: false },
-    }
-  );
+  const supabase = createClient(getEnv("KB_SUPABASE_URL"), getEnv("KB_SUPABASE_SERVICE_ROLE_KEY"), {
+    auth: { persistSession: false },
+  });
 
   const entities = await fetchAll<{
     id: string;

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClient } from "@/shared/services/server";
+import { createKbClient } from "@/shared/services/kb-client";
 import { log } from "@/shared/utils/logging";
 import { type AliasGroup, aliasGroup, markerCandidates } from "./synonyms";
 
@@ -38,7 +38,7 @@ export async function lookupMarkerAliases(question: string): Promise<AliasGroup[
   if (hit) return hit;
 
   try {
-    const sb = await createClient();
+    const sb = createKbClient();
     // Names are matched case-insensitively on the question's own spelling
     // ("TTF-1"); synonyms on the normalised form ("ttf 1").
     const words = [...new Set(question.match(/[A-Za-z0-9][A-Za-z0-9-]*/g) ?? [])].slice(0, 24);

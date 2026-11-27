@@ -2,7 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { KNOWLEDGE_PAGES_ENABLED } from "@/features/public/knowledge/lib/enabled";
-import { createServiceRoleClient } from "@/shared/services/service-role-client";
+import { createKbClient } from "@/shared/services/kb-client";
 import { log } from "@/shared/utils/logging";
 import {
   type EntityIndex,
@@ -44,7 +44,7 @@ const KINDS = ["neoplasm", "non_neoplastic", "syndrome"];
 // The tables are public-read; service role because this runs outside any
 // request's cookie scope (the index is shared by every request on the instance).
 // Untyped: these tables postdate the generated Database types (as in history.ts).
-const db = () => createServiceRoleClient() as unknown as SupabaseClient;
+const db = () => createKbClient() as unknown as SupabaseClient;
 
 /** Every row of a public table, paged in key order (unordered paging drops rows). */
 async function allRows<T>(table: string, select: string, kinds?: string[]): Promise<T[]> {
