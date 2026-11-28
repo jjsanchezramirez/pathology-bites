@@ -8,6 +8,8 @@ import {
   minimalPanel,
   characteristicStains,
   relatedDiagnoses,
+  positivePct,
+  outcomeProbs,
 } from "@/features/public/tools/ihc/panel-engine";
 import type { Matrix, Cell } from "@/features/public/tools/ihc/types";
 
@@ -40,6 +42,27 @@ describe("effVal / pctTone", () => {
     expect(pctTone(cell("a", "m", "positive", 30))).toBe("partial");
     expect(pctTone(cell("a", "m", "positive", 5))).toBe("neg");
     expect(pctTone(cell("a", "m", "positive", null))).toBe("pos");
+  });
+});
+
+describe("positivePct: a loss rate is never read as a positivity rate", () => {
+  // Audit G1-03: "about 90% of cases show loss of nuclear RB1" was stored as a
+  // negative cell with pct 90, drawn green as "90%" and scored as 90% positive.
+  const rb1Loss = cell("a", "rb1", "negative", 90);
+
+  it("inverts a negative cell's majority % into the share still staining", () => {
+    expect(positivePct(rb1Loss)).toBe(10);
+    expect(effVal(rb1Loss)).toBe(10);
+    expect(pctTone(rb1Loss)).toBe("neg");
+  });
+  it("scores the loss as mostly negative", () => {
+    const o = outcomeProbs(rb1Loss);
+    expect(o.negative).toBeGreaterThan(o.positive * 5);
+  });
+  it("leaves real positivity rates alone", () => {
+    expect(positivePct(cell("a", "ema", "negative", 2))).toBe(2); // "negative, as is EMA (2%)"
+    expect(positivePct(cell("a", "cd30", "positive", 90))).toBe(90);
+    expect(positivePct(cell("a", "x", "negative", null))).toBeNull();
   });
 });
 

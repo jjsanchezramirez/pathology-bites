@@ -36,6 +36,7 @@ import {
   relatedDiagnoses,
   OBSERVATIONS,
   OBSERVATION_SYMBOL,
+  positivePct,
   type RankedMarker,
   type Observation,
   type DiagnosisScore,
@@ -108,7 +109,9 @@ function cellLabel(cell: Cell): string {
   if (cell.status === "review") return "?";
   // An index is a number, not a call: "Ki-67 < 5%" is not Ki-67 negative.
   if (cell.polarity === "index") return cell.pct !== null && cell.pct !== undefined ? `${cell.pct}%` : "index";
-  if (cell.pct !== null && cell.pct !== undefined) return `${cell.pct}%`;
+  // Always a positivity rate: "RB1 lost in 90%" is shown as 10%, not a green 90%.
+  const pct = positivePct(cell);
+  if (pct !== null) return `${pct}%`;
   return cell.polarity === "positive" ? "Pos" : "Neg";
 }
 
