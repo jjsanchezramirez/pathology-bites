@@ -75,6 +75,23 @@ export async function saveHistory(
   }
 }
 
+/**
+ * Signed-out questions (public.ask_albright_public_history), kept for quality
+ * control: the question, the answer or decline the visitor saw, and when.
+ * Nothing that identifies the visitor is stored (no IP, cookie or usage
+ * bucket). Like saveHistory, a failed write never fails the answer.
+ */
+const PUBLIC_TABLE = "ask_albright_public_history";
+
+export async function savePublicHistory(question: string, result: AskResult): Promise<void> {
+  try {
+    const { error } = await db().from(PUBLIC_TABLE).insert({ question, result });
+    if (error) throw error;
+  } catch (err) {
+    log.warn("[ask-albright] public history save failed", err);
+  }
+}
+
 export async function listHistory(userId: string, limit = 20): Promise<HistoryEntry[]> {
   const { data, error } = await db()
     .from(TABLE)

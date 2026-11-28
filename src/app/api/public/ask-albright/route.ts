@@ -23,6 +23,7 @@ import {
 import { NDJSON, limited, streamResponse } from "@/features/user/ask-albright/lib/http";
 import { budgetMessage } from "@/features/user/ask-albright/lib/usage";
 import { namesakeQuestion } from "@/features/user/ask-albright/lib/kb-entity";
+import { savePublicHistory } from "@/features/user/ask-albright/lib/history";
 import { MAX_QUESTION_CHARS } from "@/features/user/ask-albright/lib/router";
 import { COST_CAP_USD } from "@/features/user/ask-albright/lib/cost";
 import { createClient } from "@/shared/services/server";
@@ -32,8 +33,11 @@ import { log } from "@/shared/utils/logging";
 
 /**
  * Ask Dr. Albright for signed-out visitors: the homepage teaser. A few free
- * answers per browser (lib/anon-usage.ts), then "sign up for more". Nothing is
- * saved to a history. Signed-in visitors are told to use /api/user/ask-albright.
+ * answers per browser (lib/anon-usage.ts), then "sign up for more". There is no
+ * visitor history; each answered or declined question is kept anonymously
+ * (question, answer, time; no IP or visitor id) for quality control
+ * (lib/history.ts savePublicHistory). Signed-in visitors are told to use
+ * /api/user/ask-albright.
  *
  * Bot defences, cheapest first: Cloudflare Bot Fight Mode (zone-wide, before
  * Vercel); a same-origin check; a honeypot field; a visitor cookie that only
@@ -215,13 +219,15 @@ export async function POST(request: NextRequest) {
     log.info(
       `[ask-albright] public source=${result.source} cached=${result.cached} cost=${result.costUsd ?? 0}`
     );
+    // Kept for quality control, declines included: a wrongly declined
+    // question is worth seeing too.
+    const saved = savePublicHistory(body.question, result);
     // A decline ("I only answer pathology") isn't an answer: give it back.
     if (result.scope) {
-      await refund();
-      await recordAnonCost(visitor, result.costUsd ?? 0);
+      await Promise.all([refund(), recordAnonCost(visitor, result.costUsd ?? 0), saved]);
       return { ...result, historyId: null, remaining: remaining + 1 };
     }
-    await recordAnonCost(visitor, result.costUsd ?? 0);
+    await Promise.all([recordAnonCost(visitor, result.costUsd ?? 0), saved]);
     return { ...result, historyId: null, remaining };
   };
 

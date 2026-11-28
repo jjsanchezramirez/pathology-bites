@@ -24,6 +24,10 @@ export default function PrivacyPage() {
                 <li>Account information (name, email, institution)</li>
                 <li>Educational progress data (quiz scores, study patterns)</li>
                 <li>Platform usage statistics for improvement</li>
+                <li>
+                  Questions asked to Dr. Albright while signed out, with his answers, kept
+                  anonymously (no name, email or IP address) to improve his answers
+                </li>
                 <li>Technical data required for platform functionality</li>
               </ul>
             </PolicyCard>
