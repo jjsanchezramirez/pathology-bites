@@ -25,8 +25,9 @@ export default function PrivacyPage() {
                 <li>Educational progress data (quiz scores, study patterns)</li>
                 <li>Platform usage statistics for improvement</li>
                 <li>
-                  Questions asked to Dr. Albright while signed out, with his answers, kept
-                  anonymously (no name, email or IP address) to improve his answers
+                  Questions asked to Dr. Albright while signed out, with his answers, kept without
+                  your name, email or IP address to improve his answers. They are kept as typed, so
+                  please don&apos;t include patient details
                 </li>
                 <li>Technical data required for platform functionality</li>
               </ul>

@@ -1,5 +1,5 @@
 // src/app/api/public/ask-albright/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { z } from "zod";
 import {
   type AskResult,
@@ -23,7 +23,10 @@ import {
 import { NDJSON, limited, streamResponse } from "@/features/user/ask-albright/lib/http";
 import { budgetMessage } from "@/features/user/ask-albright/lib/usage";
 import { namesakeQuestion } from "@/features/user/ask-albright/lib/kb-entity";
-import { savePublicHistory } from "@/features/user/ask-albright/lib/history";
+import {
+  savePublicHistory,
+  type PublicOutcome,
+} from "@/features/user/ask-albright/lib/history";
 import { MAX_QUESTION_CHARS } from "@/features/user/ask-albright/lib/router";
 import { COST_CAP_USD } from "@/features/user/ask-albright/lib/cost";
 import { createClient } from "@/shared/services/server";
@@ -32,11 +35,25 @@ import { apiError, parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
 
 /**
+ * Keep a signed-out question once the response has been sent: the visitor never
+ * waits on this write. Outside a request scope (scripts, some tests) `after`
+ * throws, so fall back to a plain background write.
+ */
+function keepPublic(question: string, outcome: PublicOutcome, result: AskResult | null): void {
+  const save = () => savePublicHistory(question, outcome, result);
+  try {
+    after(save);
+  } catch {
+    void save();
+  }
+}
+
+/**
  * Ask Dr. Albright for signed-out visitors: the homepage teaser. A few free
  * answers per browser (lib/anon-usage.ts), then "sign up for more". There is no
- * visitor history; each answered or declined question is kept anonymously
- * (question, answer, time; no IP or visitor id) for quality control
- * (lib/history.ts savePublicHistory). Signed-in visitors are told to use
+ * visitor history; every question that reaches the model or the namesake check
+ * is kept anonymously (question, outcome, answer, time; no IP or visitor id) for
+ * quality control (lib/history.ts savePublicHistory). Signed-in visitors are told to use
  * /api/user/ask-albright.
  *
  * Bot defences, cheapest first: Cloudflare Bot Fight Mode (zone-wide, before
@@ -180,11 +197,10 @@ export async function POST(request: NextRequest) {
   // model call, so it never uses one up.
   const wantsStream = (request.headers.get("accept") ?? "").includes(NDJSON);
   if (await namesakeQuestion(body.question)) {
-    const free = async (r: AskResult) => ({
-      ...r,
-      historyId: null,
-      remaining: await anonRemaining(visitor),
-    });
+    const free = async (r: AskResult) => {
+      keepPublic(body.question, "clarified", r);
+      return { ...r, historyId: null, remaining: await anonRemaining(visitor) };
+    };
     if (wantsStream) return streamResponse(askAlbrightStream(body.question), free);
     return NextResponse.json(await free(await askAlbright(body.question)));
   }
@@ -210,7 +226,8 @@ export async function POST(request: NextRequest) {
   const refund = () => refundAnon(visitor, network);
   // A failure gives the question back but is charged the worst case: what it
   // spent before failing isn't known.
-  const fail = async () => {
+  const fail = async (err: unknown) => {
+    keepPublic(body.question, err instanceof NoPassagesError ? "not_found" : "failed", null);
     await refund();
     await recordAnonCost(visitor, COST_CAP_USD);
   };
@@ -221,13 +238,14 @@ export async function POST(request: NextRequest) {
     );
     // Kept for quality control, declines included: a wrongly declined
     // question is worth seeing too.
-    const saved = savePublicHistory(body.question, result);
+    keepPublic(body.question, result.scope ? "declined" : "answered", result);
     // A decline ("I only answer pathology") isn't an answer: give it back.
     if (result.scope) {
-      await Promise.all([refund(), recordAnonCost(visitor, result.costUsd ?? 0), saved]);
+      await refund();
+      await recordAnonCost(visitor, result.costUsd ?? 0);
       return { ...result, historyId: null, remaining: remaining + 1 };
     }
-    await Promise.all([recordAnonCost(visitor, result.costUsd ?? 0), saved]);
+    await recordAnonCost(visitor, result.costUsd ?? 0);
     return { ...result, historyId: null, remaining };
   };
 
@@ -237,7 +255,7 @@ export async function POST(request: NextRequest) {
   try {
     return NextResponse.json(await finish(await askAlbright(body.question, { clarify: false })));
   } catch (err) {
-    await fail();
+    await fail(err);
     if (err instanceof NoPassagesError) return apiError(err.message, 404);
     log.error("[ask-albright] public failed", err);
     return apiError("Dr. Albright couldn't answer that right now", 502);

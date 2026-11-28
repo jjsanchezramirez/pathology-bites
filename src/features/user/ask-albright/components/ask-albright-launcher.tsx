@@ -913,6 +913,15 @@ export function AskAlbrightLauncher({ variant = "user" }: { variant?: "user" | "
                       : `You have ${plural(remaining)} left today`}
                   </p>
                 )}
+                {anon && !outOfFree && !result && (
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    Questions are kept anonymously to improve answers. Don&apos;t include patient
+                    details.{" "}
+                    <Link href="/privacy" className="underline underline-offset-2">
+                      Privacy
+                    </Link>
+                  </p>
+                )}
               </div>
 
               {outOfFree && !result && <SignUpCard />}

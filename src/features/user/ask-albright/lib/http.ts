@@ -13,8 +13,8 @@ export const NDJSON = "application/x-ndjson";
 export function streamResponse(
   events: AsyncGenerator<AskEvent>,
   finish: (result: AskResult) => Promise<Record<string, unknown>>,
-  /** Called once if the answer fails (404 nothing found, 502 upstream). */
-  onError?: () => Promise<void>
+  /** Called once if the answer fails (404 nothing found, 502 upstream), with the error. */
+  onError?: (err: unknown) => Promise<void>
 ): Response {
   const enc = new TextEncoder();
   const body = new ReadableStream<Uint8Array>({
@@ -26,7 +26,7 @@ export function streamResponse(
           else send(ev);
         }
       } catch (err) {
-        await onError?.().catch(() => {});
+        await onError?.(err).catch(() => {});
         if (err instanceof NoPassagesError)
           send({ type: "error", status: 404, error: err.message });
         else {
