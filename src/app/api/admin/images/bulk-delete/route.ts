@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { bulkDeleteFromR2, extractR2KeyFromUrl } from "@/shared/services/r2-storage";
-import { requireUser } from "@/shared/utils/api/api-guard";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
 
@@ -119,20 +119,9 @@ export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Verify user is authenticated admin
-    const auth = requireUser(request);
+    // Admin only. Role comes from app_metadata via middleware headers (CLAUDE.md "Auth").
+    const auth = requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
-    const userId = auth.userId;
-
-    const { data: userData, error: roleError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
-
-    if (roleError || !userData || userData.role !== "admin") {
-      return NextResponse.json({ error: "Only administrators can delete images" }, { status: 403 });
-    }
 
     // Parse request body
     const body = await parseBody(request, bulkDeleteImagesSchema);

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { uploadToR2, generateImageStoragePath, deleteFromR2 } from "@/shared/services/r2-storage";
 import { getImageDimensionsFromFile } from "@/shared/utils/images/server-image-utils";
-import { requireUser } from "@/shared/utils/api/api-guard";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { isImageCategory } from "@/shared/types/database";
 import { parseImageFilename } from "@/shared/utils/images/filename-parser";
 import { revalidateImages } from "@/shared/utils/api/revalidation";
@@ -145,23 +145,10 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Verify user is authenticated admin
-    const auth = requireUser(request);
+    // Admin only. Role comes from app_metadata via middleware headers (CLAUDE.md "Auth").
+    const auth = requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
-
-    const { data: userData, error: roleError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
-
-    if (roleError || !userData || userData.role !== "admin") {
-      return NextResponse.json(
-        { error: "Administrator privileges required to upload images." },
-        { status: 403 }
-      );
-    }
 
     // Parse form data
     const formData = await parseFormData(request);
