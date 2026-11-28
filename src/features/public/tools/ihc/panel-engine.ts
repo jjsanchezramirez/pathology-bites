@@ -5,9 +5,25 @@
 import { compareMarkerNames } from "./marker-order";
 import type { Matrix, Marker, Cell, Diagnosis } from "./types";
 
+/**
+ * The cell's % as a POSITIVITY rate (share of cases staining), or null when no
+ * number was reported. `pct` is meant to be exactly that, but the WHO extraction
+ * has written LOSS rates into it: "about 90% of cases show loss of nuclear RB1"
+ * became a negative cell with pct 90, which was drawn green as "90%" and scored
+ * as 90% positive (audit G1-03). A negative call cannot be majority-positive, so
+ * a negative cell's pct above 50 is read as the loss rate and inverted. Every
+ * reader of `pct` goes through here so a future rebuild cannot bring the bug back.
+ */
+export function positivePct(c: Cell): number | null {
+  if (c.pct === null || c.pct === undefined) return null;
+  if (c.polarity === "negative" && c.pct > 50) return 100 - c.pct;
+  return c.pct;
+}
+
 /** Numeric value for ranking/tone: the % if known, else a proxy from polarity. */
 export function effVal(c: Cell): number {
-  if (c.pct !== null && c.pct !== undefined) return c.pct;
+  const pct = positivePct(c);
+  if (pct !== null) return pct;
   // A proliferation index with no number tells us nothing about positivity, and a
   // disputed call should not pull a marker up the ranking.
   if (c.polarity === "index" || c.status === "review") return 50;
@@ -19,10 +35,11 @@ export function pctTone(c: Cell): "pos" | "partial" | "neg" | "unsettled" {
   if (c.polarity === "index") return "partial";
   // Hedged in the source ("a subset", "variable") — not the same claim as a
   // definite positive, and it should not be coloured like one.
-  if (c.certainty === "variable" && (c.pct === null || c.pct === undefined)) return "partial";
-  if (c.pct === null || c.pct === undefined) return c.polarity === "positive" ? "pos" : "neg";
-  if (c.pct >= 50) return "pos";
-  if (c.pct <= 15) return "neg";
+  const pct = positivePct(c);
+  if (c.certainty === "variable" && pct === null) return "partial";
+  if (pct === null) return c.polarity === "positive" ? "pos" : "neg";
+  if (pct >= 50) return "pos";
+  if (pct <= 15) return "neg";
   return "partial";
 }
 
@@ -130,8 +147,8 @@ export function profileForDiagnosis(matrix: Matrix, diagnosisId: string): { mark
       if (ta !== tb) return ta - tb;
       // Inside a group a reported rate outranks a bare qualitative call, so the
       // quantified end of the profile reads first.
-      const pa = a.cell.pct ?? -1;
-      const pb = b.cell.pct ?? -1;
+      const pa = positivePct(a.cell) ?? -1;
+      const pb = positivePct(b.cell) ?? -1;
       if (pa !== pb && pa >= 0 && pb >= 0) return pb - pa;
       return compareMarkerNames(a.marker.name, b.marker.name);
     });
@@ -223,8 +240,9 @@ export function outcomeProbs(cell: Cell | undefined): Outcomes {
   // disagree on has no claim to make. Neither may push a candidate anywhere.
   if (cell.polarity === "index" || cell.status === "review") return UNINFORMATIVE;
 
-  if (cell.pct !== null && cell.pct !== undefined) {
-    const p = clamp(cell.pct / 100, 0, 1);
+  const pct = positivePct(cell);
+  if (pct !== null) {
+    const p = clamp(pct / 100, 0, 1);
     // Heterogeneity peaks where the reported rate is mid-range: a marker positive
     // in half of cases is precisely the one that looks patchy on the bench.
     const variable = 2 * p * (1 - p);
@@ -572,9 +590,9 @@ export function minimalPanel(matrix: Matrix, diagnosisIds: string[]): PanelMarke
     const cb = idx.get(`${b}|${mId}`);
     if (!ca || !cb) return false;
     if (ca.polarity !== cb.polarity) return true;
-    if (ca.pct !== null && ca.pct !== undefined && cb.pct !== null && cb.pct !== undefined) {
-      return Math.abs(ca.pct - cb.pct) >= 50;
-    }
+    const pa = positivePct(ca);
+    const pb = positivePct(cb);
+    if (pa !== null && pb !== null) return Math.abs(pa - pb) >= 50;
     return false;
   };
 
